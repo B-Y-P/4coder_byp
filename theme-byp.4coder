@@ -1,0 +1,60 @@
+// Created by: BYP
+
+defcolor_back                       =  0xFF1E1E1E;
+defcolor_margin           	      =  0xFF2E2E2E;
+defcolor_margin_hover     	      =  0xFF660BDD;
+defcolor_margin_active    	      =  defcolor_margin_hover;
+defcolor_list_item        	      = {defcolor_margin, defcolor_back};
+defcolor_list_item_hover  	      = {defcolor_margin_hover, defcolor_margin};
+defcolor_list_item_active	       = {defcolor_margin_active, defcolor_margin_active};
+defcolor_cursor                     = {0xFF8E2DE2, 0xFF8E2DE2};
+defcolor_at_cursor                  =  0xFFEFEFEF;
+defcolor_highlight_cursor_line      =  0xFF303232;
+defcolor_mark                       =  0xFF9B2BD8;
+defcolor_highlight                  =  0xFF203483;
+defcolor_at_highlight               =  0xFFCDAA7D;
+
+defcolor_text_default               =  0xFFEFEFEF;
+defcolor_comment                    =  0xFF505F89;
+defcolor_comment_pop                = {0xFFaf5fff, 0xFF2584e3};		// NOTE, TODO
+defcolor_keyword                    =  0xFFA6A6F1;
+defcolor_str_constant               =  0xFFA54FEF;
+defcolor_char_constant              =  0xFFAFAFFF;
+defcolor_include                    =  defcolor_str_constant;
+defcolor_int_constant               =  0xFF5fafff;
+defcolor_float_constant             =  defcolor_int_constant;
+defcolor_bool_constant              =  defcolor_int_constant;
+defcolor_preproc                    =  0xFF00d7d7;
+defcolor_special_character          =  0xFFFF0000;
+defcolor_ghost_character            =  0xFF8A8A8A;
+
+defcolor_paste                      =  0xFFFFBB00;
+defcolor_undo                       =  0xFF80005D;
+
+defcolor_highlight_junk             =  0xFF3A0000;
+defcolor_highlight_white            =  0xFF003A3A;
+
+defcolor_bar                        =  0xFF660BDD;
+defcolor_base                       =  0xFFEFEFEF;                    // file bar text color
+defcolor_pop1                       =  defcolor_int_constant;		   // Query bar, lister text color
+defcolor_pop2                       =  0xFFFF0000;
+
+defcolor_back_cycle                 = {0xFF1E1E1E, 0xFF1E1E1E};
+defcolor_text_cycle                 = {0xFFF00000, 0xFF00F000, 0xFF0080F0, 0xFFF0F000};
+
+defcolor_line_numbers_back          =  defcolor_back;
+defcolor_line_numbers_text          =  0xFF8880C0;
+
+/// BYP Colors
+defcolor_function                   =  0xFFBDA3F9;
+defcolor_type                       =  0xFFB84AFD;
+defcolor_macro                      =  0xFF579EA8;
+defcolor_control                    =  defcolor_preproc;
+defcolor_struct                     =  defcolor_keyword;
+//defcolor_struct                   =  0xFF70A7F7;
+
+/// Vim Colors
+defcolor_vim_filebar_pop            =  0xFF8A4CDB;
+defcolor_vim_chord_text             =  defcolor_text_default;
+defcolor_vim_chord_unresolved       =  defcolor_mark;
+defcolor_vim_chord_error            =  defcolor_special_character;
