@@ -1,4 +1,76 @@
 
+// TODO(BYP): param number underlining (account for variadic ...)
+function void
+byp_draw_function_preview_inner(Application_Links *app, Buffer_ID buffer, Text_Layout_ID text_layout_id, Range_i64 range, i64 pos, i32 count){
+   Scratch_Block scratch(app);
+   String_Const_u8 query = push_token_or_word_under_pos(app, scratch, buffer, range.min-1);
+
+   Buffer_ID target_buffer = -1;
+   Range_i64 target_range = Ii64(-1);
+
+   code_index_lock();
+   for(Buffer_ID b = get_buffer_next(app, 0, Access_Always);
+       b != 0;
+       b = get_buffer_next(app, b, Access_Always)){
+      Code_Index_File *file = code_index_get_file(b);
+      if(file != 0){
+         foreach(i, file->note_array.count){
+            Code_Index_Note *note = file->note_array.ptrs[i];
+            if((note->note_kind == CodeIndexNote_Function || note->note_kind == CodeIndexNote_Macro) &&
+               string_match(note->text, query))
+            {
+               target_buffer = b;
+               target_range = note->pos;
+               goto done;
+            }
+         }
+      }
+   }
+   done:
+   code_index_unlock();
+
+   if(target_buffer < 0){ return; }
+   target_range.max = vim_scan_bounce(app, target_buffer, target_range.max, Scan_Forward) + 1;
+   String_Const_u8 sig = push_buffer_range(app, scratch, target_buffer, target_range);
+
+   Face_Metrics metrics = get_face_metrics(app, byp_small_italic_face);
+   f32 wid = 2.f;
+   Vec2_f32 rect_p0 = vim_cur_cursor_pos + V2f32(0, 2.f + count*(metrics.line_height + wid));
+   Vec2_f32 rect_p1 = rect_p0 + V2f32(sig.size*metrics.max_advance, metrics.line_height);
+
+   draw_rectangle_fcolor(app, Rf32(rect_p0, rect_p1), 3.f, fcolor_id(defcolor_back));
+   draw_rectangle_outline_fcolor(app, Rf32(rect_p0, rect_p1), 3.f, wid, fcolor_id(defcolor_ghost_character));
+   draw_string(app, byp_small_italic_face, sig, rect_p0 + V2f32(0, wid), fcolor_id(defcolor_ghost_character));
+}
+
+function void
+byp_draw_function_preview(Application_Links *app, Buffer_ID buffer, Text_Layout_ID text_layout_id, i64 pos){
+
+   Token_Array token_array = get_token_array_from_buffer(app, buffer);
+   if(token_array.tokens == 0){ return; }
+   Token_Iterator_Array it = token_iterator_pos(0, &token_array, pos);
+   Token *token = token_it_read(&it);
+
+   if(token->kind == TokenBaseKind_ParentheticalOpen){ pos = token->pos + token->size; }
+   else if(token_it_dec_all(&it)){
+      token = token_it_read(&it);
+      if(token->kind == TokenBaseKind_ParentheticalClose && pos == token->pos + token->size){
+         pos = token->pos;
+      }
+   }
+
+	Scratch_Block scratch(app);
+   Range_i64_Array ranges = get_enclosure_ranges(app, scratch, buffer, pos, FindNest_Paren);
+   i32 count = 0;
+   foreach(i, ranges.count){
+      Token_Iterator_Array cur_it = token_iterator_pos(0, &token_array, ranges.ranges[i].min-1);
+      token = token_it_read(&cur_it);
+      if(token->kind == TokenBaseKind_Identifier){
+         byp_draw_function_preview_inner(app, buffer, text_layout_id, ranges.ranges[i], pos, count++);
+      }
+   }
+}
+
 function void
 byp_hex_color_preview(Application_Links *app, Buffer_ID buffer_id, Text_Layout_ID text_layout_id){
 	Scratch_Block scratch(app);
@@ -73,28 +145,28 @@ byp_draw_scrollbars(Application_Links *app, View_ID view, Buffer_ID buffer, Text
 
 function void
 draw_scope_range(Application_Links *app, View_ID view, Buffer_ID buffer, Text_Layout_ID text_layout_id, Range_i64 range, f32 x_off, f32 wid, FColor color){
-    range.max -= 1;
-    u8 c0 = buffer_get_char(app, buffer, range.min);
-    u8 c1 = buffer_get_char(app, buffer, range.max);
-    if((c0 != '{' && c0 != '(') || (c1 != '}' && c1 != ')')){ return; }
-    paint_text_color_pos(app, text_layout_id, range.min, color);
-    paint_text_color_pos(app, text_layout_id, range.max, color);
+   range.max -= 1;
+   //u8 c0 = buffer_get_char(app, buffer, range.min);
+   //u8 c1 = buffer_get_char(app, buffer, range.max);
+   //if((c0 != '{' && c0 != '(') || (c1 != '}' && c1 != ')')){ return; }
+   paint_text_color_pos(app, text_layout_id, range.min, color);
+   paint_text_color_pos(app, text_layout_id, range.max, color);
 
-    i64 line0 = get_line_number_from_pos(app, buffer, range.min);
-    i64 line1 = get_line_number_from_pos(app, buffer, range.max);
-    if(line0 == line1){ return; }
+   i64 line0 = get_line_number_from_pos(app, buffer, range.min);
+   i64 line1 = get_line_number_from_pos(app, buffer, range.max);
+   if(line0 == line1){ return; }
 
-    Rect_f32 line_rect = vim_get_abs_block_rect(app, view, buffer, text_layout_id, range);
-    line_rect.p0 -= V2f32(3.f, 4.f);
-    Rect_f32 region = line_rect;
-    region.x1 = region.x0 + x_off;
+   Rect_f32 line_rect = vim_get_abs_block_rect(app, view, buffer, text_layout_id, range);
+   line_rect.p0 -= V2f32(3.f, 4.f);
+   Rect_f32 region = line_rect;
+   region.x1 = region.x0 + x_off;
 
-    Rect_f32 prev_clip = draw_set_clip(app, region);
-    draw_set_clip(app, rect_intersect(region, prev_clip));
+   Rect_f32 prev_clip = draw_set_clip(app, region);
+   draw_set_clip(app, rect_intersect(region, prev_clip));
 
-    draw_rectangle_outline_fcolor(app, line_rect, 1.5f*wid, wid, color);
+   draw_rectangle_outline_fcolor(app, line_rect, 1.5f*wid, wid, color);
 
-    draw_set_clip(app, prev_clip);
+   draw_set_clip(app, prev_clip);
 }
 
 function void
@@ -116,8 +188,10 @@ byp_draw_scope_brackets(Application_Links *app, View_ID view, Buffer_ID buffer, 
 	}
 
 	Scratch_Block scratch(app);
-	Range_i64_Array ranges = get_enclosure_ranges(app, scratch, buffer, pos, RangeHighlightKind_CharacterHighlight);
-	Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
+   Range_i64_Array ranges = get_enclosure_ranges(app, scratch, buffer, pos, FindNest_Scope);
+	//Range_i64_Array ranges = get_enclosure_ranges(app, scratch, buffer, pos, FindNest_Scope|FindNest_Paren);
+   //Range_i64_Array ranges = get_enclosure_ranges(app, scratch, buffer, pos, RangeHighlightKind_CharacterHighlight);
+   Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
 
 	region.x0 -= 3.f;
 	Rect_f32 prev_clip = draw_set_clip(app, region);
@@ -213,7 +287,7 @@ byp_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, Buff
 	i64 cursor_pos = view_correct_cursor(app, view_id);
 	view_correct_mark(app, view_id);
 
-    b32 highlight_line_at_cursor = def_get_config_b32(vars_save_string_lit("highlight_line_at_cursor"));
+   b32 highlight_line_at_cursor = def_get_config_b32(vars_save_string_lit("highlight_line_at_cursor"));
 	if(highlight_line_at_cursor && is_active_view){
 		i64 line_number = get_line_number_from_pos(app, buffer, cursor_pos);
 		draw_line_highlight(app, text_layout_id, line_number, fcolor_id(defcolor_highlight_cursor_line));
@@ -302,10 +376,12 @@ byp_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, Buff
 		draw_notepad_style_cursor_highlight(app, view_id, buffer, text_layout_id, cursor_roundness); break;
 	}
 
+
 	paint_fade_ranges(app, text_layout_id, buffer);
 	draw_text_layout_default(app, text_layout_id);
 
 	vim_draw_after_text(app, view_id, is_active_view, buffer, text_layout_id, cursor_roundness, mark_thickness);
+   byp_draw_function_preview(app, buffer, text_layout_id, cursor_pos);
 
 	draw_set_clip(app, prev_clip);
 }

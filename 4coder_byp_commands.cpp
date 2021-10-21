@@ -46,8 +46,8 @@ global Buffer_Cursor byp_col_cursor;
 CUSTOM_COMMAND_SIG(byp_toggle_set_col_ruler)
 CUSTOM_DOC("Toggles the column ruler. Set to cursor column when on.")
 {
-   View_ID view = get_active_view(app, Access_ReadVisible);
-   byp_col_cursor = (byp_col_cursor.pos != 0 ?
+	View_ID view = get_active_view(app, Access_ReadVisible);
+	byp_col_cursor = (byp_col_cursor.pos != 0 ?
                      Buffer_Cursor{} :
                      view_compute_cursor(app, view, seek_pos(view_get_cursor_pos(app, view))));
 }
@@ -123,77 +123,77 @@ CUSTOM_DOC("Sets the right size of the view near the x position of the cursor.")
 
 function void
 byp_load_theme(String_Const_u8 theme_name){
-    Color_Table *table_ptr = get_color_table_by_name(theme_name);
-    if(table_ptr){ byp_copy_color_table(&target_color_table, *table_ptr); }
+	Color_Table *table_ptr = get_color_table_by_name(theme_name);
+	if(table_ptr){ byp_copy_color_table(&target_color_table, *table_ptr); }
 }
 
 global Vim_Buffer_Peek_Entry BYP_peek_list[VIM_ADDITIONAL_PEEK] = {
-    { buffer_identifier(string_u8_litexpr("*scratch*")), 1.f, 1.f },
-    { buffer_identifier(string_u8_litexpr("todo.txt")),  1.f, 1.f },
+	{ buffer_identifier(string_u8_litexpr("*scratch*")), 1.f, 1.f },
+	{ buffer_identifier(string_u8_litexpr("todo.txt")),  1.f, 1.f },
 };
 
 VIM_TEXT_OBJECT_SIG(byp_object_param){
-   u8 c = buffer_get_char(app, buffer, cursor_pos);
-   Range_i64 range = Ii64(cursor_pos + (c == ',' || c == ';'));
+	u8 c = buffer_get_char(app, buffer, cursor_pos);
+	Range_i64 range = Ii64(cursor_pos + (c == ',' || c == ';'));
 
-   for(; range.min>0; range.min--){
-      c = buffer_get_char(app, buffer, range.min);
-      if(c == ',' || c == ';'){ break; }
-      Scan_Direction bounce = vim_bounce_direction(c);
-      if(bounce == Scan_Forward){ break; }
-      if(bounce == Scan_Backward){
-         range.min = vim_bounce_pair(app, view, buffer, range.min, c)-1;
-         continue;
-      }
-   }
+	for(; range.min>0; range.min--){
+		c = buffer_get_char(app, buffer, range.min);
+		if(c == ',' || c == ';'){ break; }
+		Scan_Direction bounce = vim_bounce_direction(c);
+		if(bounce == Scan_Forward){ break; }
+		if(bounce == Scan_Backward){
+			range.min = vim_bounce_pair(app, buffer, range.min, c)-1;
+			continue;
+		}
+	}
 
-   i64 buffer_size = buffer_get_size(app, buffer);
-   for(; range.max < buffer_size; range.max++){
-      c = buffer_get_char(app, buffer, range.max);
-      if(c == ',' || c == ';'){ break; }
-      Scan_Direction bounce = vim_bounce_direction(c);
-      if(bounce == Scan_Backward){ break; }
-      if(bounce == Scan_Forward){
-         range.max = vim_bounce_pair(app, view, buffer, range.max, c);
-         continue;
-      }
-   }
-   range.min++; range.max--;
-   if(range.min >= range.max){ range = {}; }
+	i64 buffer_size = buffer_get_size(app, buffer);
+	for(; range.max < buffer_size; range.max++){
+		c = buffer_get_char(app, buffer, range.max);
+		if(c == ',' || c == ';'){ break; }
+		Scan_Direction bounce = vim_bounce_direction(c);
+		if(bounce == Scan_Backward){ break; }
+		if(bounce == Scan_Forward){
+			range.max = vim_bounce_pair(app, buffer, range.max, c);
+			continue;
+		}
+	}
+	range.min++; range.max--;
+	if(range.min >= range.max){ range = {}; }
 
-   return range;
+	return range;
 }
 
 VIM_TEXT_OBJECT_SIG(byp_object_camel){
-   Range_i64 range = {};
-   Scratch_Block scratch(app);
-   Range_i64 line_range = get_line_range_from_pos(app, buffer, cursor_pos);
-   i64 s = line_range.min;
-   u8 *line_text = push_buffer_range(app, scratch, buffer, line_range).str;
-   u8 c = line_text[cursor_pos-s];
-   if(!character_is_alpha_numeric(c)){ return {}; }
-   cursor_pos += line_text[cursor_pos-s] == '_';
-   range.min = range.max = cursor_pos;
+	Range_i64 range = {};
+	Scratch_Block scratch(app);
+	Range_i64 line_range = get_line_range_from_pos(app, buffer, cursor_pos);
+	i64 s = line_range.min;
+	u8 *line_text = push_buffer_range(app, scratch, buffer, line_range).str;
+	u8 c = line_text[cursor_pos-s];
+	if(!character_is_alpha_numeric(c)){ return {}; }
+	cursor_pos += line_text[cursor_pos-s] == '_';
+	range.min = range.max = cursor_pos;
 
-   b32 valid=false;
-   for(; range.min>0; range.min--){
-      c = line_text[range.min-s];
-      if(!character_is_alpha_numeric(c) || c == '_'){ valid = true; break; }
-   }
-   if(!valid){ return {}; }
+	b32 valid=false;
+	for(; range.min>0; range.min--){
+		c = line_text[range.min-s];
+		if(!character_is_alpha_numeric(c) || c == '_'){ valid = true; break; }
+	}
+	if(!valid){ return {}; }
 
-   valid=false;
-   for(; range.max>0; range.max++){
-      c = line_text[range.max-s];
-      if(!character_is_alpha_numeric(c) || c == '_'){ valid = true; break; }
-   }
-   if(!valid){ return {}; }
+	valid=false;
+	for(; range.max>0; range.max++){
+		c = line_text[range.max-s];
+		if(!character_is_alpha_numeric(c) || c == '_'){ valid = true; break; }
+	}
+	if(!valid){ return {}; }
 
-   range.min += (vim_state.params.clusivity != VIM_Inclusive || line_text[range.min-s] != '_');
-   range.max -= (vim_state.params.clusivity != VIM_Inclusive || line_text[range.max-s] != '_');
-   if(range.min >= range.max){ range = {}; }
+	range.min += (vim_state.params.clusivity != VIM_Inclusive || line_text[range.min-s] != '_');
+	range.max -= (vim_state.params.clusivity != VIM_Inclusive || line_text[range.max-s] != '_');
+	if(range.min >= range.max){ range = {}; }
 
-   return range;
+	return range;
 }
 
 function void byp_make_vim_request(Application_Links *app, BYP_Vim_Request request){
@@ -210,56 +210,58 @@ VIM_REQUEST_SIG(byp_apply_title){
 		prev = text.str[i];
 	}
 	buffer_replace_range(app, buffer, range, text);
-    buffer_post_fade(app, buffer, 0.667f, range, fcolor_resolve(fcolor_id(defcolor_paste)));
+	buffer_post_fade(app, buffer, 0.667f, range, fcolor_resolve(fcolor_id(defcolor_paste)));
 }
 
 VIM_REQUEST_SIG(byp_apply_comment){
-   i64 line0 = get_line_number_from_pos(app, buffer, range.min);
-   i64 line1 = get_line_number_from_pos(app, buffer, range.max);
-   line1 += (line0 == line1);
-   History_Group history_group = history_group_begin(app, buffer);
-   for(i64 l=line0; l<line1; l++){
-      i64 line_start = get_pos_past_lead_whitespace_from_line_number(app, buffer, l);
-      b32 has_comment = c_line_comment_starts_at_position(app, buffer, line_start);
-      if(!has_comment){
-         buffer_replace_range(app, buffer, Ii64(line_start), string_u8_litexpr("//"));
-         buffer_post_fade(app, buffer, 0.667f, Ii64_size(line_start,2), fcolor_resolve(fcolor_id(defcolor_paste)));
-      }
-   }
-   history_group_end(history_group);
+	i64 line0 = get_line_number_from_pos(app, buffer, range.min);
+	i64 line1 = get_line_number_from_pos(app, buffer, range.max);
+	line1 += (line0 == line1);
+	History_Group history_group = history_group_begin(app, buffer);
+	for(i64 l=line0; l<line1; l++){
+		i64 line_start = get_pos_past_lead_whitespace_from_line_number(app, buffer, l);
+		b32 has_comment = c_line_comment_starts_at_position(app, buffer, line_start);
+		if(!has_comment){
+			buffer_replace_range(app, buffer, Ii64(line_start), string_u8_litexpr("//"));
+			buffer_post_fade(app, buffer, 0.667f, Ii64_size(line_start,2), fcolor_resolve(fcolor_id(defcolor_paste)));
+		}
+	}
+	history_group_end(history_group);
 }
 
 VIM_REQUEST_SIG(byp_apply_uncomment){
-   i64 line0 = get_line_number_from_pos(app, buffer, range.min);
-   i64 line1 = get_line_number_from_pos(app, buffer, range.max);
-   line1 += (line0 == line1);
-   History_Group history_group = history_group_begin(app, buffer);
-   for(i64 l=line0; l<line1; l++){
-      i64 line_start = get_pos_past_lead_whitespace_from_line_number(app, buffer, l);
-      b32 has_comment = c_line_comment_starts_at_position(app, buffer, line_start);
-      if(has_comment){
-         buffer_replace_range(app, buffer, Ii64_size(line_start,2), string_u8_empty);
-      }
-   }
-   history_group_end(history_group);
+	i64 line0 = get_line_number_from_pos(app, buffer, range.min);
+	i64 line1 = get_line_number_from_pos(app, buffer, range.max);
+	line1 += (line0 == line1);
+	History_Group history_group = history_group_begin(app, buffer);
+	for(i64 l=line0; l<line1; l++){
+		i64 line_start = get_pos_past_lead_whitespace_from_line_number(app, buffer, l);
+		b32 has_comment = c_line_comment_starts_at_position(app, buffer, line_start);
+		if(has_comment){
+			buffer_replace_range(app, buffer, Ii64_size(line_start,2), string_u8_empty);
+		}
+	}
+	history_group_end(history_group);
 }
 
 VIM_COMMAND_SIG(byp_request_title){ byp_make_vim_request(app, BYP_REQUEST_Title); }
 VIM_COMMAND_SIG(byp_request_comment){ byp_make_vim_request(app, BYP_REQUEST_Comment); }
 VIM_COMMAND_SIG(byp_request_uncomment){ byp_make_vim_request(app, BYP_REQUEST_UnComment); }
 VIM_COMMAND_SIG(byp_visual_comment){
-   if(vim_state.mode == VIM_Visual){
-      Vim_Edit_Type edit = vim_state.params.edit_type;
-      byp_request_comment(app);
-      vim_state.mode = VIM_Visual;
-      vim_state.params.edit_type = edit;
-   }
+	if(vim_state.mode == VIM_Visual){
+		Vim_Edit_Type edit = vim_state.params.edit_type;
+		byp_request_comment(app);
+		vim_state.mode = VIM_Visual;
+		vim_state.params.edit_type = edit;
+	}
 }
 VIM_COMMAND_SIG(byp_visual_uncomment){
-   if(vim_state.mode == VIM_Visual){
-      Vim_Edit_Type edit = vim_state.params.edit_type;
-      byp_request_uncomment(app);
-      vim_state.mode = VIM_Visual;
-      vim_state.params.edit_type = edit;
-   }
+	if(vim_state.mode == VIM_Visual){
+		Vim_Edit_Type edit = vim_state.params.edit_type;
+		byp_request_uncomment(app);
+		vim_state.mode = VIM_Visual;
+		vim_state.params.edit_type = edit;
+	}
 }
+
+

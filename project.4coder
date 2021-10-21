@@ -12,9 +12,7 @@ patterns = {
 "*.4coder",
 "*.txt",
 };
-blacklist_patterns = {
-".*",
-};
+blacklist_patterns = { ".*", };
 load_paths_custom = {
  {"..\custom"}, {"."},
 };

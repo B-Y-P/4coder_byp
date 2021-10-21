@@ -11,9 +11,9 @@ CUSTOM_DOC("Responding to a startup event")
 		default_4coder_initialize(app, file_names);
 
 		/*
-				  Buffer_ID buffer = create_buffer(app, string_u8_litexpr("*peek*"),
-									 BufferCreate_NeverAttachToFile|BufferCreate_AlwaysNew);
-				  buffer_set_setting(app, buffer, BufferSetting_Unimportant, true);
+        Buffer_ID buffer = create_buffer(app, string_u8_litexpr("*peek*"),
+            BufferCreate_NeverAttachToFile|BufferCreate_AlwaysNew);
+            buffer_set_setting(app, buffer, BufferSetting_Unimportant, true);
 				*/
 
 		Buffer_Identifier left = buffer_identifier(string_u8_litexpr("*scratch*"));
