@@ -39,7 +39,7 @@ byp_tick_colors(Application_Links *app, Frame_Info frame_info){
          Vec4_f32 nxt_v = unpack_color(nxt_array->vals[j]);
          Vec4_f32 cur_v = unpack_color(cur_array->vals[j]);
          Vec4_f32 diff = nxt_v - cur_v;
-         cur_v += diff*frame_info.animation_dt*20.f;
+         cur_v += diff*frame_info.animation_dt*10.f;
          cur_array->vals[j] = pack_color(cur_v);
 
          needs_animate |= (!near_zero(diff, 0.001f));
