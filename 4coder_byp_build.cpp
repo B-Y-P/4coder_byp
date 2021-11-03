@@ -27,20 +27,22 @@ byp_prj_exec_command(Application_Links *app, Variable_Handle cmd_var){
 		Buffer_Identifier buffer_id = {};
 		b32 set_fancy_font = false;
 		String8 out = vars_string_from_var(scratch, vars_read_key(cmd_var, out_id));
-		if (out.size > 0){
+		if(out.size > 0){
 			buffer_id = buffer_identifier(out);
 
 			b32 footer_panel = vars_b32_from_var(vars_read_key(cmd_var, footer_panel_id));
-			if (footer_panel){
-				if (string_match(out, string_u8_litexpr("*compilation*"))){
-					set_fancy_font = true;
-					vim_show_buffer_peek = false;
-					vim_toggle_show_buffer_peek(app);
-					vim_buffer_peek_index = 0;
-				}else{
-					// TODO(BYP): Have make a buffer peek list entry for this to set, and use that
-               view = get_or_open_build_panel(app);
-				}
+			if(footer_panel){
+				set_fancy_font = true;
+				vim_show_buffer_peek = false;
+				vim_toggle_show_buffer_peek(app);
+				vim_buffer_peek_index = 0;
+				buffer_id = vim_buffer_peek_list[0].buffer_id;
+            vim_buffer_peek_list[0] = {buffer_id, 1.f, 1.f};
+
+				View_Context ctx = view_current_context(app, build_footer_panel_view_id);
+				view_set_split_pixel_size(app, build_footer_panel_view_id, 0);
+				ctx.render_caller = 0;
+				view_alter_context(app, build_footer_panel_view_id, &ctx);
 			}
 			else{
 				Buffer_ID buffer = buffer_identifier_to_id(app, buffer_id);
@@ -133,20 +135,19 @@ CUSTOM_DOC("Compiles project")
 	Buffer_ID buffer = view_get_buffer(app, view, Access_Always);
 
 	View_ID build_view = get_or_open_build_panel(app);
-    standard_search_and_build(app, build_view, buffer);
+	standard_search_and_build(app, build_view, buffer);
 
 	vim_show_buffer_peek = false;
 	vim_toggle_show_buffer_peek(app);
 	vim_buffer_peek_index = 0;
+	vim_buffer_peek_list[0] = {buffer_identifier(string_u8_litexpr("*compilation*")), 1.f, 1.f};
 
-    block_zero_struct(&prev_location);
+	View_Context ctx = view_current_context(app, build_footer_panel_view_id);
+	view_set_split_pixel_size(app, build_footer_panel_view_id, 0);
+	ctx.render_caller = 0;
+	view_alter_context(app, build_footer_panel_view_id, &ctx);
+
+	block_zero_struct(&prev_location);
 	lock_jump_buffer(app, string_u8_litexpr("*compilation*"));
-
-    // NOTE/TODO: (BYP) This is a hack until buffer_peek has it's own View_ID (allows comp jump list)
-    View_Context ctx = view_current_context(app, build_footer_panel_view_id);
-    view_set_split_pixel_size(app, build_footer_panel_view_id, 0);
-    ctx.render_caller = 0;
-    view_alter_context(app, build_footer_panel_view_id, &ctx);
-
-    //close_build_footer_panel(app);
+	//close_build_footer_panel(app);
 }

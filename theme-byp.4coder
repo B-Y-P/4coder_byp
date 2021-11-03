@@ -48,9 +48,11 @@ defcolor_line_numbers_text          =  0xFF8880C0;
 /// BYP Colors
 defcolor_function                   =  0xFFBDA3F9;
 defcolor_type                       =  0xFFB84AFD;
+defcolor_primitive                  =  0xFFB84AFD;
 defcolor_macro                      =  0xFF579EA8;
 defcolor_control                    =  defcolor_preproc;
 defcolor_struct                     =  defcolor_keyword;
+defcolor_non_text                   =  0xFFDAAEFE;
 //defcolor_struct                   =  0xFF70A7F7;
 
 /// Vim Colors

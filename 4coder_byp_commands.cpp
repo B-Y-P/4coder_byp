@@ -13,6 +13,7 @@ DECLARE_TOGGLE(show_hex_colors);
 DECLARE_TOGGLE(show_range);
 DECLARE_TOGGLE(relative_numbers);
 DECLARE_TOGGLE(show_scrollbars);
+DECLARE_TOGGLE(drop_shadow);
 
 
 CUSTOM_COMMAND_SIG(byp_test)
@@ -26,6 +27,10 @@ CUSTOM_DOC("Just bound to the key I spam to execute whatever test code I'm worki
 
 	print_message(app, push_stringf(scratch, "Buffer[%d] = '%c'\n", pos, buffer_get_char(app, buffer, pos)));
 	print_message(app, push_stringf(scratch, "Line %d Col: %d\n", cursor.line, cursor.col));
+
+	Face_ID face = get_face_id(app, buffer);
+	Face_Description desc = get_face_description(app, face);
+	printf_message(app, scratch, "Face Size: %d \n", desc.parameters.pt_size);
 }
 
 CUSTOM_COMMAND_SIG(byp_reset_face_size)
@@ -48,8 +53,8 @@ CUSTOM_DOC("Toggles the column ruler. Set to cursor column when on.")
 {
 	View_ID view = get_active_view(app, Access_ReadVisible);
 	byp_col_cursor = (byp_col_cursor.pos != 0 ?
-                     Buffer_Cursor{} :
-                     view_compute_cursor(app, view, seek_pos(view_get_cursor_pos(app, view))));
+					  Buffer_Cursor{} :
+					  view_compute_cursor(app, view, seek_pos(view_get_cursor_pos(app, view))));
 }
 
 CUSTOM_COMMAND_SIG(byp_space)
@@ -206,7 +211,7 @@ VIM_REQUEST_SIG(byp_apply_title){
 	u8 prev = buffer_get_char(app, buffer, range.min-1);
 	for(i32 i=0; i<text.size; i++){
 		text.str[i] += u8(i32('A' - 'a')*((!character_is_alpha(prev) || prev == '_') &&
-                                        character_is_lower(text.str[i])));
+										  character_is_lower(text.str[i])));
 		prev = text.str[i];
 	}
 	buffer_replace_range(app, buffer, range, text);
