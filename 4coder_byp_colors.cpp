@@ -5,9 +5,9 @@ global Color_Table cached_color_table = {};
 // TODO(BYP): Check for way to get highest color sub_id instead of hard-coding 14
 function Color_Table
 byp_init_color_table(Application_Links *app){
-	Color_Table result = make_color_table(app, &global_theme_arena);
+	Color_Table result = make_color_table(app, &global_permanent_arena);
 	foreach(i, result.count){
-		result.arrays[i].vals = push_array(&global_theme_arena, u32, 14);
+		result.arrays[i].vals = push_array(&global_permanent_arena, u32, 14);
 		result.arrays[i].count = 14;
 	}
 	return result;
@@ -28,8 +28,10 @@ function void
 byp_tick_colors(Application_Links *app, Frame_Info frame_info){
 	// If another function sets active, correct this to not write into a loaded theme
 	if(active_color_table.arrays != cached_color_table.arrays){
-		byp_copy_color_table(&target_color_table, active_color_table);
-		active_color_table = cached_color_table;
+		if(active_color_table.arrays && active_color_table.arrays->vals && active_color_table.arrays->count > 0){
+			byp_copy_color_table(&target_color_table, active_color_table);
+			active_color_table = cached_color_table;
+		}
 	}
 	b32 needs_animate = false;
 	foreach(i, active_color_table.count){
@@ -70,7 +72,9 @@ CUSTOM_DOC("Opens an interactive list of all registered themes.")
 	lister_add_item(lister, string_u8_litexpr("4coder"), string_u8_litexpr(""),
 					(void*)&default_color_table, 0);
 
-	byp_copy_color_table(&target_color_table, color_table_list->first->table);
+	if(color_table_list->first){
+		byp_copy_color_table(&target_color_table, color_table_list->first->table);
+	}
 	for(Color_Table_Node *node = color_table_list->first; node; node = node->next){
 		lister_add_item(lister, node->name, string_u8_litexpr(""), (void*)&node->table, 0);
 	}
