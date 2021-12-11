@@ -22,7 +22,7 @@ CUSTOM_DOC("Just bound to the key I spam to execute whatever test code I'm worki
 	Scratch_Block scratch(app);
 	View_ID view = get_active_view(app, Access_ReadVisible);
 
-   Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
+    Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
 	i64 pos = view_get_cursor_pos(app, view);
 	Buffer_Cursor cursor = buffer_compute_cursor(app, buffer, seek_pos(pos));
 
@@ -54,8 +54,8 @@ CUSTOM_DOC("Toggles the column ruler. Set to cursor column when on.")
 {
 	View_ID view = get_active_view(app, Access_ReadVisible);
 	byp_col_cursor = (byp_col_cursor.pos != 0 ?
-                     Buffer_Cursor{} :
-                     view_compute_cursor(app, view, seek_pos(view_get_cursor_pos(app, view))));
+					  Buffer_Cursor{} :
+					  view_compute_cursor(app, view, seek_pos(view_get_cursor_pos(app, view))));
 }
 
 CUSTOM_COMMAND_SIG(byp_space)
@@ -212,7 +212,7 @@ VIM_REQUEST_SIG(byp_apply_title){
 	u8 prev = buffer_get_char(app, buffer, range.min-1);
 	for(i32 i=0; i<text.size; i++){
 		text.str[i] += u8(i32('A' - 'a')*((!character_is_alpha(prev) || prev == '_') &&
-                                        character_is_lower(text.str[i])));
+										  character_is_lower(text.str[i])));
 		prev = text.str[i];
 	}
 	buffer_replace_range(app, buffer, range, text);

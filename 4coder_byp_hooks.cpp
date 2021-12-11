@@ -164,8 +164,8 @@ byp_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view_id
 	Rect_f32 line_number_rect = {};
 	if(show_line_number_margins){
 		Rect_f32_Pair pair = (byp_relative_numbers ?
-                            vim_line_number_margin(app, buffer, region, digit_advance) :
-                            layout_line_number_margin(app, buffer, region, digit_advance));
+							  vim_line_number_margin(app, buffer, region, digit_advance) :
+							  layout_line_number_margin(app, buffer, region, digit_advance));
 		line_number_rect = pair.min;
 		region = pair.max;
 	}
@@ -273,8 +273,8 @@ byp_buffer_region(Application_Links *app, View_ID view_id, Rect_f32 region){
 	b32 show_line_number_margins = def_get_config_b32(vars_save_string_lit("show_line_number_margins"));
 	if(show_line_number_margins){
 		region = (byp_relative_numbers ?
-                vim_line_number_margin(app, buffer, region, digit_advance) :
-                layout_line_number_margin(app, buffer, region, digit_advance)).max;
+				  vim_line_number_margin(app, buffer, region, digit_advance) :
+				  layout_line_number_margin(app, buffer, region, digit_advance)).max;
 	}
 
 	return region;

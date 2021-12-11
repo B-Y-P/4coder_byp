@@ -10,8 +10,8 @@ byp_draw_function_preview_inner(Application_Links *app, Buffer_ID buffer, Range_
 
 	code_index_lock();
 	for(Buffer_ID b = get_buffer_next(app, 0, Access_Always);
-       b != 0;
-       b = get_buffer_next(app, b, Access_Always))
+        b != 0;
+        b = get_buffer_next(app, b, Access_Always))
 	{
 		Code_Index_File *file = code_index_get_file(b);
 		if(file != 0){

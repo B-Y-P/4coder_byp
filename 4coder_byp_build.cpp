@@ -37,7 +37,7 @@ byp_prj_exec_command(Application_Links *app, Variable_Handle cmd_var){
 				vim_toggle_show_buffer_peek(app);
 				vim_buffer_peek_index = 0;
 				buffer_id = vim_buffer_peek_list[0].buffer_id;
-            vim_buffer_peek_list[0] = {buffer_id, 1.f, 1.f};
+                vim_buffer_peek_list[0] = {buffer_id, 1.f, 1.f};
 
 				View_Context ctx = view_current_context(app, build_footer_panel_view_id);
 				view_set_split_pixel_size(app, build_footer_panel_view_id, 0);
