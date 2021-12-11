@@ -1,7 +1,7 @@
 
 #define VIM_DO_ANIMATE                 1
 #define VIM_USE_TRADITIONAL_CHORDS     0
-#define VIM_USE_REIGSTER_BUFFER 1
+#define VIM_USE_REIGSTER_BUFFER        1
 
 enum BYP_Vim_Request{
 	BYP_REQUEST_Title,

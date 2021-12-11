@@ -1,5 +1,7 @@
 #pragma once
 
+#define SNIPPET_EXPANSION "4coder_byp_snippets.inc"
+
 #include "4coder_default_include.cpp"
 
 CUSTOM_ID(colors, defcolor_function);
@@ -46,6 +48,7 @@ custom_layer_init(Application_Links *app){
 	vim_request_vtable[VIM_REQUEST_COUNT + BYP_REQUEST_UnComment] = byp_apply_uncomment;
 
 	vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_param] = {',', (Vim_Text_Object_Func *)byp_object_param};
+	vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_param] = {';', (Vim_Text_Object_Func *)byp_object_param};
 	vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_camel] = {'_', (Vim_Text_Object_Func *)byp_object_camel};
 	vim_init(app);
 
