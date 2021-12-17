@@ -47,6 +47,7 @@ byp_vim_bindings(Application_Links *app){
 	VimBind(N|MAP, goto_prev_jump,              (Alt|Sft|KeyCode_N));
 
 	VimBind(N|V|MAP, vim_bounce,                    (Ctl|KeyCode_5));
+	VimBind(N|V|MAP, byp_open_current_peek,         (Alt|KeyCode_Return));
 
 	VimBind(N|V|MAP, byp_request_title, SUB_Leader, (Sft|KeyCode_U));
 	VimBind(N|MAP,   byp_request_comment,    SUB_G,      KeyCode_ForwardSlash);

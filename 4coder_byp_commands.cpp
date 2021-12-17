@@ -138,6 +138,16 @@ global Vim_Buffer_Peek_Entry BYP_peek_list[VIM_ADDITIONAL_PEEK] = {
 	{ buffer_identifier(string_u8_litexpr("todo.txt")),  1.f, 1.f },
 };
 
+CUSTOM_COMMAND_SIG(byp_open_current_peek)
+CUSTOM_DOC("Sets the active view to the current peeked buffer")
+{
+	View_ID view = get_active_view(app, Access_ReadWriteVisible);
+	Buffer_ID buffer = buffer_identifier_to_id(app, vim_buffer_peek_list[vim_buffer_peek_index].buffer_id);
+	view_set_buffer(app, view, buffer, SetBuffer_KeepOriginalGUI);
+	vim_show_buffer_peek = 1;
+	vim_toggle_show_buffer_peek(app);
+}
+
 VIM_TEXT_OBJECT_SIG(byp_object_param){
 	u8 c = buffer_get_char(app, buffer, cursor_pos);
 	Range_i64 range = Ii64(cursor_pos + (c == ',' || c == ';'));
