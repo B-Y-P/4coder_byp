@@ -28,6 +28,7 @@ CUSTOM_ID(colors, defcolor_non_text);
 #include "4coder_byp_game.cpp"
 
 #include "4coder_byp_bindings.cpp"
+#include "4coder_discord.cpp"
 #include "4coder_byp_hooks.cpp"
 
 
@@ -47,9 +48,9 @@ custom_layer_init(Application_Links *app){
 	vim_request_vtable[VIM_REQUEST_COUNT + BYP_REQUEST_Comment] = byp_apply_comment;
 	vim_request_vtable[VIM_REQUEST_COUNT + BYP_REQUEST_UnComment] = byp_apply_uncomment;
 
-	vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_param] = {',', (Vim_Text_Object_Func *)byp_object_param};
-	vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_param] = {';', (Vim_Text_Object_Func *)byp_object_param};
-	vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_camel] = {'_', (Vim_Text_Object_Func *)byp_object_camel};
+	vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_param0] = {',', (Vim_Text_Object_Func *)byp_object_param};
+	vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_param1] = {';', (Vim_Text_Object_Func *)byp_object_param};
+	vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_camel]  = {'_', (Vim_Text_Object_Func *)byp_object_camel};
 	vim_init(app);
 
 	set_custom_hook(app, HookID_ViewEventHandler, vim_view_input_handler);

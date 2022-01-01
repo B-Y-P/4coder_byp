@@ -5,3 +5,7 @@
 
 {"WinMain", "int WinMain(HINSTANCE instance, HINSTANCE prev_instance, LPSTR cmd_line, int show_cmd){\n\n}", 88, 0},
 
+{"BMP", "#pragma pack(push, 1)\nstruct BMP_Header{\nu16 file_type;\nu32 file_size, reserve_zeroes;\nu32 offset, size;\ni32 wid, hit;\nu16 planes, bits_per_pixel;\nu32 compression, bitmap_size;\ni32 horz_res, vert_res;\nu32 colors_used, colors_important;\nu32 rmask, gmask, bmask;\nu8  padding[84];\n};\n#pragma pack(pop)\n", 0, 0},
+
+{"BMP default",
+"BMP_Header{\n0x4d42, byte_count,\n0, 150, 124,\nWID, HIT,\n1, 8*sizeof(u32),\n3, 0,\n2835, 2835, 0, 0,\n0xFF0000, 0xFF00, 0xFF,\n};", 0, 0},
