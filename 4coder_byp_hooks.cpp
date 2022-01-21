@@ -307,3 +307,16 @@ BUFFER_HOOK_SIG(byp_file_save){
 	}
 	return 0;
 }
+
+BUFFER_HOOK_SIG(byp_new_file){
+	Scratch_Block scratch(app);
+	String_Const_u8 file_name = push_buffer_base_name(app, scratch, buffer_id);
+	if(string_match(string_postfix(file_name, 4), string_u8_litexpr(".bat"))){
+		Buffer_Insertion insert = begin_buffer_insertion_at_buffered(app, buffer_id, 0, scratch, KB(16));
+		insertf(&insert, "@echo off" "\n");
+		end_buffer_insertion(&insert);
+		return 0;
+	}
+
+	return 0;
+}
