@@ -100,7 +100,16 @@ CUSTOM_DOC("Sets the right size of the view near the x position of the cursor.")
 	i64 pos = view_get_character_legal_pos_from_pos(app, view, view_get_cursor_pos(app, view));
 	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadWriteVisible);
 	Token_Array token_array = get_token_array_from_buffer(app, buffer);
-	if(token_array.tokens == 0){ goto byp_default_return; }
+	if(token_array.tokens == 0){
+		if(byp_bracket_opened){
+			write_text(app, string_u8_litexpr("\n\n}"));
+			move_up(app);
+			byp_bracket_opened = 0;
+			return;
+		}else{
+			goto byp_default_return;
+		}
+	}
 
 	i64 first_index = token_index_from_pos(&token_array, pos);
 	Token_Iterator_Array it = token_iterator_index(0, token_array.tokens, token_array.count, first_index);

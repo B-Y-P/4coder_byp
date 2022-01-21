@@ -60,6 +60,9 @@ byp_vim_bindings(Application_Links *app){
 	VimBind(N|V|MAP, vim_leader_D, SUB_Leader,      (Sft|KeyCode_D));
 	VimBind(N|V|MAP, vim_leader_C, SUB_Leader,      (Sft|KeyCode_C));
 
+	VimBind(I|MAP, byp_auto_complete_bracket,            KeyCode_Return);
+	VimBind(I|MAP, byp_auto_complete_bracket,       (Sft|KeyCode_Return));
+
 #undef I
 #undef N
 #undef V
@@ -155,8 +158,6 @@ byp_default_bindings(Mapping *mapping, i64 global_id, i64 file_id, i64 code_id){
 	SelectMap(code_id);
 	ParentMap(file_id);
 
-	Bind(byp_auto_complete_bracket,                     KeyCode_Return);
-	Bind(byp_auto_complete_bracket,                     KeyCode_Return, KeyCode_Shift);
 	Bind(comment_line_toggle,                           KeyCode_Semicolon, KeyCode_Control);
 	Bind(word_complete,                                 KeyCode_Tab);
 	Bind(if0_off,                                       KeyCode_I, KeyCode_Alt);
