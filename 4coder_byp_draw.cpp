@@ -61,6 +61,7 @@ byp_draw_function_preview_inner(Application_Links *app, Buffer_ID buffer, Range_
 	//token_array_from_text;
 
 	String_Const_u8 sig = push_buffer_range(app, scratch, target_buffer, target_range);
+	sig = string_condense_whitespace(scratch, sig);
 
 	Face_Metrics metrics = get_face_metrics(app, byp_small_italic_face);
 	f32 wid = 2.f;
@@ -69,7 +70,7 @@ byp_draw_function_preview_inner(Application_Links *app, Buffer_ID buffer, Range_
 	rect.p0 = vim_cur_cursor_pos + V2f32(0, 2.f + count*(metrics.line_height + pad + 2.f*wid));
 	rect.p1 = rect.p0 + V2f32(sig.size*metrics.max_advance, metrics.line_height);
 	f32 x_offset = ((rect.x1 > x_range.max)*(rect.x1 - x_range.max) -
-                   (rect.x0 < x_range.min)*(rect.x0 - x_range.max));
+					(rect.x0 < x_range.min)*(rect.x0 - x_range.max));
 	rect.x0 -= x_offset;
 	rect.x1 -= x_offset;
 
@@ -280,9 +281,9 @@ byp_draw_scope_brackets(Application_Links *app, View_ID view, Buffer_ID buffer, 
 					break;
 				}
 				else if(token->kind == TokenBaseKind_Identifier ||
-                    token->kind == TokenBaseKind_Keyword ||
-                    token->kind == TokenBaseKind_Comment ||
-                    token->kind == byp_TokenKind_ControlFlow)
+						token->kind == TokenBaseKind_Keyword ||
+						token->kind == TokenBaseKind_Comment ||
+						token->kind == byp_TokenKind_ControlFlow)
 				{
 					start_token = token;
 					break;
