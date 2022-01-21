@@ -111,17 +111,45 @@ function void byp_draw_token_colors(Application_Links *app, View_ID view, Buffer
 		}
 	}
 
+	// NOTE(BYP): @Annotations
+	{
+		i64 first_index = token_index_from_pos(&token_array, visible_range.first);
+		Token_Iterator_Array comment_it = token_iterator_index(buffer, &token_array, first_index);
+		for(;;){
+			Token *token = token_it_read(&comment_it);
+			if(token->pos >= visible_range.max){ break; }
+			String_Const_u8 tail = {};
+			if(token_it_check_and_get_lexeme(app, scratch, &comment_it, TokenBaseKind_Comment, &tail)){
+				foreach(i, token->size){
+					if(tail.str[i] == '@'){
+						Range_i64 annot_range = Ii64(i);
+						i32 j=i+1;
+						for(; j<token->size; j++){
+							if(character_is_whitespace(tail.str[j]) || !character_is_alpha_numeric(tail.str[j])){
+								break;
+							}
+						}
+						annot_range.max = j;
+						if(annot_range.min != annot_range.max-1){
+							annot_range += token->pos;
+							paint_text_color(app, text_layout_id, annot_range, 0xFFFF0000);
+						}
+					}
+				}
+			}
+			if(!token_it_inc_non_whitespace(&comment_it)){ break; }
+		}
+	}
+
 	// NOTE(allen): Scan for TODOs and NOTEs
 	b32 use_comment_keyword = def_get_config_b32(vars_save_string_lit("use_comment_keyword"));
 	if(use_comment_keyword){
 		Comment_Highlight_Pair pairs[] = {
 			{string_u8_litexpr("NOTE"), finalize_color(defcolor_comment_pop, 0)},
 			{string_u8_litexpr("TODO"), finalize_color(defcolor_comment_pop, 1)},
-			// TODO(BYP): @Annotations
 		};
 		draw_comment_highlights(app, buffer, text_layout_id, &token_array, pairs, ArrayCount(pairs));
 	}
-
 
 	// TODO(BYP): Still doesn't work for tokens at pos==0
 	it = token_iterator_pos(0, &token_array, Max(0, visible_range.first-1));
@@ -150,4 +178,5 @@ function void byp_draw_token_colors(Application_Links *app, View_ID view, Buffer
 		}
 	}
 	if(do_cursor_tok_highlight){ draw_rectangle(app, cursor_tok_rect, 5.f, cursor_tok_color); }
+
 }
