@@ -49,7 +49,8 @@ custom_layer_init(Application_Links *app){
 
 	vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_param0] = {',', (Vim_Text_Object_Func *)byp_object_param};
 	vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_param1] = {';', (Vim_Text_Object_Func *)byp_object_param};
-	vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_camel]  = {'_', (Vim_Text_Object_Func *)byp_object_camel};
+	vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_camel0] = {'_', (Vim_Text_Object_Func *)byp_object_camel};
+	vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_camel1] = {'-', (Vim_Text_Object_Func *)byp_object_camel};
 	vim_init(app);
 
 	set_custom_hook(app, HookID_SaveFile,                 byp_file_save);

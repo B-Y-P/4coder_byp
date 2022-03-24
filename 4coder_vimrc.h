@@ -14,7 +14,8 @@ enum BYP_Vim_Request{
 enum BYP_Vim_Objects{
 	BYP_OBJECT_param0,
 	BYP_OBJECT_param1,
-	BYP_OBJECT_camel,
+	BYP_OBJECT_camel0,
+	BYP_OBJECT_camel1,
 
 	BYP_OBJECT_COUNT
 };
