@@ -6,11 +6,10 @@ global Face_ID byp_minimal_face;
 #define DECLARE_TOGGLE(name) \
 global b32 byp_##name; \
 CUSTOM_COMMAND_SIG(byp_toggle_##name) \
-CUSTOM_DOC(stringify(glue(Toggles_value_for_, name))) \
+CUSTOM_DOC(stringify(glue(glue(Toggles value for `, name), `))) \
 { byp_##name ^= 1; }
 
 DECLARE_TOGGLE(show_hex_colors);
-DECLARE_TOGGLE(show_range);
 DECLARE_TOGGLE(relative_numbers);
 DECLARE_TOGGLE(show_scrollbars);
 DECLARE_TOGGLE(drop_shadow);
@@ -22,7 +21,7 @@ CUSTOM_DOC("Just bound to the key I spam to execute whatever test code I'm worki
 	Scratch_Block scratch(app);
 	View_ID view = get_active_view(app, Access_ReadVisible);
 
-    Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
+	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
 	i64 pos = view_get_cursor_pos(app, view);
 	Buffer_Cursor cursor = buffer_compute_cursor(app, buffer, seek_pos(pos));
 
@@ -136,6 +135,14 @@ CUSTOM_DOC("Sets the right size of the view near the x position of the cursor.")
 	byp_bracket_opened = 0;
 }
 
+CUSTOM_COMMAND_SIG(explorer)
+CUSTOM_DOC("Opens file explorer in hot directory")
+{
+	Scratch_Block scratch(app);
+	String_Const_u8 hot = push_hot_directory(app, scratch);
+	exec_system_command(app, 0, buffer_identifier(0), hot, string_u8_litexpr("explorer ."), 0);
+}
+
 function void
 byp_load_theme(String_Const_u8 theme_name){
 	Color_Table *table_ptr = get_color_table_by_name(theme_name);
@@ -146,6 +153,20 @@ global Vim_Buffer_Peek_Entry BYP_peek_list[VIM_ADDITIONAL_PEEK] = {
 	{ buffer_identifier(string_u8_litexpr("*scratch*")), 1.f, 1.f },
 	{ buffer_identifier(string_u8_litexpr("todo.txt")),  1.f, 1.f },
 };
+
+CUSTOM_COMMAND_SIG(byp_list_all_locations_selection)
+CUSTOM_DOC("Lists locations of selection range")
+{
+	vim_normal_mode(app);
+	View_ID view = get_active_view(app, Access_ReadVisible);
+	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
+	Range_i64 range = get_view_range(app, view);
+	range.max++;
+
+    Scratch_Block scratch(app);
+	String_Const_u8 range_string = push_buffer_range(app, scratch, buffer, range);
+	list_all_locations__generic(app, range_string, ListAllLocationsFlag_CaseSensitive|ListAllLocationsFlag_MatchSubstring);
+}
 
 CUSTOM_COMMAND_SIG(byp_open_current_peek)
 CUSTOM_DOC("Sets the active view to the current peeked buffer")
@@ -288,6 +309,4 @@ VIM_COMMAND_SIG(byp_visual_uncomment){
 		vim_state.params.edit_type = edit;
 	}
 }
-
-
 

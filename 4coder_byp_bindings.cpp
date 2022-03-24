@@ -34,34 +34,38 @@ byp_vim_bindings(Application_Links *app){
 	u32 Sft = KeyMod_Sft;
 	u32 Alt = KeyMod_Alt;
 
-	VimBind(N|MAP, redo,                            (Ctl|KeyCode_Y));
-	VimBind(N|MAP, redo,                        (Ctl|Sft|KeyCode_Z));
-	VimBind(N|MAP, save,                            (Ctl|KeyCode_S));
-	VimBind(N|MAP, vim_line_start,                  (Sft|KeyCode_0));
-	VimBind(N|MAP, byp_space,                            KeyCode_Space);
-	VimBind(N|MAP, move_line_up,                    (Alt|KeyCode_K));
-	VimBind(N|MAP, move_line_down,                  (Alt|KeyCode_J));
-	VimBind(N|MAP, change_active_panel_backwards,   (Ctl|KeyCode_H));
-	VimBind(N|MAP, change_active_panel,             (Ctl|KeyCode_L));
-	VimBind(N|MAP, goto_next_jump,                  (Alt|KeyCode_N));
-	VimBind(N|MAP, goto_prev_jump,              (Alt|Sft|KeyCode_N));
+	VimBind(N|MAP, redo,                                  (Ctl|KeyCode_Y));
+	VimBind(N|MAP, redo,                              (Ctl|Sft|KeyCode_Z));
+	VimBind(N|MAP, save,                                  (Ctl|KeyCode_S));
+	VimBind(N|MAP, vim_line_start,                        (Sft|KeyCode_0));
+	VimBind(N|MAP, byp_space,                                  KeyCode_Space);
+	VimBind(N|MAP, move_line_up,                          (Alt|KeyCode_K));
+	VimBind(N|MAP, move_line_down,                        (Alt|KeyCode_J));
+	VimBind(N|MAP, change_active_panel_backwards,         (Ctl|KeyCode_H));
+	VimBind(N|MAP, change_active_panel,                   (Ctl|KeyCode_L));
+	VimBind(N|MAP, goto_next_jump,                        (Alt|KeyCode_N));
+	VimBind(N|MAP, goto_prev_jump,                    (Alt|Sft|KeyCode_N));
 
-	VimBind(N|V|MAP, vim_bounce,                    (Ctl|KeyCode_5));
-	VimBind(N|V|MAP, byp_open_current_peek,         (Alt|KeyCode_Return));
+	VimBind(N|V|MAP, vim_bounce,                          (Ctl|KeyCode_5));
+	VimBind(N|V|MAP, byp_open_current_peek,               (Alt|KeyCode_Return));
 
-	VimBind(N|V|MAP, byp_request_title, SUB_Leader, (Sft|KeyCode_U));
-	VimBind(N|MAP,   byp_request_comment,    SUB_G,      KeyCode_ForwardSlash);
-	VimBind(N|MAP,   byp_request_uncomment,  SUB_G, (Sft|KeyCode_ForwardSlash));
-	VimBind(V|MAP,   byp_visual_comment,                 KeyCode_ForwardSlash);
-	VimBind(V|MAP,   byp_visual_uncomment,          (Sft|KeyCode_ForwardSlash));
+	VimBind(N|V|MAP, byp_request_title,      SUB_Leader,  (Sft|KeyCode_U));
+	VimBind(N|MAP,   byp_request_comment,         SUB_G,       KeyCode_ForwardSlash);
+	VimBind(N|MAP,   byp_request_uncomment,       SUB_G,  (Sft|KeyCode_ForwardSlash));
+	VimBind(V|MAP,   byp_visual_comment,                       KeyCode_ForwardSlash);
+	VimBind(V|MAP,   byp_visual_uncomment,                (Sft|KeyCode_ForwardSlash));
 
-	VimBind(N|V|MAP, vim_leader_d, SUB_Leader,           KeyCode_D);
-	VimBind(N|V|MAP, vim_leader_c, SUB_Leader,           KeyCode_C);
-	VimBind(N|V|MAP, vim_leader_D, SUB_Leader,      (Sft|KeyCode_D));
-	VimBind(N|V|MAP, vim_leader_C, SUB_Leader,      (Sft|KeyCode_C));
+	VimBind(N|V|MAP, vim_leader_d,           SUB_Leader,       KeyCode_D);
+	VimBind(N|V|MAP, vim_leader_c,           SUB_Leader,       KeyCode_C);
+	VimBind(N|V|MAP, vim_leader_D,           SUB_Leader,  (Sft|KeyCode_D));
+	VimBind(N|V|MAP, vim_leader_C,           SUB_Leader,  (Sft|KeyCode_C));
 
-	VimBind(I|MAP, byp_auto_complete_bracket,            KeyCode_Return);
-	VimBind(I|MAP, byp_auto_complete_bracket,       (Sft|KeyCode_Return));
+	VimBind(I|MAP, byp_auto_complete_bracket,                  KeyCode_Return);
+	VimBind(I|MAP, byp_auto_complete_bracket,             (Sft|KeyCode_Return));
+	VimBind(N|MAP, goto_jump_at_cursor,                        KeyCode_Return);
+	VimBind(N|MAP, goto_jump_at_cursor_same_panel,        (Sft|KeyCode_Return));
+	VimBind(V|MAP, byp_list_all_locations_selection,  (Ctl|Sft|KeyCode_F));
+	VimBind(N|MAP, list_all_locations_of_identifier,  (Ctl|Sft|KeyCode_F));
 
 #undef I
 #undef N
@@ -151,8 +155,8 @@ byp_default_bindings(Mapping *mapping, i64 global_id, i64 file_id, i64 code_id){
 	Bind(cut,                                           KeyCode_X, KeyCode_Control);
 	Bind(redo,                                          KeyCode_Y, KeyCode_Control);
 	Bind(undo,                                          KeyCode_Z, KeyCode_Control);
-	Bind(if_read_only_goto_position,                    KeyCode_Return);
-	Bind(if_read_only_goto_position_same_panel,         KeyCode_Return, KeyCode_Shift);
+	Bind(goto_jump_at_cursor,                           KeyCode_Return);
+	Bind(goto_jump_at_cursor_same_panel,                KeyCode_Return, KeyCode_Shift);
 	Bind(view_jump_list_with_lister,                    KeyCode_Period, KeyCode_Control, KeyCode_Shift);
 
 	SelectMap(code_id);
