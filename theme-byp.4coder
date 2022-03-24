@@ -36,7 +36,7 @@ defcolor_highlight_white            =  0xFF003A3A;
 
 defcolor_bar                        =  0xFF660BDD;
 defcolor_base                       =  0xFFEFEFEF;                    // file bar text color
-defcolor_pop1                       =  defcolor_int_constant;		   // Query bar, lister text color
+defcolor_pop1                       =  defcolor_int_constant;		 // Query bar, lister text color
 defcolor_pop2                       =  0xFFFF0000;
 
 defcolor_back_cycle                 = {0xFF1E1E1E, 0xFF1E1E1E};
@@ -60,3 +60,30 @@ defcolor_vim_filebar_pop            =  0xFF8A4CDB;
 defcolor_vim_chord_text             =  defcolor_text_default;
 defcolor_vim_chord_unresolved       =  defcolor_mark;
 defcolor_vim_chord_error            =  defcolor_special_character;
+
+/// Fleury Colors
+fleury_color_syntax_crap           = defcolor_non_text;
+fleury_color_operators             = defcolor_non_text;
+fleury_color_inactive_pane_overlay = 0x44000000;
+fleury_color_inactive_pane_background = 0xff000000;
+fleury_color_file_progress_bar     = 0x608A4CDB;
+fleury_color_brace_highlight       = { defcolor_preproc };
+fleury_color_brace_line            = { 0x809ba290 };
+fleury_color_brace_annotation      = { 0x809ba290 };
+fleury_color_index_product_type    = defcolor_type;
+fleury_color_index_sum_type        = defcolor_type;
+fleury_color_index_function        = defcolor_function;
+fleury_color_index_macro           = defcolor_macro;
+fleury_color_index_constant        = defcolor_macro;
+fleury_color_index_comment_tag     = 0xffff0000;
+fleury_color_index_decl            = 0xFF2299FF;
+fleury_color_cursor_macro          = defcolor_bar;
+fleury_color_cursor_power_mode     = defcolor_bar;
+fleury_color_cursor_inactive       = 0xFF8E2DE2;
+fleury_color_plot_cycle            = { 0xff03d3fc, 0xff22b80b, 0xfff0bb0c, 0xfff0500c };
+fleury_color_token_highlight       = defcolor_margin_hover;
+fleury_color_token_minor_highlight = defcolor_bar;
+fleury_color_error_annotation      = 0xffff0000;
+fleury_color_lego_grab             = 0xffefaf6f;
+fleury_color_lego_splat            = 0xffefaaef;
+fleury_color_comment_user_name     = defcolor_keyword;
