@@ -65,7 +65,6 @@ CUSTOM_DOC("Responding to a startup event")
 	system_set_fullscreen(true);
 	set_window_title(app, string_u8_litexpr("4coder BYP"));
 
-	//byp_load_theme(string_u8_litexpr("theme-byp"));
 	byp_relative_numbers = 1;
 	byp_show_hex_colors = 1;
 	byp_show_scrollbars = 0;
@@ -88,6 +87,7 @@ byp_tick(Application_Links *app, Frame_Info frame_info){
 
 	vim_animate_filebar(app, frame_info);
 	vim_animate_cursor(app, frame_info);
+	fold_tick(app, frame_info);
 	byp_tick_colors(app, frame_info);
 
 	vim_cursor_blink++;
@@ -161,14 +161,13 @@ byp_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view_id
 
 	// NOTE(allen): layout line numbers
 	b32 show_line_number_margins = def_get_config_b32(vars_save_string_lit("show_line_number_margins"));
-	Rect_f32 line_number_rect = {};
-	if(show_line_number_margins){
-		Rect_f32_Pair pair = (byp_relative_numbers ?
-							  vim_line_number_margin(app, buffer, region, digit_advance) :
-							  layout_line_number_margin(app, buffer, region, digit_advance));
-		line_number_rect = pair.min;
-		region = pair.max;
-	}
+	Rect_f32_Pair pair = (show_line_number_margins ?
+						  (byp_relative_numbers ?
+						   vim_line_number_margin(app, buffer, region, digit_advance) :
+						   layout_line_number_margin(app, buffer, region, digit_advance)) :
+						  rect_split_left_right(region, 1.5f*digit_advance));
+	Rect_f32 line_number_rect = pair.min;
+	region = pair.max;
 
 	Buffer_Scroll scroll = view_get_buffer_scroll(app, view_id);
 	Buffer_Point_Delta_Result delta = delta_apply(app, view_id, frame_info.animation_dt, scroll);
@@ -182,9 +181,11 @@ byp_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view_id
 
 	if(show_line_number_margins){
 		if(byp_relative_numbers)
-			draw_rel_line_number_margin(app, view_id, buffer, face_id, text_layout_id, line_number_rect);
+			vim_draw_rel_line_number_margin(app, view_id, buffer, face_id, text_layout_id, line_number_rect);
 		else
-			draw_line_number_margin(app, view_id, buffer, face_id, text_layout_id, line_number_rect);
+			vim_draw_line_number_margin(app, view_id, buffer, face_id, text_layout_id, line_number_rect);
+	}else{
+		draw_rectangle_fcolor(app, line_number_rect, 0.f, fcolor_id(defcolor_back));
 	}
 
 	if(show_scrollbar){
@@ -271,11 +272,11 @@ byp_buffer_region(Application_Links *app, View_ID view_id, Rect_f32 region){
 	}
 
 	b32 show_line_number_margins = def_get_config_b32(vars_save_string_lit("show_line_number_margins"));
-	if(show_line_number_margins){
-		region = (byp_relative_numbers ?
-				  vim_line_number_margin(app, buffer, region, digit_advance) :
-				  layout_line_number_margin(app, buffer, region, digit_advance)).max;
-	}
+	region = (show_line_number_margins ?
+			  (byp_relative_numbers ?
+			   vim_line_number_margin(app, buffer, region, digit_advance) :
+			   layout_line_number_margin(app, buffer, region, digit_advance)) :
+			  rect_split_left_right(region, 1.5f*digit_advance)).max;
 
 	return region;
 }

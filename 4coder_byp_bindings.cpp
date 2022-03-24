@@ -10,6 +10,7 @@ byp_essential_mapping(Mapping *mapping, i64 global_id, i64 file_id, i64 code_id)
 	BindCore(clipboard_record_clip, CoreCode_NewClipboardContents);
 	BindMouseWheel(mouse_wheel_scroll);
 	BindMouseWheel(mouse_wheel_change_face_size, KeyCode_Control);
+	//BindCore(vim_file_externally_modified, CoreCode_FileExternallyModified);
 
 	SelectMap(file_id);
 	ParentMap(global_id);

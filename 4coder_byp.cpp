@@ -61,6 +61,7 @@ custom_layer_init(Application_Links *app){
 	set_custom_hook(app, HookID_Tick,                     byp_tick);
 	set_custom_hook(app, HookID_NewFile,                  byp_new_file);
 	set_custom_hook(app, HookID_BeginBuffer,              vim_begin_buffer);
+	set_custom_hook(app, HookID_BufferEditRange,          vim_buffer_edit_range);
 	set_custom_hook(app, HookID_ViewChangeBuffer,         vim_view_change_buffer);
 	set_custom_hook(app, HookID_ViewEventHandler,         vim_view_input_handler);
 
