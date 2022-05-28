@@ -27,7 +27,7 @@ byp_draw_function_preview_inner(Application_Links *app, Buffer_ID buffer, Range_
 			}
 		}
 	}
-	done:
+	done:;
 	code_index_unlock();
 
 	if(target_buffer < 0){ return; }

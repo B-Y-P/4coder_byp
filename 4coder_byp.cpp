@@ -1,6 +1,8 @@
 #pragma once
 
+#ifdef OS_WINDOWS
 #define SNIPPET_EXPANSION "4coder_byp_snippets.inc"
+#endif
 
 #include "4coder_default_include.cpp"
 

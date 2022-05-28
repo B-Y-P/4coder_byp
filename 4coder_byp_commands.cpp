@@ -140,7 +140,7 @@ CUSTOM_DOC("Sets the right size of the view near the x position of the cursor.")
 		return;
 	}
 
-	byp_default_return:
+	byp_default_return:;
 	write_text(app, string_u8_litexpr("\n"));
 	byp_bracket_opened = 0;
 }
