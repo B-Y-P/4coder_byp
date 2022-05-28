@@ -109,38 +109,39 @@ CUSTOM_DOC("Sets the right size of the view near the x position of the cursor.")
 	i64 pos = view_get_character_legal_pos_from_pos(app, view, view_get_cursor_pos(app, view));
 	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadWriteVisible);
 	Token_Array token_array = get_token_array_from_buffer(app, buffer);
-	if(token_array.tokens == 0){
-		if(byp_bracket_opened){
-			write_text(app, string_u8_litexpr("\n\n}"));
+	do{
+		if(token_array.tokens == 0){
+			if(byp_bracket_opened){
+				write_text(app, string_u8_litexpr("\n\n}"));
+				move_up(app);
+				byp_bracket_opened = 0;
+				return;
+			}else{
+				break;
+			}
+		}
+
+		i64 first_index = token_index_from_pos(&token_array, pos);
+		Token_Iterator_Array it = token_iterator_index(0, token_array.tokens, token_array.count, first_index);
+		if(!token_it_dec(&it)){ break; }
+
+		Token *token = token_it_read(&it);
+		if(token && byp_bracket_opened && buffer_get_char(app, buffer, token->pos) == '{'){
+			token_it_dec(&it);
+			token = token_it_read(&it);
+			if(token->kind == TokenBaseKind_Identifier){
+				if(!token_it_dec(&it)){ break; }
+				token = token_it_read(&it);
+			}
+			String_Const_u8 insert = string_u8_litexpr("\n\n};");
+			insert.size -= (token->kind != byp_TokenKind_Struct);
+			write_text(app, insert);
 			move_up(app);
 			byp_bracket_opened = 0;
 			return;
-		}else{
-			goto byp_default_return;
 		}
-	}
+	}while(0);
 
-	i64 first_index = token_index_from_pos(&token_array, pos);
-	Token_Iterator_Array it = token_iterator_index(0, token_array.tokens, token_array.count, first_index);
-	if(!token_it_dec(&it)){ goto byp_default_return; }
-
-	Token *token = token_it_read(&it);
-	if(token && byp_bracket_opened && buffer_get_char(app, buffer, token->pos) == '{'){
-		token_it_dec(&it);
-		token = token_it_read(&it);
-		if(token->kind == TokenBaseKind_Identifier){
-			if(!token_it_dec(&it)){ goto byp_default_return; }
-			token = token_it_read(&it);
-		}
-		String_Const_u8 insert = string_u8_litexpr("\n\n};");
-		insert.size -= (token->kind != byp_TokenKind_Struct);
-		write_text(app, insert);
-		move_up(app);
-		byp_bracket_opened = 0;
-		return;
-	}
-
-	byp_default_return:;
 	write_text(app, string_u8_litexpr("\n"));
 	byp_bracket_opened = 0;
 }
