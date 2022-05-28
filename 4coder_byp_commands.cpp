@@ -2,17 +2,27 @@
 global Face_ID byp_small_italic_face;
 global Face_ID byp_minimal_face;
 
-// NOTE(BYP): Don't do this. Do as I say, not as I do
-#define DECLARE_TOGGLE(name) \
-global b32 byp_##name; \
-CUSTOM_COMMAND_SIG(byp_toggle_##name) \
-CUSTOM_DOC(stringify(glue(glue(Toggles value for `, name), `))) \
-{ byp_##name ^= 1; }
 
-DECLARE_TOGGLE(show_hex_colors);
-DECLARE_TOGGLE(relative_numbers);
-DECLARE_TOGGLE(show_scrollbars);
-DECLARE_TOGGLE(drop_shadow);
+global b32 byp_show_hex_colors;
+global b32 byp_relative_numbers;
+global b32 byp_show_scrollbars;
+global b32 byp_drop_shadow;
+
+CUSTOM_COMMAND_SIG(byp_toggle_show_hex_colors)
+CUSTOM_DOC("Toggles value for `show_hex_colors`")
+{ byp_show_hex_colors ^= 1; }
+
+CUSTOM_COMMAND_SIG(byp_toggle_relative_numbers)
+CUSTOM_DOC("Toggles value for `relative_numbers`")
+{ byp_relative_numbers ^= 1; }
+
+CUSTOM_COMMAND_SIG(byp_toggle_show_scrollbars)
+CUSTOM_DOC("Toggles value for `show_scrollbars`")
+{ byp_show_scrollbars ^= 1; }
+
+CUSTOM_COMMAND_SIG(byp_toggle_drop_shadow)
+CUSTOM_DOC("Toggles value for `drop_shadow`")
+{ byp_drop_shadow ^= 1; }
 
 
 CUSTOM_COMMAND_SIG(byp_test)
@@ -163,7 +173,7 @@ CUSTOM_DOC("Lists locations of selection range")
 	Range_i64 range = get_view_range(app, view);
 	range.max++;
 
-    Scratch_Block scratch(app);
+	Scratch_Block scratch(app);
 	String_Const_u8 range_string = push_buffer_range(app, scratch, buffer, range);
 	list_all_locations__generic(app, range_string, ListAllLocationsFlag_CaseSensitive|ListAllLocationsFlag_MatchSubstring);
 }
@@ -250,7 +260,7 @@ VIM_REQUEST_SIG(byp_apply_title){
 	Scratch_Block scratch(app);
 	String_Const_u8 text = push_buffer_range(app, scratch, buffer, range);
 	u8 prev = buffer_get_char(app, buffer, range.min-1);
-	for(i32 i=0; i<text.size; i++){
+	foreach(i, text.size){
 		text.str[i] += u8(i32('A' - 'a')*((!character_is_alpha(prev) || prev == '_') &&
 										  character_is_lower(text.str[i])));
 		prev = text.str[i];

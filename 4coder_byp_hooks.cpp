@@ -330,9 +330,6 @@ BUFFER_HOOK_SIG(byp_file_save){
 					print_message(app, string_u8_litexpr("Copied color theme\n"));
 					byp_copy_color_table(&node->table, color_table);
 					byp_copy_color_table(&target_color_table, color_table);
-
-					//active_color_table.arrays;
-					//cached_color_table.arrays;
 				}
 
 				break;
