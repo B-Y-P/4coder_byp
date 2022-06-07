@@ -151,11 +151,10 @@ function void byp_draw_token_colors(Application_Links *app, View_ID view, Buffer
 		draw_comment_highlights(app, buffer, text_layout_id, &token_array, pairs, ArrayCount(pairs));
 	}
 
-	// TODO(BYP): Still doesn't work for tokens at pos==0
 	it = token_iterator_pos(0, &token_array, Max(0, visible_range.first-1));
 	for(;;){
-		if(!token_it_inc_non_whitespace(&it)){ break; }
 		Token *token = token_it_read(&it);
+		if(token->pos > visible_range.max){ break; }
 		String_Const_u8 lexeme = push_token_lexeme(app, scratch, buffer, token);
 		Code_Index_Note *note = code_index_note_from_string(lexeme);
 
@@ -167,6 +166,7 @@ function void byp_draw_token_colors(Application_Links *app, View_ID view, Buffer
 			}
 		}
 
+		if(!token_it_inc_non_whitespace(&it)){ break; }
 		if(note == 0){ continue; }
 		switch(note->note_kind){
 			case CodeIndexNote_Function:
@@ -176,6 +176,7 @@ function void byp_draw_token_colors(Application_Links *app, View_ID view, Buffer
 			case CodeIndexNote_Macro:
 			paint_text_color(app, text_layout_id, Ii64_size(token->pos, token->size), macro_color); break;
 		}
+
 	}
 	if(do_cursor_tok_highlight){ draw_rectangle(app, cursor_tok_rect, 5.f, cursor_tok_color); }
 
