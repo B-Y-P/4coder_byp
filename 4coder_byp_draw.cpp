@@ -333,6 +333,12 @@ byp_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, Buff
 	i64 cursor_pos = view_correct_cursor(app, view_id);
 	view_correct_mark(app, view_id);
 
+	b32 use_scope_highlight = def_get_config_b32(vars_save_string_lit("use_scope_highlight"));
+	if(use_scope_highlight){
+		Color_Array colors = finalize_color_array(defcolor_back_cycle);
+		draw_scope_highlight(app, buffer, text_layout_id, cursor_pos, colors.vals, colors.count);
+	}
+
 	b32 highlight_line_at_cursor = def_get_config_b32(vars_save_string_lit("highlight_line_at_cursor"));
 	if(highlight_line_at_cursor && is_active_view){
 		i64 line_number = get_line_number_from_pos(app, buffer, cursor_pos);
@@ -362,12 +368,6 @@ byp_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, Buff
 		paint_text_color_fcolor(app, text_layout_id, visible_range, fcolor_id(defcolor_text_default));
 	}else{
 		byp_draw_token_colors(app, view_id, buffer, text_layout_id);
-	}
-
-	b32 use_scope_highlight = def_get_config_b32(vars_save_string_lit("use_scope_highlight"));
-	if(use_scope_highlight){
-		Color_Array colors = finalize_color_array(defcolor_back_cycle);
-		draw_scope_highlight(app, buffer, text_layout_id, cursor_pos, colors.vals, colors.count);
 	}
 
 	b32 use_error_highlight = def_get_config_b32(vars_save_string_lit("use_error_highlight"));
