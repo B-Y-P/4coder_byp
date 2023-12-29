@@ -27,7 +27,7 @@ build_language_model(void){
 	sm_char_name('?', "Ternary");
 	sm_char_name('/', "Div");
 
-	// CPP Direct Toke Kinds
+	// CPP Direct Token Kinds
 	sm_select_base_kind(TokenBaseKind_Comment);
 	sm_direct_token_kind("BlockComment");
 	sm_direct_token_kind("LineComment");
@@ -235,7 +235,6 @@ build_language_model(void){
 	sm_key("Switch");
 	sm_key("Try");
 	sm_key("While");
-	// TODO(BYP): Add to state machine: labels for goto's
 
 	sm_select_base_kind(TokenBaseKind_LiteralInteger);
 	sm_key("LiteralTrue", "true");
@@ -534,7 +533,7 @@ build_language_model(void){
 	////
 
 	sm_select_state(number);
-	sm_case("0123456789", number);
+	sm_case("0123456789'", number);   // quote is not 'correct' but that's fine imo
 	sm_case(".", fnumber_decimal);
 	sm_case("Ee", fnumber_exponent);
 	sm_case("Uu", U_number);
@@ -554,7 +553,7 @@ build_language_model(void){
 	sm_case("Uu", U_number);
 	sm_case("L", L_number);
 	sm_case("l", l_number);
-	sm_case("Xx", number_hex_first);
+	sm_case("XxBb", number_hex_first);   // <- not correct for bitstring literals, but I'm not busy rn
 	sm_case("01234567", number_oct);
 	{
 		Emit_Rule *emit = sm_emit_rule();
@@ -565,7 +564,7 @@ build_language_model(void){
 	////
 
 	sm_select_state(fnumber_decimal);
-	sm_case("0123456789", fnumber_decimal);
+	sm_case("0123456789'", fnumber_decimal);
 	sm_case("Ee", fnumber_exponent);
 	{
 		Emit_Rule *emit = sm_emit_rule();
@@ -658,7 +657,7 @@ build_language_model(void){
 	////
 
 	sm_select_state(number_hex);
-	sm_case("0123456789abcdefABCDEF", number_hex);
+	sm_case("0123456789abcdefABCDEF'", number_hex);
 	sm_case("Uu", U_number);
 	sm_case("L", L_number);
 	sm_case("l", l_number);
@@ -672,7 +671,7 @@ build_language_model(void){
 
 	sm_select_state(number_oct);
 	sm_set_flag(is_oct, true);
-	sm_case("01234567", number_oct);
+	sm_case("01234567'", number_oct);
 	sm_case("Uu", U_number);
 	sm_case("L", L_number);
 	sm_case("l", l_number);

@@ -28,19 +28,19 @@ CUSTOM_DOC("Toggles value for `drop_shadow`")
 CUSTOM_COMMAND_SIG(byp_test)
 CUSTOM_DOC("Just bound to the key I spam to execute whatever test code I'm working on")
 {
-	Scratch_Block scratch(app);
-	View_ID view = get_active_view(app, Access_ReadVisible);
+	toggle_virtual_whitespace(app);
+}
 
-	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
-	i64 pos = view_get_cursor_pos(app, view);
-	Buffer_Cursor cursor = buffer_compute_cursor(app, buffer, seek_pos(pos));
-
-	print_message(app, push_stringf(scratch, "Buffer[%d] = '%c'\n", pos, buffer_get_char(app, buffer, pos)));
-	print_message(app, push_stringf(scratch, "Line %d Col: %d\n", cursor.line, cursor.col));
-
-	Face_ID face = get_face_id(app, buffer);
-	Face_Description desc = get_face_description(app, face);
-	printf_message(app, scratch, "Face Size: %d \n", desc.parameters.pt_size);
+CUSTOM_COMMAND_SIG(byp_reopen_all_buffers)
+CUSTOM_DOC("Reload current buffer")
+{
+    for (Buffer_ID buffer = get_buffer_next(app, 0, Access_Always);
+         buffer != 0;
+         buffer = get_buffer_next(app, buffer, Access_Always)){
+        if (buffer_has_name_with_star(app, buffer)){ continue; }
+		if (buffer_get_dirty_state(app, buffer) == DirtyState_UpToDate){ continue; }
+		buffer_reopen(app, buffer, 0);
+	}
 }
 
 CUSTOM_COMMAND_SIG(byp_reset_face_size)
@@ -62,9 +62,14 @@ CUSTOM_COMMAND_SIG(byp_toggle_set_col_ruler)
 CUSTOM_DOC("Toggles the column ruler. Set to cursor column when on.")
 {
 	View_ID view = get_active_view(app, Access_ReadVisible);
-	byp_col_cursor = (byp_col_cursor.pos != 0 ?
-					  Buffer_Cursor{} :
-					  view_compute_cursor(app, view, seek_pos(view_get_cursor_pos(app, view))));
+	if(byp_col_cursor.pos == 0){
+		Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
+		i64 pos = view_get_cursor_pos(app, view);
+		byp_col_cursor = view_compute_cursor(app, view, seek_pos(pos));
+		vim_state.params.seek = {buffer_get_char(app, buffer, pos), VIM_Inclusive, -1};
+	}else{
+		byp_col_cursor = Buffer_Cursor{};
+	}
 }
 
 CUSTOM_COMMAND_SIG(byp_space)
