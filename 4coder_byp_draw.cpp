@@ -316,6 +316,45 @@ byp_draw_scope_brackets(Application_Links *app, View_ID view, Buffer_ID buffer, 
 	}
 }
 
+function void
+byp_draw_compile_errors(Application_Links *app, Buffer_ID buffer, Text_Layout_ID text_layout_id, Buffer_ID jump_buffer){
+	Scratch_Block scratch(app);
+	Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
+	if (jump_buffer != 0){
+		Heap *heap = &global_heap;
+		Marker_List *list = get_or_make_list_for_buffer(app, heap, jump_buffer);
+
+		FColor cl_error = fcolor_blend(fcolor_id(defcolor_highlight_junk), 0.6f, fcolor_id(defcolor_text_default));
+
+		Managed_Scope scopes[2];
+		scopes[0] = buffer_get_managed_scope(app, jump_buffer);
+		scopes[1] = buffer_get_managed_scope(app, buffer);
+		Managed_Scope comp_scope = get_managed_scope_with_multiple_dependencies(app, scopes, ArrayCount(scopes));
+		Managed_Object *markers_object = scope_attachment(app, comp_scope, sticky_jump_marker_handle, Managed_Object);
+
+		i32 count = managed_object_get_item_count(app, *markers_object);
+		Marker *markers = push_array(scratch, Marker, count);
+		managed_object_load_data(app, *markers_object, 0, count, markers);
+		for (i32 i = 0; i < count; i += 1){
+			i64 line_number = get_line_number_from_pos(app, buffer, markers[i].pos);
+			Range_i64 line_range = get_line_pos_range(app, buffer, line_number);
+			if (range_overlap(visible_range, line_range)){
+				draw_line_highlight(app, text_layout_id, line_number, fcolor_id(defcolor_highlight_junk));
+
+				i64 comp_line_number = get_line_from_list(app, list, i);
+				String_Const_u8 comp_line_string = push_buffer_line(app, scratch, jump_buffer, comp_line_number);
+				Parsed_Jump jump = parse_jump_location(comp_line_string);
+				if (jump.success){
+					i64 end_pos = get_line_end_pos(app, buffer, line_number)-1;
+					Rect_f32 end_rect = text_layout_character_on_screen(app, text_layout_id, end_pos);
+					Vec2_f32 p0 = V2f32(end_rect.x1 + 4.f, end_rect.y0 + 2.f);
+					String_Const_u8 error_string = string_skip(comp_line_string, jump.colon_position + 2);
+					draw_string(app, byp_small_italic_face, error_string, p0, cl_error);
+				}
+			}
+		}
+	}
+}
 
 function void
 byp_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, Buffer_ID buffer, Text_Layout_ID text_layout_id, Rect_f32 rect){
@@ -376,7 +415,7 @@ byp_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, Buff
 		Buffer_ID comp_buffer = get_buffer_by_name(app, string_u8_litexpr("*compilation*"), Access_Always);
 		if(use_error_highlight){
 			draw_jump_highlights(app, buffer, text_layout_id, comp_buffer, fcolor_id(defcolor_highlight_junk));
-			// TODO(BYP): Draw error messsage annotations
+			byp_draw_compile_errors(app, buffer, text_layout_id, comp_buffer);
 		}
 
 		if(use_jump_highlight){
