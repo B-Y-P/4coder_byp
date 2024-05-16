@@ -111,36 +111,6 @@ function void byp_draw_token_colors(Application_Links *app, View_ID view, Buffer
 		}
 	}
 
-	// NOTE(BYP): @Annotations
-	{
-		i64 first_index = token_index_from_pos(&token_array, visible_range.first);
-		Token_Iterator_Array comment_it = token_iterator_index(buffer, &token_array, first_index);
-		for(;;){
-			Token *token = token_it_read(&comment_it);
-			if(token->pos >= visible_range.max){ break; }
-			String_Const_u8 tail = {};
-			if(token_it_check_and_get_lexeme(app, scratch, &comment_it, TokenBaseKind_Comment, &tail)){
-				foreach(i, token->size){
-					if(tail.str[i] == '@'){
-						Range_i64 annot_range = Ii64(i);
-						i32 j=i+1;
-						for(; j<token->size; j++){
-							if(character_is_whitespace(tail.str[j]) || !character_is_alpha_numeric(tail.str[j])){
-								break;
-							}
-						}
-						annot_range.max = j;
-						if(annot_range.min != annot_range.max-1){
-							annot_range += token->pos;
-							paint_text_color(app, text_layout_id, annot_range, 0xFFFF0000);
-						}
-					}
-				}
-			}
-			if(!token_it_inc_non_whitespace(&comment_it)){ break; }
-		}
-	}
-
 	// NOTE(allen): Scan for TODOs and NOTEs
 	b32 use_comment_keyword = def_get_config_b32(vars_save_string_lit("use_comment_keyword"));
 	if(use_comment_keyword){

@@ -151,6 +151,52 @@ CUSTOM_DOC("Sets the right size of the view near the x position of the cursor.")
 	byp_bracket_opened = 0;
 }
 
+function void
+byp_find_divider(Application_Links *app, Scan_Direction direction){
+	View_ID view = get_active_view(app, Access_ReadVisible);
+	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
+	Token_Array tokens = get_token_array_from_buffer(app, buffer);
+	if (tokens.tokens == 0){ return; }
+
+	i64 pos = view_get_cursor_pos(app, view);
+	Token_Iterator_Array it = token_iterator_pos(buffer, &tokens, pos);
+	for (;;){
+		Scratch_Block scratch(app);
+		Token *token = token_it_read(&it);
+
+		b32 correct_direction = ((token->pos < pos && direction == Scan_Backward) ||
+								 (token->pos > pos && direction == Scan_Forward));
+
+		String_Const_u8 tail = {};
+		if (correct_direction && token_it_check_and_get_lexeme(app, scratch, &it, TokenBaseKind_Comment, &tail)){
+			String_Const_u8 match = string_u8_litexpr("//-");
+			String_Const_u8 prefix = string_prefix(tail, match.size);
+			if (block_match(prefix.str, match.str, match.size)){
+				view_set_cursor(app, view, seek_pos(token->pos));
+				return;
+			}
+		}
+
+		b32 has_next = (direction == Scan_Forward ?
+						token_it_inc_non_whitespace(&it) :
+						token_it_dec_non_whitespace(&it));
+		if (!has_next){ break; }
+	}
+}
+
+CUSTOM_COMMAND_SIG(byp_find_divider_up)
+CUSTOM_DOC("Find //- divider above cursor")
+{
+	byp_find_divider(app, Scan_Backward);
+}
+
+CUSTOM_COMMAND_SIG(byp_find_divider_down)
+CUSTOM_DOC("Find //- divider below cursor")
+{
+	byp_find_divider(app, Scan_Forward);
+}
+
+
 CUSTOM_COMMAND_SIG(explorer)
 CUSTOM_DOC("Opens file explorer in hot directory")
 {

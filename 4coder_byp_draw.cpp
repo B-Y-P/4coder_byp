@@ -317,6 +317,49 @@ byp_draw_scope_brackets(Application_Links *app, View_ID view, Buffer_ID buffer, 
 }
 
 function void
+byp_draw_comments(Application_Links *app, Buffer_ID buffer, Text_Layout_ID text_layout_id, Token_Array *array, Rect_f32 rect){
+	Scratch_Block scratch(app);
+	Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
+	i64 first_index = token_index_from_pos(array, visible_range.first);
+	Token_Iterator_Array it = token_iterator_index(buffer, array, first_index);
+	for (;;){
+		Temp_Memory_Block temp(scratch);
+		Token *token = token_it_read(&it);
+		if (token->pos >= visible_range.one_past_last){ break; }
+		String_Const_u8 tail = {};
+		if (token_it_check_and_get_lexeme(app, scratch, &it, TokenBaseKind_Comment, &tail)){
+
+			//- divider comments
+			String_Const_u8 match = string_u8_litexpr("//-");
+			String_Const_u8 prefix = string_prefix(tail, match.size);
+			if (block_match(prefix.str, match.str, match.size)){
+				f32 y = text_layout_character_on_screen(app, text_layout_id, token->pos).y0;
+				Rect_f32 dividor_line = Rf32(rect.x0, y - 1.f, rect.x1, y);
+				draw_rectangle_fcolor(app, dividor_line, 0.f, fcolor_id(defcolor_comment));
+			}
+
+			// paint @annotations in comments
+			for (i64 i = 0; i < token->size; i += 1){
+				if (tail.str[i] != '@'){ continue; }
+				Range_i64 range = Ii64(i,i+1);
+				for (i64 j = i+1; j < token->size; j += 1){
+					char ch = tail.str[j];
+					if (character_is_whitespace(ch) || !character_is_alpha_numeric(ch)){
+						break;
+					}
+					range.max++;
+				}
+
+				if (range_size(range) > 1){
+					paint_text_color(app, text_layout_id, range + token->pos, 0xFFFF0000);
+				}
+			}
+		}
+		if (!token_it_inc_non_whitespace(&it)){ break; }
+	}
+}
+
+function void
 byp_draw_compile_errors(Application_Links *app, Buffer_ID buffer, Text_Layout_ID text_layout_id, Buffer_ID jump_buffer){
 	Scratch_Block scratch(app);
 	Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
@@ -407,6 +450,7 @@ byp_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, Buff
 		paint_text_color_fcolor(app, text_layout_id, visible_range, fcolor_id(defcolor_text_default));
 	}else{
 		byp_draw_token_colors(app, view_id, buffer, text_layout_id);
+		byp_draw_comments(app, buffer, text_layout_id, &token_array, rect);
 	}
 
 	b32 use_error_highlight = def_get_config_b32(vars_save_string_lit("use_error_highlight"));
