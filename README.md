@@ -14,7 +14,7 @@ My personal 4coder custom layer
 
 `'cl' is not recognized as an internal or external command, operable program or batch file.`
 
-#### If you already have it installed and just want to build
+#### If you already have Visual Studio installed and just want to build
  - Search for `x64 Native Tools Command Prompt for VS <YYYY>` (make sure it's `x64` not `x86_64`)\
  - Open and navigate to `4coder_byp\` and run `build release`
 
@@ -36,6 +36,6 @@ My personal 4coder custom layer
 
 </br>
 
-If all goes well, hopefully running `4ed.exe` ends up looking something like this
+If all goes well, running `4ed.exe` will look something like this
 ---
 ![4coder_byp example](https://github.com/B-Y-P/4coder_byp/assets/69936251/e50bfefa-997d-401b-8b40-a77c22feb5b9)
