@@ -286,50 +286,38 @@ byp_buffer_region(Application_Links *app, View_ID view_id, Rect_f32 region){
 }
 
 BUFFER_HOOK_SIG(byp_file_save){
-	//default_file_save(app, buffer_id);
 	b32 auto_indent = def_get_config_b32(vars_save_string_lit("automatically_indent_text_on_save"));
 	b32 is_virtual = def_get_config_b32(vars_save_string_lit("enable_virtual_whitespace"));
 	if (auto_indent && is_virtual){
 		auto_indent_buffer(app, buffer_id, buffer_range(app, buffer_id));
 	}
 	vim_file_save(app, buffer_id);
-	//auto_indent_buffer(app, buffer_id, buffer_range(app, buffer_id));
 	clean_all_lines_buffer(app, buffer_id, CleanAllLinesMode_RemoveBlankLines);
 
 	Scratch_Block scratch(app);
-	String_Const_u8 unique_name = push_buffer_unique_name(app, scratch, buffer_id);
-	String_Const_u8 postfix = string_u8_litexpr(".4coder");
+	String_Const_u8 path = push_buffer_file_name(app, scratch, buffer_id);
+	String_Const_u8 name = string_front_of_path(path);
 
-	if(string_match(string_postfix(unique_name, postfix.size), postfix)){
-		String_Const_u8 theme_name = string_chop(unique_name, postfix.size);
-		for(Color_Table_Node *node = global_theme_list.first; node; node=node->next){
-			if(string_match(node->name, theme_name)){
-				Color_Table color_table = make_color_table(app, scratch);
-				Config *config = theme_parse__buffer(app, scratch, buffer_id, scratch, &color_table);
-				String_Const_u8 error_text = config_stringize_errors(app, scratch, config);
-				print_message(app, error_text);
+	String_Const_u8 target_prefix = string_u8_litexpr("theme-");
+	String_Const_u8 target_suffix = string_u8_litexpr(".4coder");
+	String_Const_u8 actual_prefix = string_prefix(name, target_prefix.size);
+	String_Const_u8 actual_suffix = string_postfix(name, target_suffix.size);
 
-				u64 problem_score = 0;
-				if(color_table.count < defcolor_line_numbers_text){
-					problem_score = defcolor_line_numbers_text - color_table.count;
-				}
-				foreach(i, color_table.count){
-					problem_score += (color_table.arrays[i].count == 0);
-				}
+	if (string_match(actual_prefix, target_prefix) && string_match(actual_suffix, target_suffix)){
+		Color_Table color_table = make_color_table(app, &global_theme_arena);
+		Config *config = theme_parse__buffer(app, scratch, buffer_id, &global_theme_arena, &color_table);
+		String_Const_u8 error_text = config_stringize_errors(app, scratch, config);
 
-				if(0 < error_text.size || 10 <= problem_score){
-					String_Const_u8 string = push_u8_stringf(scratch, "There appears to be a problem parsing %.*s; no theme change applied\n", string_expand(theme_name));
-					print_message(app, string);
-				}else{
-					print_message(app, string_u8_litexpr("Copied color theme\n"));
-					byp_copy_color_table(&node->table, color_table);
-					byp_copy_color_table(&target_color_table, color_table);
-				}
-
-				break;
-			}
+		if (error_text.size > 0){
+			print_message(app, error_text);
+			printf_message(app, scratch, "There appears to be a problem parsing %S; no theme change applied\n", path);
+		}
+		else{
+			print_message(app, string_u8_litexpr("Copied color theme\n"));
+			byp_copy_color_table(&target_color_table, color_table);
 		}
 	}
+
 	return 0;
 }
 
