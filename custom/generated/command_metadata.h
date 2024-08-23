@@ -367,7 +367,7 @@ static Command_Metadata fcoder_metacmd_table[322] = {
 { PROC_LINKS(byp_space, 0), false, "byp_space", 9, "When column ruler is set, spaces towards that, else just inserts one space", 74, "P:\\4coder\\4coder_byp\\4coder_byp_commands.cpp", 44, 75 },
 { PROC_LINKS(byp_startup, 0), false, "byp_startup", 11, "Responding to a startup event", 29, "P:\\4coder\\4coder_byp\\4coder_byp_hooks.cpp", 41, 2 },
 { PROC_LINKS(byp_test, 0), false, "byp_test", 8, "Just bound to the key I spam to execute whatever test code I'm working on", 73, "P:\\4coder\\4coder_byp\\4coder_byp_commands.cpp", 44, 28 },
-{ PROC_LINKS(byp_theme_lister, 0), true, "byp_theme_lister", 16, "Opens an interactive list of all registered themes.", 51, "P:\\4coder\\4coder_byp\\4coder_byp_colors.cpp", 42, 61 },
+{ PROC_LINKS(byp_theme_lister, 0), true, "byp_theme_lister", 16, "Opens an interactive list of all registered themes.", 51, "P:\\4coder\\4coder_byp\\4coder_byp_colors.cpp", 42, 62 },
 { PROC_LINKS(byp_toggle_drop_shadow, 0), false, "byp_toggle_drop_shadow", 22, "Toggles value for `drop_shadow`", 31, "P:\\4coder\\4coder_byp\\4coder_byp_commands.cpp", 44, 23 },
 { PROC_LINKS(byp_toggle_relative_numbers, 0), false, "byp_toggle_relative_numbers", 27, "Toggles value for `relative_numbers`", 36, "P:\\4coder\\4coder_byp\\4coder_byp_commands.cpp", 44, 15 },
 { PROC_LINKS(byp_toggle_set_col_ruler, 0), false, "byp_toggle_set_col_ruler", 24, "Toggles the column ruler. Set to cursor column when on.", 55, "P:\\4coder\\4coder_byp\\4coder_byp_commands.cpp", 44, 61 },

@@ -18,6 +18,7 @@ byp_copy_color_table(Color_Table *dst, Color_Table table){
 	foreach(i, table.count){
 		Color_Array *nxt_array = &dst->arrays[i];
 		Color_Array *array = &table.arrays[i];
+		nxt_array->count = array->count;
 		foreach(j, array->count){
 			nxt_array->vals[j] = array->vals[j];
 		}
