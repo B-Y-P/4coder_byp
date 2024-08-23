@@ -2,42 +2,42 @@ version(1);
 project_name = "4coder BYP";
 
 patterns = {
-"*.c",
-"*.cpp",
-"*.h",
-"*.m",
-"*.mm",
-"*.bat",
-"*.sh",
-"*.4coder",
-"*.txt",
+	"*.c",
+	"*.cpp",
+	"*.hpp",
+	"*.h",
+	"*.m",
+	"*.mm",
+	"*.bat",
+	"*.sh",
+	"*.4coder",
+	"*.txt",
 };
+
 blacklist_patterns = { ".*", };
-load_paths_custom = {
- {"..\custom"}, {"."},
-};
+
+load_paths_custom = { {"."}, };
 load_paths = {
- { load_paths_custom, .os = "win"  },
- { load_paths_custom, .os = "linux"},
- { load_paths_custom, .os = "mac"  },
+	{ load_paths_custom, .os = "win"  },
+	{ load_paths_custom, .os = "linux"},
+	{ load_paths_custom, .os = "mac"  },
 };
 
 command_list = {
+	{ .name = "run test build",
+		.out = "*compilation*", .footer_panel = true, .save_dirty_files = true, .cursor_at_end = true,
+		.cmd = { {"call run_test.bat", .os = "win" }, },
+	},
 
- { .name = "run test build",
-   .out = "*compilation*", .footer_panel = true, .save_dirty_files = true, .cursor_at_end = true,
-   .cmd = { {"..\\test_build\\4ed.exe 4coder_vim\\4coder_vim_bindings.cpp", .os = "win" },
-           }, },
+	{ .name = "build byp",
+		.out = "*compilation*", .footer_panel = true, .save_dirty_files = true, .cursor_at_end = true,
+		.cmd = { {"build.bat", .os = "win" }, },
+	},
 
- { .name = "build byp",
-   .out = "*compilation*", .footer_panel = true, .save_dirty_files = true, .cursor_at_end = true,
-   .cmd = { {"build.bat", .os = "win" },
-           }, },
-
- { .name = "debugger",
-    .out = "*run*", .footer_panel = true, .save_dirty_files = false,
-    .cmd = { {"shell && devenv ..", .os = "win" },
-            }, }
+	{ .name = "debugger",
+		.out = "*run*", .footer_panel = true, .save_dirty_files = false,
+		.cmd = { {"remedybg .", .os = "win" }, },
+	},
 };
 
 fkey_command[2] = "run test build";

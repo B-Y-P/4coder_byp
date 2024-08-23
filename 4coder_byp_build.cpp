@@ -64,7 +64,6 @@ byp_prj_exec_command(Application_Links *app, Variable_Handle cmd_var){
 		Variable_Handle prj_var = vars_parent(command_list_var);
 		String8 prj_dir = prj_path_from_project(scratch, prj_var);
 		exec_system_command(app, view, buffer_id, prj_dir, cmd, flags);
-
 	}
 }
 

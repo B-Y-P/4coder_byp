@@ -32,33 +32,9 @@ byp_draw_function_preview_inner(Application_Links *app, Buffer_ID buffer, Range_
 
 	if(target_buffer < 0){ return; }
 
-	//i64 p = target_range.max;
 	target_range.max = vim_scan_bounce(app, target_buffer, target_range.max, Scan_Forward) + 1;
 
-	/*
-	i32 cur_count = 0;
-	Range_i64 cur_range = Ii64(range.min+1);
-	for(;;){
-	   if(cur_range.max >= pos || cur_range.max >= range.max){ break; }
-	   cur_count++;
-	   cur_range = byp_object_param(app, buffer, cur_range.max+1);
-	   if(cur_range.min == 0 && cur_range.max == 0){ break; }
-	}
-
-	i32 sig_count = 0;
-	Range_i64 sig_range = Ii64(p);
-	for(;;){
-	   if(sig_count >= cur_count){ break; }
-	   sig_count++;
-	   sig_range = byp_object_param(app, target_buffer, sig_range.max+1);
-	   if(sig_range.min == 0 && sig_range.max == 0){ break; }
-	}
-	sig_range.max++;
-	Range_i64 sig_underline = sig_range;
-	//*/
 	Range_i64 sig_underline = target_range;
-	///find_surrounding_nest;
-	//token_array_from_text;
 
 	String_Const_u8 sig = push_buffer_range(app, scratch, target_buffer, target_range);
 	sig = string_condense_whitespace(scratch, sig);
@@ -68,15 +44,15 @@ byp_draw_function_preview_inner(Application_Links *app, Buffer_ID buffer, Range_
 	f32 pad = 2.f;
 	Rect_f32 rect = {};
 	rect.p0 = vim_cur_cursor_pos + V2f32(0, 2.f + count*(metrics.line_height + pad + 2.f*wid));
-	rect.p1 = rect.p0 + V2f32(sig.size*metrics.max_advance, metrics.line_height);
+	rect.p1 = rect.p0 + V2f32(sig.size*metrics.space_advance, metrics.line_height);
 	f32 x_offset = ((rect.x1 > x_range.max)*(rect.x1 - x_range.max) -
 					(rect.x0 < x_range.min)*(rect.x0 - x_range.max));
 	rect.x0 -= x_offset;
 	rect.x1 -= x_offset;
 
 	Rect_f32 underline = rect;
-	underline.x0 += metrics.max_advance*(sig_underline.min - target_range.min);
-	underline.x1 = underline.x0 + metrics.max_advance*(range_size(sig_underline));
+	underline.x0 += metrics.space_advance*(sig_underline.min - target_range.min);
+	underline.x1 = underline.x0 + metrics.space_advance*(range_size(sig_underline));
 	underline.y1 -= 1.f;
 	underline.y0 = underline.y1 - 1.f;
 
@@ -506,7 +482,6 @@ byp_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, Buff
 		case FCoderMode_NotepadLike:
 		draw_notepad_style_cursor_highlight(app, view_id, buffer, text_layout_id, cursor_roundness); break;
 	}
-
 
 	paint_fade_ranges(app, text_layout_id, buffer);
 	draw_text_layout_default(app, text_layout_id);

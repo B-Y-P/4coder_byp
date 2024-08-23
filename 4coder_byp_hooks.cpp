@@ -9,12 +9,6 @@ CUSTOM_DOC("Responding to a startup event")
 		load_themes_default_folder(app);
 		default_4coder_initialize(app, file_names);
 
-		/*
-        Buffer_ID buffer = create_buffer(app, string_u8_litexpr("*peek*"),
-            BufferCreate_NeverAttachToFile|BufferCreate_AlwaysNew);
-            buffer_set_setting(app, buffer, BufferSetting_Unimportant, true);
-				*/
-
 		Buffer_Identifier left = buffer_identifier(string_u8_litexpr("*scratch*"));
 		if(file_names.count > 0){
 			left = buffer_identifier(file_names.vals[0]);
@@ -42,14 +36,12 @@ CUSTOM_DOC("Responding to a startup event")
 		if(def_get_config_b32(vars_save_string_lit("automatically_load_project"))){
 			load_project(app);
 		}
-
 	}
 
 	def_audio_init();
 
 	def_enable_virtual_whitespace = def_get_config_b32(vars_save_string_lit("enable_virtual_whitespace"));
 	clear_all_layouts(app);
-
 
 	Face_Description desc = get_global_face_description(app);
 	desc.parameters.pt_size -= 2;
@@ -168,13 +160,16 @@ byp_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view_id
 		animate_in_n_milliseconds(app, 1000);
 	}
 
+
+	Rect_f32_Pair pair = {};
+
 	// NOTE(allen): layout line numbers
 	b32 show_line_number_margins = def_get_config_b32(vars_save_string_lit("show_line_number_margins"));
-	Rect_f32_Pair pair = (show_line_number_margins ?
-						  (byp_relative_numbers ?
-						   vim_line_number_margin(app, buffer, region, digit_advance) :
-						   layout_line_number_margin(app, buffer, region, digit_advance)) :
-						  rect_split_left_right(region, 1.5f*digit_advance));
+	pair = (show_line_number_margins ?
+			(byp_relative_numbers ?
+			 vim_line_number_margin(app, buffer, region, digit_advance) :
+			 layout_line_number_margin(app, buffer, region, digit_advance)) :
+			rect_split_left_right(region, 1.5f*digit_advance));
 	Rect_f32 line_number_rect = pair.min;
 	region = pair.max;
 
@@ -290,16 +285,15 @@ byp_buffer_region(Application_Links *app, View_ID view_id, Rect_f32 region){
 	return region;
 }
 
-function void
-byp_whole_screen_render_caller(Application_Links *app, Frame_Info frame_info){
-	vim_draw_whole_screen(app, frame_info);
-	if(byp_game_is_running){ byp_game_state.render_game_byp(app, frame_info, get_face_id(app, 0)); }
-}
-
 BUFFER_HOOK_SIG(byp_file_save){
-	default_file_save(app, buffer_id);
+	//default_file_save(app, buffer_id);
+	b32 auto_indent = def_get_config_b32(vars_save_string_lit("automatically_indent_text_on_save"));
+	b32 is_virtual = def_get_config_b32(vars_save_string_lit("enable_virtual_whitespace"));
+	if (auto_indent && is_virtual){
+		auto_indent_buffer(app, buffer_id, buffer_range(app, buffer_id));
+	}
 	vim_file_save(app, buffer_id);
-	auto_indent_buffer(app, buffer_id, buffer_range(app, buffer_id));
+	//auto_indent_buffer(app, buffer_id, buffer_range(app, buffer_id));
 	clean_all_lines_buffer(app, buffer_id, CleanAllLinesMode_RemoveBlankLines);
 
 	Scratch_Block scratch(app);
@@ -352,68 +346,15 @@ BUFFER_HOOK_SIG(byp_begin_buffer){
 		String_Const_u8 ext = string_file_extension(file_name);
 		for (i32 i = 0; i < extensions.count; ++i){
 			if (string_match(ext, extensions.strings[i])){
-
 				if (string_match(ext, string_u8_litexpr("cpp")) ||
 					string_match(ext, string_u8_litexpr("h")) ||
 					string_match(ext, string_u8_litexpr("c")) ||
 					string_match(ext, string_u8_litexpr("hpp")) ||
 					string_match(ext, string_u8_litexpr("hlsl")) ||
+					string_match(ext, string_u8_litexpr("4coder")) ||
 					string_match(ext, string_u8_litexpr("cc"))){
 					treat_as_code = true;
 				}
-
-#if 0
-				treat_as_code = true;
-
-				if (string_match(ext, string_u8_litexpr("cs"))){
-					if (parse_context_language_cs == 0){
-						init_language_cs(app);
-					}
-					parse_context_id = parse_context_language_cs;
-				}
-
-				if (string_match(ext, string_u8_litexpr("java"))){
-					if (parse_context_language_java == 0){
-						init_language_java(app);
-					}
-					parse_context_id = parse_context_language_java;
-				}
-
-				if (string_match(ext, string_u8_litexpr("rs"))){
-					if (parse_context_language_rust == 0){
-						init_language_rust(app);
-					}
-					parse_context_id = parse_context_language_rust;
-				}
-
-				if (string_match(ext, string_u8_litexpr("cpp")) ||
-					string_match(ext, string_u8_litexpr("h")) ||
-					string_match(ext, string_u8_litexpr("c")) ||
-					string_match(ext, string_u8_litexpr("hpp")) ||
-					string_match(ext, string_u8_litexpr("cc"))){
-					if (parse_context_language_cpp == 0){
-						init_language_cpp(app);
-					}
-					parse_context_id = parse_context_language_cpp;
-				}
-
-				// TODO(NAME): Real GLSL highlighting
-				if (string_match(ext, string_u8_litexpr("glsl"))){
-					if (parse_context_language_cpp == 0){
-						init_language_cpp(app);
-					}
-					parse_context_id = parse_context_language_cpp;
-				}
-
-				// TODO(NAME): Real Objective-C highlighting
-				if (string_match(ext, string_u8_litexpr("m"))){
-					if (parse_context_language_cpp == 0){
-						init_language_cpp(app);
-					}
-					parse_context_id = parse_context_language_cpp;
-				}
-#endif
-
 				break;
 			}
 		}

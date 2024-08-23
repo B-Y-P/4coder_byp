@@ -8,6 +8,6 @@ IF NOT exist ..\test_build (
         copy ..\config.4coder ..\test_build\config.4coder
 )
 pushd ..\test_build
-call ..\custom\bin\buildsuper_x64-win.bat ..\4coder_byp\4coder_byp.cpp %1
+call ..\4coder_byp\custom\bin\buildsuper_x64-win.bat ..\4coder_byp\4coder_byp.cpp %1
 call ..\4coder_byp\apply.bat
 popd

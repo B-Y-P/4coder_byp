@@ -95,6 +95,7 @@ function void byp_draw_token_colors(Application_Links *app, View_ID view, Buffer
 	ARGB_Color function_color = fcolor_resolve(fcolor_id(defcolor_function));
 	ARGB_Color type_color     = fcolor_resolve(fcolor_id(defcolor_type));
 	ARGB_Color macro_color    = fcolor_resolve(fcolor_id(defcolor_macro));
+	ARGB_Color enum_color     = fcolor_resolve(fcolor_id(defcolor_enum));
 	ARGB_Color back_color     = fcolor_resolve(fcolor_id(defcolor_back));
 	ARGB_Color cursor_tok_color = byp_get_token_color_cpp(*cursor_token);
 
@@ -107,6 +108,7 @@ function void byp_draw_token_colors(Application_Links *app, View_ID view, Buffer
 				case CodeIndexNote_Function: cursor_tok_color = function_color; break;
 				case CodeIndexNote_Type:     cursor_tok_color = type_color;     break;
 				case CodeIndexNote_Macro:    cursor_tok_color = macro_color;    break;
+				case CodeIndexNote_Enum:     cursor_tok_color = enum_color;     break;
 			}
 		}
 	}
@@ -145,6 +147,8 @@ function void byp_draw_token_colors(Application_Links *app, View_ID view, Buffer
 			paint_text_color(app, text_layout_id, Ii64_size(token->pos, token->size), type_color); break;
 			case CodeIndexNote_Macro:
 			paint_text_color(app, text_layout_id, Ii64_size(token->pos, token->size), macro_color); break;
+			case CodeIndexNote_Enum:
+			paint_text_color(app, text_layout_id, Ii64_size(token->pos, token->size), enum_color); break;
 		}
 
 	}

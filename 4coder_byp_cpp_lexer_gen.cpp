@@ -12,6 +12,9 @@
 
 internal void
 build_language_model(void){
+
+	printf("Building BYP cpp lexer\n");
+
 	u8 utf8[129];
 	smh_utf8_fill(utf8);
 
@@ -1153,5 +1156,3 @@ build_language_model(void){
 }
 
 // BOTTOM
-
-
