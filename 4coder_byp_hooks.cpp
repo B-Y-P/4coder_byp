@@ -91,7 +91,7 @@ byp_tick(Application_Links *app, Frame_Info frame_info){
 	fold_tick(app, frame_info);
 	byp_tick_colors(app, frame_info);
 
-	vim_cursor_blink++;
+	vim_cursor_blink += frame_info.animation_dt;
 
 	b32 enable_virtual_whitespace = def_get_config_b32(vars_save_string_lit("enable_virtual_whitespace"));
 	if(enable_virtual_whitespace != def_enable_virtual_whitespace){
