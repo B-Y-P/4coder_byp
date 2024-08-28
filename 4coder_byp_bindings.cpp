@@ -77,7 +77,6 @@ byp_vim_bindings(Application_Links *app){
 #undef MAP
 }
 
-
 function void
 byp_default_bindings(Mapping *mapping, i64 global_id, i64 file_id, i64 code_id){
 	MappingScope();
