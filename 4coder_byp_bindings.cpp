@@ -71,6 +71,8 @@ byp_vim_bindings(Application_Links *app){
 	VimBind(V|MAP, byp_list_all_locations_selection,  (Ctl|Sft|KeyCode_F));
 	VimBind(N|MAP, list_all_locations_of_identifier,  (Ctl|Sft|KeyCode_F));
 
+	VimBind(N|V|MAP, byp_search_token,                    (Sft|KeyCode_8));
+
 #undef I
 #undef N
 #undef V

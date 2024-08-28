@@ -557,7 +557,7 @@ build_language_model(void){
 	sm_case("L", L_number);
 	sm_case("l", l_number);
 	sm_case("XxBb", number_hex_first);   // <- not correct for bitstring literals, but I'm not busy rn
-	sm_case("01234567", number_oct);
+	sm_case("01234567'", number_oct);
 	{
 		Emit_Rule *emit = sm_emit_rule();
 		sm_emit_handler_direct("LiteralInteger");

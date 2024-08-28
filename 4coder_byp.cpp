@@ -4,6 +4,8 @@
 #define SNIPPET_EXPANSION "4coder_byp_snippets.inc"
 #endif
 
+#define USE_CPP 0
+
 #include "4coder_default_include.h"
 
 function Lister_Result vim_run_lister(Application_Links *app, Lister *lister);
@@ -27,6 +29,8 @@ CUSTOM_ID(colors, defcolor_non_text);
 
 #include "4coder_byp_token.h"
 #include "4coder_byp_token.cpp"
+
+#include "4coder_byp_3th.cpp"
 
 #include "4coder_byp_build.cpp"
 #include "4coder_byp_colors.cpp"
@@ -67,7 +71,8 @@ custom_layer_init(Application_Links *app){
 	set_custom_hook(app, HookID_Tick,                     byp_tick);
 	set_custom_hook(app, HookID_NewFile,                  byp_new_file);
 	set_custom_hook(app, HookID_BeginBuffer,              byp_begin_buffer);
-	set_custom_hook(app, HookID_BufferEditRange,          vim_buffer_edit_range);
+	set_custom_hook(app, HookID_BufferEditRange,          byp_buffer_edit_range);
+	//set_custom_hook(app, HookID_BufferEditRange,          vim_buffer_edit_range);
 	set_custom_hook(app, HookID_ViewChangeBuffer,         vim_view_change_buffer);
 	set_custom_hook(app, HookID_ViewEventHandler,         vim_view_input_handler);
 

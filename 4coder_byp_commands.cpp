@@ -29,6 +29,30 @@ CUSTOM_COMMAND_SIG(byp_test)
 CUSTOM_DOC("Just bound to the key I spam to execute whatever test code I'm working on")
 {
 	toggle_virtual_whitespace(app);
+
+	Scratch_Block scratch(app);
+	View_ID view = get_active_view(app, Access_Always);
+	Buffer_ID buffer = view_get_buffer(app, view, Access_Always);
+	Token_Array token_array = get_token_array_from_buffer(app, buffer);
+	if(token_array.tokens){
+		i64 pos = view_get_cursor_pos(app, view);
+		Token_Iterator_Array it = token_iterator_pos(0, &token_array, pos);
+		Token *token = token_it_read(&it);
+		vim_set_bottom_text(push_stringf(scratch, "token(%lld, %lld) = %s\n", token->pos, token->size, byp_token_base_kind_names[token->kind]));
+	}
+}
+
+CUSTOM_COMMAND_SIG(byp_search_token)
+CUSTOM_DOC("select token or alpha-num range")
+{
+	View_ID view = get_active_view(app, Access_ReadVisible);
+	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
+	i64 pos = view_get_cursor_pos(app, view);
+	Token *token = get_token_from_pos(app, buffer, pos);
+	Range_i64 range = (token ? Ii64(token) : enclose_pos_alpha_numeric_underscore(app, buffer, pos));
+	vim_state.params.selected_reg = &vim_registers.search;
+	vim_request_vtable[REQUEST_Yank](app, view, buffer, range);
+	vim_default_register();
 }
 
 CUSTOM_COMMAND_SIG(byp_reload_config)

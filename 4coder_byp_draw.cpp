@@ -1,4 +1,3 @@
-
 // TODO(BYP): param number underlining (account for variadic ...)
 function void
 byp_draw_function_preview_inner(Application_Links *app, Buffer_ID buffer, Range_f32 x_range, Range_i64 range, i64 pos, i32 count){
@@ -421,7 +420,11 @@ byp_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, Buff
 		paint_text_color_fcolor(app, text_layout_id, visible_range, fcolor_id(defcolor_text_default));
 	}else{
 		byp_draw_token_colors(app, view_id, buffer, text_layout_id);
+#if USE_CPP
 		byp_draw_comments(app, buffer, text_layout_id, &token_array, rect);
+#else
+		draw_3th(app, buffer, text_layout_id);
+#endif
 	}
 
 	b32 use_error_highlight = def_get_config_b32(vars_save_string_lit("use_error_highlight"));
