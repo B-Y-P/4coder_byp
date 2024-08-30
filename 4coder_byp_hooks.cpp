@@ -169,7 +169,7 @@ byp_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view_id
 			(byp_relative_numbers ?
 			 vim_line_number_margin(app, buffer, region, digit_advance) :
 			 layout_line_number_margin(app, buffer, region, digit_advance)) :
-			rect_split_left_right(region, 1.5f*digit_advance));
+			rect_split_left_right(region, digit_advance));
 	Rect_f32 line_number_rect = pair.min;
 	region = pair.max;
 
@@ -208,34 +208,12 @@ byp_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view_id
 
 	byp_render_buffer(app, view_id, face_id, buffer, text_layout_id, region);
 
-	/// NOTE(BYP): If 4coder gets even smaller fonts (smaller than u32=0) this *might* be viable
-	if(false){
-		Buffer_Point point = {};
-		Rect_f32 prev_region = rect_split_left_right_neg(region, 190.f).b;
-		prev_region.x1 -= 10.f;
-		Face_ID prev_face = get_face_id(app, buffer);
-		buffer_set_face(app, buffer, byp_minimal_face);
-		Text_Layout_ID layout_id = text_layout_create(app, buffer, prev_region, point);
-
-		draw_rectangle(app, rect_inner(prev_region, -10.f), 5.f, 0x44000000);
-
-		i32 prev_mode = fcoder_mode;
-		fcoder_mode = 20; // Just don't render/update the cursor
-		byp_render_buffer(app, view_id, byp_minimal_face, buffer, layout_id, prev_region);
-		fcoder_mode = prev_mode;
-
-		buffer_set_face(app, buffer, prev_face);
-		text_layout_free(app, layout_id);
-	}
-
-
 	text_layout_free(app, text_layout_id);
 	draw_set_clip(app, prev_clip);
 }
 
 function Rect_f32
 byp_buffer_region(Application_Links *app, View_ID view_id, Rect_f32 region){
-
 	Buffer_ID buffer = view_get_buffer(app, view_id, Access_Always);
 	Face_ID face_id = get_face_id(app, 0);
 	Face_Metrics metrics = get_face_metrics(app, face_id);
@@ -244,9 +222,7 @@ byp_buffer_region(Application_Links *app, View_ID view_id, Rect_f32 region){
 
 	Rect_f32 global_rect = global_get_screen_rectangle(app);
 	f32 filebar_y = global_rect.y1 - 2.f*line_height - vim_cur_filebar_offset;
-	if(region.y1 >= filebar_y){
-		region.y1 = filebar_y;
-	}
+	if(region.y1 >= filebar_y){ region.y1 = filebar_y; }
 
 	Query_Bar *space[32];
 	Query_Bar_Ptr_Array query_bars = {};
@@ -280,7 +256,7 @@ byp_buffer_region(Application_Links *app, View_ID view_id, Rect_f32 region){
 			  (byp_relative_numbers ?
 			   vim_line_number_margin(app, buffer, region, digit_advance) :
 			   layout_line_number_margin(app, buffer, region, digit_advance)) :
-			  rect_split_left_right(region, 1.5f*digit_advance)).max;
+			  rect_split_left_right(region, digit_advance)).max;
 
 	return region;
 }
