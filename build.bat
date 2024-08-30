@@ -1,4 +1,5 @@
 @echo off
+set byp_dir=%cd%
 IF NOT exist ..\test_build (
         mkdir ..\test_build
         xcopy /E ..\themes\   ..\test_build\themes\
@@ -8,6 +9,6 @@ IF NOT exist ..\test_build (
         copy ..\config.4coder ..\test_build\config.4coder
 )
 pushd ..\test_build
-call ..\4coder_byp\custom\bin\buildsuper_x64-win.bat ..\4coder_byp\4coder_byp.cpp %1
-call ..\4coder_byp\apply.bat
+call %byp_dir%\custom\bin\buildsuper_x64-win.bat %byp_dir%\4coder_byp.cpp %1
+call %byp_dir%\apply.bat
 popd

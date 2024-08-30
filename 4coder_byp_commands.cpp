@@ -31,9 +31,21 @@ CUSTOM_DOC("Just bound to the key I spam to execute whatever test code I'm worki
 	toggle_virtual_whitespace(app);
 }
 
+CUSTOM_COMMAND_SIG(byp_reload_config)
+CUSTOM_DOC("Reloads config.4coder file")
+{
+	View_ID view = get_active_view(app, Access_Always);
+	Buffer_ID buffer = view_get_buffer(app, view, Access_Always);
+	Face_ID face = get_face_id(app, buffer);
+	Face_Description face_desc = get_face_description(app, face);
+	load_config_and_apply(app, &global_config_arena, face_desc.parameters.pt_size, face_desc.parameters.hinting);
+}
+
 CUSTOM_COMMAND_SIG(byp_reopen_all_buffers)
 CUSTOM_DOC("Reload current buffer")
 {
+	View_ID view = get_active_view(app, Access_Always);
+	Buffer_Scroll scroll = view_get_buffer_scroll(app, view);
     for (Buffer_ID buffer = get_buffer_next(app, 0, Access_Always);
          buffer != 0;
          buffer = get_buffer_next(app, buffer, Access_Always)){
@@ -41,6 +53,7 @@ CUSTOM_DOC("Reload current buffer")
 		if (buffer_get_dirty_state(app, buffer) == DirtyState_UpToDate){ continue; }
 		buffer_reopen(app, buffer, 0);
 	}
+	view_set_buffer_scroll(app, view, scroll, SetBufferScroll_NoCursorChange);
 }
 
 CUSTOM_COMMAND_SIG(byp_reset_face_size)

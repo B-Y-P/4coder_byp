@@ -106,7 +106,6 @@ byp_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view_id
 	ProfileScope(app, "default render caller");
 
 	Buffer_ID buffer = view_get_buffer(app, view_id, Access_Always);
-
 	Face_ID face_id = get_face_id(app, 0);
 	Face_Metrics face_metrics = get_face_metrics(app, face_id);
 	f32 line_height = face_metrics.line_height;
@@ -292,6 +291,11 @@ BUFFER_HOOK_SIG(byp_file_save){
 			print_message(app, string_u8_litexpr("Copied color theme\n"));
 			byp_copy_color_table(&target_color_table, color_table);
 		}
+	}
+
+	if (string_match(name, string_u8_litexpr("config.4coder"))){
+		View_ID view = get_active_view(app, Access_Always);
+		view_enqueue_command_function(app, view, byp_reload_config);
 	}
 
 	return 0;
