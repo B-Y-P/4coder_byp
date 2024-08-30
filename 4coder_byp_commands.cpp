@@ -151,6 +151,14 @@ CUSTOM_DOC("Sets the right size of the view near the x position of the cursor.")
 	byp_bracket_opened = 0;
 }
 
+function bool
+byp_is_divider(String_Const_u8 lexeme){
+	String_Const_u8 match = string_u8_litexpr("//");
+	String_Const_u8 start = string_prefix(lexeme, 2);
+	String_Const_u8 first_non_ws = string_skip_whitespace(string_skip(lexeme, 2));
+	return (string_match(start, match) && string_get_character(first_non_ws, 0) == '-');
+}
+
 function void
 byp_find_divider(Application_Links *app, Scan_Direction direction){
 	View_ID view = get_active_view(app, Access_ReadVisible);
@@ -163,18 +171,15 @@ byp_find_divider(Application_Links *app, Scan_Direction direction){
 	for (;;){
 		Scratch_Block scratch(app);
 		Token *token = token_it_read(&it);
+		String_Const_u8 lexeme = {};
 
-		b32 correct_direction = ((token->pos < pos && direction == Scan_Backward) ||
-								 (token->pos > pos && direction == Scan_Forward));
+		b32 valid_dir = ((token->pos < pos && direction == Scan_Backward) ||
+						 (token->pos > pos && direction == Scan_Forward));
+		b32 has_lexeme = token_it_check_and_get_lexeme(app, scratch, &it, TokenBaseKind_Comment, &lexeme);
 
-		String_Const_u8 tail = {};
-		if (correct_direction && token_it_check_and_get_lexeme(app, scratch, &it, TokenBaseKind_Comment, &tail)){
-			String_Const_u8 match = string_u8_litexpr("//-");
-			String_Const_u8 prefix = string_prefix(tail, match.size);
-			if (block_match(prefix.str, match.str, match.size)){
-				view_set_cursor(app, view, seek_pos(token->pos));
-				return;
-			}
+		if (valid_dir && has_lexeme && byp_is_divider(lexeme)){
+			view_set_cursor(app, view, seek_pos(token->pos));
+			return;
 		}
 
 		b32 has_next = (direction == Scan_Forward ?
