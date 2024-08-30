@@ -31,6 +31,17 @@ CUSTOM_DOC("Just bound to the key I spam to execute whatever test code I'm worki
 	toggle_virtual_whitespace(app);
 }
 
+CUSTOM_COMMAND_SIG(byp_close_all_buffers)
+CUSTOM_DOC("Reloads project.4coder")
+{
+	for (Buffer_ID buffer = get_buffer_next(app, 0, Access_Always);
+		 buffer != 0;
+		 buffer = get_buffer_next(app, buffer, Access_Always)){
+        if (buffer_has_name_with_star(app, buffer)){ continue; }
+		buffer_kill(app, buffer, BufferKill_AlwaysKill);
+	}
+}
+
 CUSTOM_COMMAND_SIG(byp_reload_config)
 CUSTOM_DOC("Reloads config.4coder file")
 {
@@ -44,17 +55,48 @@ CUSTOM_DOC("Reloads config.4coder file")
 CUSTOM_COMMAND_SIG(byp_reopen_all_buffers)
 CUSTOM_DOC("Reload current buffer")
 {
-	View_ID view = get_active_view(app, Access_Always);
-	Buffer_Scroll scroll = view_get_buffer_scroll(app, view);
-    for (Buffer_ID buffer = get_buffer_next(app, 0, Access_Always);
-         buffer != 0;
-         buffer = get_buffer_next(app, buffer, Access_Always)){
+	View_ID views[32];
+	Buffer_Scroll scrolls[32];
+	i64 count = 0;
+
+	for (View_ID view = get_view_next(app, 0, Access_Always);
+		 view != 0;
+		 view = get_view_next(app, view, Access_Always)){
+		i64 idx = count++;
+		views[idx] = view;
+		scrolls[idx] = view_get_buffer_scroll(app, view);
+	}
+
+	for (Buffer_ID buffer = get_buffer_next(app, 0, Access_Always);
+		 buffer != 0;
+		 buffer = get_buffer_next(app, buffer, Access_Always)){
         if (buffer_has_name_with_star(app, buffer)){ continue; }
 		if (buffer_get_dirty_state(app, buffer) == DirtyState_UpToDate){ continue; }
 		buffer_reopen(app, buffer, 0);
 	}
-	view_set_buffer_scroll(app, view, scroll, SetBufferScroll_NoCursorChange);
+
+	foreach(i, count){
+		view_set_buffer_scroll(app, views[i], scrolls[i], SetBufferScroll_NoCursorChange);
+	}
 }
+
+CUSTOM_COMMAND_SIG(format_all_buffers)
+CUSTOM_DOC("Auto-indent and remove blank lines for all loaded buffers")
+{
+	b32 auto_indent = def_get_config_b32(vars_save_string_lit("automatically_indent_text_on_save"));
+	b32 is_virtual = def_get_config_b32(vars_save_string_lit("enable_virtual_whitespace"));
+	for (Buffer_ID buffer = get_buffer_next(app, 0, Access_ReadWrite);
+		 buffer != 0;
+		 buffer = get_buffer_next(app, buffer, Access_ReadWrite)){
+        if (buffer_has_name_with_star(app, buffer)){ continue; }
+		if (auto_indent && is_virtual){
+			auto_indent_buffer(app, buffer, buffer_range(app, buffer));
+		}
+		clean_all_lines_buffer(app, buffer, CleanAllLinesMode_RemoveBlankLines);
+	}
+	save_all_dirty_buffers(app);
+}
+
 
 CUSTOM_COMMAND_SIG(byp_reset_face_size)
 CUSTOM_DOC("Resets face size to default")
