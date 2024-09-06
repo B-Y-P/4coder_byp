@@ -83,15 +83,11 @@ CUSTOM_DOC("Reload current buffer")
 CUSTOM_COMMAND_SIG(format_all_buffers)
 CUSTOM_DOC("Auto-indent and remove blank lines for all loaded buffers")
 {
-	b32 auto_indent = def_get_config_b32(vars_save_string_lit("automatically_indent_text_on_save"));
-	b32 is_virtual = def_get_config_b32(vars_save_string_lit("enable_virtual_whitespace"));
 	for (Buffer_ID buffer = get_buffer_next(app, 0, Access_ReadWrite);
 		 buffer != 0;
 		 buffer = get_buffer_next(app, buffer, Access_ReadWrite)){
         if (buffer_has_name_with_star(app, buffer)){ continue; }
-		if (auto_indent && is_virtual){
-			auto_indent_buffer(app, buffer, buffer_range(app, buffer));
-		}
+		auto_indent_buffer(app, buffer, buffer_range(app, buffer), Indent_ClearLine|Indent_UseTab|Indent_FullTokens);
 		clean_all_lines_buffer(app, buffer, CleanAllLinesMode_RemoveBlankLines);
 	}
 	save_all_dirty_buffers(app);

@@ -1,4 +1,4 @@
-version(1);
+version(2);
 project_name = "4coder BYP";
 
 patterns = {
@@ -16,30 +16,17 @@ patterns = {
 
 blacklist_patterns = { ".*", };
 
-load_paths_custom = { {"."}, };
-load_paths = {
-	{ load_paths_custom, .os = "win"  },
-	{ load_paths_custom, .os = "linux"},
-	{ load_paths_custom, .os = "mac"  },
+paths = { { .path = ".", .recursive = true, .relative = true, }, };
+load_paths = { .win = paths, };
+
+commands = {
+	.run      = { .win = "run_test.bat", .out = "*compilation*", .footer_panel = true, .save_dirty_files = true,  .cursor_at_end = true,  },
+	.build    = { .win = "build.bat",    .out = "*compilation*", .footer_panel = true, .save_dirty_files = true,  .cursor_at_end = true,  },
+	.debugger = { .win = "remedybg .",   .out = "*run*",         .footer_panel = true, .save_dirty_files = false, .cursor_at_end = false, },
 };
 
-command_list = {
-	{ .name = "run test build",
-		.out = "*compilation*", .footer_panel = true, .save_dirty_files = true, .cursor_at_end = true,
-		.cmd = { {"call run_test.bat", .os = "win" }, },
-	},
-
-	{ .name = "build byp",
-		.out = "*compilation*", .footer_panel = true, .save_dirty_files = true, .cursor_at_end = true,
-		.cmd = { {"build.bat", .os = "win" }, },
-	},
-
-	{ .name = "debugger",
-		.out = "*run*", .footer_panel = true, .save_dirty_files = false,
-		.cmd = { {"remedybg .", .os = "win" }, },
-	},
+fkey_command = {
+	.F2 = "run",
+	.F5 = "build",
+	.F9 = "debugger",
 };
-
-fkey_command[2] = "run test build";
-fkey_command[5] = "build byp";
-fkey_command[9] = "debugger";

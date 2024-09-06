@@ -35,7 +35,6 @@ byp_vim_bindings(Application_Links *app){
 	u32 Sft = KeyMod_Sft;
 	u32 Alt = KeyMod_Alt;
 
-	VimBind(N|MAP, redo,                                  (Ctl|KeyCode_Y));
 	VimBind(N|MAP, redo,                              (Ctl|Sft|KeyCode_Z));
 	VimBind(N|MAP, save,                                  (Ctl|KeyCode_S));
 	VimBind(N|MAP, vim_line_start,                        (Sft|KeyCode_0));
