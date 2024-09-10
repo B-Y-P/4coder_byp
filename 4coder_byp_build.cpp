@@ -1,5 +1,42 @@
 
 function void
+byp_build_view_spin(Application_Links *app){
+	for (;;){
+		User_Input input = get_next_input(app, EventPropertyGroup_Any, 0);
+		if(input.abort){ break; }
+
+		View_ID view_active = get_active_view(app, Access_Always);
+		View_ID view_next   = get_view_next(app, view_active, Access_Always);
+		if (view_active == build_footer_panel_view_id){
+			if (view_next != 0){
+				view_set_active(app, view_next);
+			}
+			else{
+				open_panel_vsplit(app);
+				default_4coder_one_panel(app, buffer_identifier(string_u8_litexpr("*scratch*")));
+			}
+		}
+
+		view_set_split_pixel_size(app, build_footer_panel_view_id, 0);
+	}
+}
+
+function View_ID
+byp_get_or_open_build_panel(Application_Links *app){
+	if(build_footer_panel_view_id == 0){
+		View_ID view = get_or_open_build_panel(app);
+		build_footer_panel_view_id = view;
+		View_Context ctx = view_current_context(app, view);
+		ctx.render_caller = 0;
+		view_set_split_pixel_size(app, view, 0);
+		view_set_passive(app, view, true);
+		view_alter_context(app, view, &ctx);
+		view_enqueue_command_function(app, view, byp_build_view_spin);
+	}
+	return build_footer_panel_view_id;
+}
+
+function void
 byp_prj_exec_command(Application_Links *app, Variable_Handle cmd_var){
 	Scratch_Block scratch(app);
 
@@ -25,24 +62,19 @@ byp_prj_exec_command(Application_Links *app, Variable_Handle cmd_var){
 
 		View_ID view = 0;
 		Buffer_Identifier buffer_id = {};
-		b32 set_fancy_font = false;
 		String8 out = vars_string_from_var(scratch, vars_read_key(cmd_var, out_id));
 		if(out.size > 0){
 			buffer_id = buffer_identifier(out);
 
 			b32 footer_panel = vars_b32_from_var(vars_read_key(cmd_var, footer_panel_id));
 			if(footer_panel){
-				set_fancy_font = true;
 				vim_show_buffer_peek = false;
 				vim_toggle_show_buffer_peek(app);
 				vim_buffer_peek_index = 0;
 				buffer_id = vim_buffer_peek_list[0].buffer_id;
                 vim_buffer_peek_list[0] = {buffer_id, 1.f, 1.f};
 
-				View_Context ctx = view_current_context(app, build_footer_panel_view_id);
-				view_set_split_pixel_size(app, build_footer_panel_view_id, 0);
-				ctx.render_caller = 0;
-				view_alter_context(app, build_footer_panel_view_id, &ctx);
+				byp_get_or_open_build_panel(app);
 			}
 			else{
 				Buffer_ID buffer = buffer_identifier_to_id(app, buffer_id);
@@ -133,7 +165,7 @@ CUSTOM_DOC("Compiles project")
 	View_ID view = get_active_view(app, Access_Always);
 	Buffer_ID buffer = view_get_buffer(app, view, Access_Always);
 
-	View_ID build_view = get_or_open_build_panel(app);
+	View_ID build_view = byp_get_or_open_build_panel(app);
 	standard_search_and_build(app, build_view, buffer);
 
 	vim_show_buffer_peek = false;
@@ -141,12 +173,6 @@ CUSTOM_DOC("Compiles project")
 	vim_buffer_peek_index = 0;
 	vim_buffer_peek_list[0] = {buffer_identifier(string_u8_litexpr("*compilation*")), 1.f, 1.f};
 
-	View_Context ctx = view_current_context(app, build_footer_panel_view_id);
-	view_set_split_pixel_size(app, build_footer_panel_view_id, 0);
-	ctx.render_caller = 0;
-	view_alter_context(app, build_footer_panel_view_id, &ctx);
-
 	block_zero_struct(&prev_location);
 	lock_jump_buffer(app, string_u8_litexpr("*compilation*"));
-	//close_build_footer_panel(app);
 }

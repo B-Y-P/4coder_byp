@@ -28,10 +28,7 @@ CUSTOM_DOC("Responding to a startup event")
 		vim_set_file_register(app, left_id);
 
 		// NOTE/TODO: (BYP) This is a hack until buffer_peek has it's own View_ID (allows comp jump list)
-		View_Context ctx = view_current_context(app, build_footer_panel_view_id);
-		view_set_split_pixel_size(app, build_footer_panel_view_id, 0);
-		ctx.render_caller = 0;
-		view_alter_context(app, build_footer_panel_view_id, &ctx);
+		byp_get_or_open_build_panel(app);
 
 		if(def_get_config_b32(vars_save_string_lit("automatically_load_project"))){
 			load_project(app);
