@@ -13,7 +13,7 @@ function ARGB_Color
 finalize_color(Color_Array array, i32 sub_index){
     ARGB_Color result = 0xFFFFFFFF;
     if (array.count > 0){
-	result = array.vals[sub_index % array.count];
+		result = array.vals[sub_index % array.count];
     }
     return(result);
 }
@@ -95,8 +95,8 @@ make_color_table(Application_Links *app, Arena *arena){
     u32 *dummy = push_array(arena, u32, 1);
     *dummy = 0xFF990099;
     for (i32 i = 0; i < result.count; i += 1){
-	result.arrays[i].vals = dummy;
-	result.arrays[i].count = 1;
+		result.arrays[i].vals = dummy;
+		result.arrays[i].count = 1;
     }
     return(result);
 }
@@ -104,8 +104,7 @@ make_color_table(Application_Links *app, Arena *arena){
 function void
 set_default_color_scheme(Application_Links *app){
     if (global_theme_arena.base_allocator == 0){
-	global_theme_arena = make_arena_system();
-    }
+		global_theme_arena = make_arena_system(); }
 
     Arena *arena = &global_theme_arena;
 
@@ -151,6 +150,20 @@ set_default_color_scheme(Application_Links *app){
     default_color_table.arrays[defcolor_line_numbers_back] = make_colors(arena, 0xFF101010);
     default_color_table.arrays[defcolor_line_numbers_text] = make_colors(arena, 0xFF404040);
 
+	default_color_table.arrays[defcolor_non_text] = make_colors(arena, 0xFFCCFFCC);
+	default_color_table.arrays[defcolor_function] = make_colors(arena, 0xFFDDDDDD);
+	default_color_table.arrays[defcolor_type] = make_colors(arena, 0xFF20F050);
+	default_color_table.arrays[defcolor_macro] = make_colors(arena, 0xFF579EA8);
+	default_color_table.arrays[defcolor_enum] = make_colors(arena, 0xFF9ad0f7);
+	default_color_table.arrays[defcolor_control] = make_colors(arena, 0xFF77FFAA);
+	default_color_table.arrays[defcolor_primitive] =  default_color_table.arrays[defcolor_type];
+	default_color_table.arrays[defcolor_struct] =  default_color_table.arrays[defcolor_keyword];
+
+	default_color_table.arrays[defcolor_vim_filebar_pop]      =  default_color_table.arrays[defcolor_mark];
+	default_color_table.arrays[defcolor_vim_chord_text]       =  default_color_table.arrays[defcolor_text_default];
+	default_color_table.arrays[defcolor_vim_chord_unresolved] =  default_color_table.arrays[defcolor_mark];
+	default_color_table.arrays[defcolor_vim_chord_error]      =  default_color_table.arrays[defcolor_special_character];
+
     active_color_table = default_color_table;
 }
 
@@ -159,7 +172,7 @@ set_default_color_scheme(Application_Links *app){
 function void
 set_active_color(Color_Table *table){
     if (table != 0){
-	active_color_table = *table;
+		active_color_table = *table;
     }
 }
 
@@ -184,12 +197,12 @@ function Color_Table*
 get_color_table_by_name(String_Const_u8 name){
     Color_Table *result = 0;
     for (Color_Table_Node *node = global_theme_list.first;
-	 node != 0;
-	 node = node->next){
-	if (string_match(node->name, name)){
-	    result = &node->table;
-	    break;
-	}
+		 node != 0;
+		 node = node->next){
+		if (string_match(node->name, name)){
+			result = &node->table;
+			break;
+		}
     }
     return(result);
 }

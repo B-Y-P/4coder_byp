@@ -9,8 +9,6 @@
 function Lister_Result vim_run_lister(Application_Links *app, Lister *lister);
 #define run_lister vim_run_lister
 
-#include "4coder_default_include.cpp"
-
 CUSTOM_ID(colors, defcolor_function);
 CUSTOM_ID(colors, defcolor_type);
 CUSTOM_ID(colors, defcolor_primitive);
@@ -22,6 +20,10 @@ CUSTOM_ID(colors, defcolor_non_text);
 
 #include "4coder_vimrc.h"
 #include "4coder_vim/4coder_vim_include.h"
+
+#include "4coder_default_include.cpp"
+
+#include "4coder_vim/4coder_vim_include.cpp"
 
 #include "4coder_byp_helper.h"
 

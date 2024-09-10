@@ -64,15 +64,6 @@ CUSTOM_DOC("Responding to a startup event")
 	byp_show_hex_colors = 1;
 	byp_show_scrollbars = 0;
 
-	{
-		Arena *arena = &global_theme_arena;
-		default_color_table.arrays[defcolor_function] = make_colors(arena, 0xFF0030B0);
-		default_color_table.arrays[defcolor_type]     = make_colors(arena, 0xFFA00000);
-		default_color_table.arrays[defcolor_macro]    = make_colors(arena, 0xFF579EA8);
-		default_color_table.arrays[defcolor_control]  = make_colors(arena, 0xFF00A000);
-		default_color_table.arrays[defcolor_control]  = default_color_table.arrays[defcolor_keyword];
-		default_color_table.arrays[defcolor_non_text] = default_color_table.arrays[defcolor_text_default];
-	}
 	Color_Table *table = get_color_table_by_name(string_u8_litexpr("theme-byp"));
 	if(table == 0){ table = &default_color_table; }
 	target_color_table = byp_init_color_table(app);
