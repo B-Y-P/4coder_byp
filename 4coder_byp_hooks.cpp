@@ -7,25 +7,31 @@ CUSTOM_DOC("Responding to a startup event")
 	if(match_core_code(&input, CoreCode_Startup)){
 		String_Const_u8_Array file_names = input.event.core.file_names;
 		load_themes_default_folder(app);
-		default_4coder_initialize(app, file_names);
 
-		Buffer_Identifier left = buffer_identifier(string_u8_litexpr("*scratch*"));
-		if(file_names.count > 0){
-			left = buffer_identifier(file_names.vals[0]);
+		print_message(app, string_u8_litexpr("Welcome to " VERSION "\n"));
+		Scratch_Block scratch(app);
+
+		Face_Description description = get_face_description(app, 0);
+		load_config_and_apply(app, &global_config_arena, description.parameters.pt_size, description.parameters.hinting);
+
+		// open command line files
+		String_Const_u8 hot_directory = push_hot_directory(app, scratch);
+		for (i32 i = 0; i < file_names.count; i += 1){
+			Temp_Memory_Block temp(scratch);
+			String_Const_u8 input_name = file_names.vals[i];
+			String_Const_u8 full_name = push_u8_stringf(scratch, "%S/%S", hot_directory, input_name);
+			Buffer_ID new_buffer = create_buffer(app, full_name, BufferCreate_NeverNew|BufferCreate_MustAttachToFile);
+			if (new_buffer == 0){
+				create_buffer(app, input_name, 0);
+			}
 		}
-		Buffer_ID left_id = buffer_identifier_to_id(app, left);
 
-		// Bottom panel
+		String_Const_u8 iden = (file_names.count > 0 ? file_names.vals[0] : string_u8_litexpr("*scratch*"));
+		Buffer_ID buffer = buffer_identifier_to_id(app, buffer_identifier(iden));
 		View_ID view = get_active_view(app, Access_Always);
 		new_view_settings(app, view);
-
-		// Left Panel
-		View_ID left_view = get_active_view(app, Access_Always);
-		view_set_buffer(app, view, left_id, 0);
-
-		// Restore Active to Left
-		view_set_active(app, left_view);
-		vim_set_file_register(app, left_id);
+		view_set_buffer(app, view, buffer, 0);
+		vim_set_file_register(app, buffer);
 
 		// NOTE/TODO: (BYP) This is a hack until buffer_peek has it's own View_ID (allows comp jump list)
 		byp_get_or_open_build_panel(app);
@@ -78,6 +84,7 @@ CUSTOM_DOC("Responding to a startup event")
 
 function void
 byp_tick(Application_Links *app, Frame_Info frame_info){
+	ProfileScope(app, "byp tick");
 	code_index_update_tick(app);
 	if(tick_all_fade_ranges(app, frame_info.animation_dt)){
 		animate_in_n_milliseconds(app, 0);
@@ -100,7 +107,7 @@ byp_tick(Application_Links *app, Frame_Info frame_info){
 
 function void
 byp_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view_id){
-	ProfileScope(app, "default render caller");
+	ProfileScope(app, "byp render caller");
 
 	Buffer_ID buffer = view_get_buffer(app, view_id, Access_Always);
 	Face_ID face_id = get_face_id(app, 0);
@@ -210,6 +217,7 @@ byp_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view_id
 
 function Rect_f32
 byp_buffer_region(Application_Links *app, View_ID view_id, Rect_f32 region){
+	ProfileScope(app, "byp buffer region");
 	Buffer_ID buffer = view_get_buffer(app, view_id, Access_Always);
 	Face_ID face_id = get_face_id(app, 0);
 	Face_Metrics metrics = get_face_metrics(app, face_id);
@@ -299,7 +307,7 @@ BUFFER_HOOK_SIG(byp_file_save){
 }
 
 BUFFER_HOOK_SIG(byp_begin_buffer){
-	ProfileScope(app, "begin buffer");
+	ProfileScope(app, "byp begin buffer");
 
 	Scratch_Block scratch(app);
 
