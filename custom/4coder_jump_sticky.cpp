@@ -124,56 +124,57 @@ init_marker_list(Application_Links *app, Heap *heap, Buffer_ID buffer, Marker_Li
     scope_array[0] = buffer_get_managed_scope(app, buffer);
 
     for (i32 i = 0; i < scoped_buffer_ranges.count; i += 1){
-	Range_i32 buffer_range_indices = scoped_buffer_ranges.ranges[i];
+		Range_i32 buffer_range_indices = scoped_buffer_ranges.ranges[i];
 
-	u32 total_jump_count = 0;
-	for (i32 j = buffer_range_indices.first;
-	     j < buffer_range_indices.one_past_last;
-	     j += 1){
-	    i32 range_index = range_index_buffer_id_pairs[j].index;
-	    Range_i32 range = buffer_ranges.ranges[range_index];
-	    total_jump_count += range_size(range);
-	}
+		u32 total_jump_count = 0;
+		for (i32 j = buffer_range_indices.first;
+			 j < buffer_range_indices.one_past_last;
+			 j += 1){
+			i32 range_index = range_index_buffer_id_pairs[j].index;
+			Range_i32 range = buffer_ranges.ranges[range_index];
+			total_jump_count += range_size(range);
+		}
 
-	Temp_Memory marker_temp = begin_temp(scratch);
-	Marker *markers = push_array(scratch, Marker, total_jump_count);
-	Buffer_ID target_buffer_id = 0;
-	u32 marker_index = 0;
-	for (i32 j = buffer_range_indices.first;
-	     j < buffer_range_indices.one_past_last;
-	     j += 1){
-	    i32 range_index = range_index_buffer_id_pairs[j].index;
-	    Range_i32 range = buffer_ranges.ranges[range_index];
-	    if (target_buffer_id == 0){
-		target_buffer_id = jumps.jumps[range.first].jump_buffer_id;
-	    }
-	    for (i32 k = range.first; k < range.one_past_last; k += 1){
-		markers[marker_index].pos = jumps.jumps[k].jump_pos;
-		markers[marker_index].lean_right = false;
-		stored[k].list_line        = jumps.jumps[k].list_line;
-		stored[k].list_colon_index = jumps.jumps[k].list_colon_index;
-		stored[k].is_sub_error     = jumps.jumps[k].is_sub_error;
-		stored[k].jump_buffer_id   = jumps.jumps[k].jump_buffer_id;
-		stored[k].index_into_marker_array = marker_index;
-		marker_index += 1;
-	    }
-	}
+		Temp_Memory marker_temp = begin_temp(scratch);
+		Marker *markers = push_array(scratch, Marker, total_jump_count);
+		Buffer_ID target_buffer_id = 0;
+		u32 marker_index = 0;
+		for (i32 j = buffer_range_indices.first;
+			 j < buffer_range_indices.one_past_last;
+			 j += 1){
+			i32 range_index = range_index_buffer_id_pairs[j].index;
+			Range_i32 range = buffer_ranges.ranges[range_index];
+			if (target_buffer_id == 0){
+				target_buffer_id = jumps.jumps[range.first].jump_buffer_id;
+			}
+			for (i32 k = range.first; k < range.one_past_last; k += 1){
+				markers[marker_index].pos = jumps.jumps[k].jump_pos;
+				markers[marker_index].lean_right = false;
+				markers[marker_index].line = i32(jumps.jumps[k].list_line);
+				stored[k].list_line        = jumps.jumps[k].list_line;
+				stored[k].list_colon_index = jumps.jumps[k].list_colon_index;
+				stored[k].is_sub_error     = jumps.jumps[k].is_sub_error;
+				stored[k].jump_buffer_id   = jumps.jumps[k].jump_buffer_id;
+				stored[k].index_into_marker_array = marker_index;
+				marker_index += 1;
+			}
+		}
 
-	scope_array[1] = buffer_get_managed_scope(app, target_buffer_id);
-	Managed_Scope scope = get_managed_scope_with_multiple_dependencies(app, scope_array, ArrayCount(scope_array));
-	Managed_Object marker_handle = alloc_buffer_markers_on_buffer(app, target_buffer_id, total_jump_count, &scope);
-	managed_object_store_data(app, marker_handle, 0, total_jump_count, markers);
+		scope_array[1] = buffer_get_managed_scope(app, target_buffer_id);
+		Managed_Scope scope = get_managed_scope_with_multiple_dependencies(app, scope_array, ArrayCount(scope_array));
+		Managed_Object marker_handle = alloc_buffer_markers_on_buffer(app, target_buffer_id, total_jump_count, &scope);
+		managed_object_store_data(app, marker_handle, 0, total_jump_count, markers);
 
-	end_temp(marker_temp);
+		end_temp(marker_temp);
 
-	Assert(managed_object_get_item_size(app, marker_handle) == sizeof(Marker));
-	Assert(managed_object_get_item_count(app, marker_handle) == total_jump_count);
-	Assert(managed_object_get_type(app, marker_handle) == ManagedObjectType_Markers);
+		Assert(managed_object_get_item_size(app, marker_handle) == sizeof(Marker));
+		Assert(managed_object_get_item_count(app, marker_handle) == total_jump_count);
+		Assert(managed_object_get_type(app, marker_handle) == ManagedObjectType_Markers);
 
-	Managed_Object *marker_handle_ptr = scope_attachment(app, scope, sticky_jump_marker_handle, Managed_Object);
-	if (marker_handle_ptr != 0){
-	    *marker_handle_ptr = marker_handle;
-	}
+		Managed_Object *marker_handle_ptr = scope_attachment(app, scope, sticky_jump_marker_handle, Managed_Object);
+		if (marker_handle_ptr != 0){
+			*marker_handle_ptr = marker_handle;
+		}
     }
 
     Managed_Object stored_jump_array = alloc_managed_memory_in_scope(app, scope_array[0], sizeof(Sticky_Jump_Stored), jumps.count);

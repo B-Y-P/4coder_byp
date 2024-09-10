@@ -228,6 +228,24 @@ byp_draw_scope_brackets(Application_Links *app, View_ID view, Buffer_ID buffer, 
 	}
 	draw_set_clip(app, prev_clip);
 
+	i32 count = 0;
+	Marker *markers = NULL;
+	Buffer_ID comp_buffer = get_buffer_by_name(app, string_u8_litexpr("*compilation*"), Access_Always);
+	b32 use_error_highlight = def_get_config_b32(vars_save_string_lit("use_error_highlight"));
+	if (use_error_highlight && comp_buffer){
+		Managed_Scope scopes[2];
+		scopes[0] = buffer_get_managed_scope(app, comp_buffer);
+		scopes[1] = buffer_get_managed_scope(app, buffer);
+		Managed_Scope scope = get_managed_scope_with_multiple_dependencies(app, scopes, 2);
+		Managed_Object *markers_object = scope_attachment(app, scope, sticky_jump_marker_handle, Managed_Object);
+
+		if (markers_object){
+			count = managed_object_get_item_count(app, *markers_object);
+			markers = push_array(scratch, Marker, count);
+			managed_object_load_data(app, *markers_object, 0, count, markers);
+		}
+	}
+
 
 	/// Basically just fleury end brace annotations
 	for(i32 i=ranges.count-1; i >= 0; --i){
@@ -236,6 +254,16 @@ byp_draw_scope_brackets(Application_Links *app, View_ID view, Buffer_ID buffer, 
 		i64 start_line_num = get_line_number_from_pos(app, buffer, range.start);
 		i64 end_line_num   = get_line_number_from_pos(app, buffer, range.end);
 		if(start_line_num == end_line_num || range.end >= visible_range.end){ continue; }
+
+		b32 has_compile_error = false;
+		for(i32 j = 0; j < count; j += 1){
+			i64 line_error = get_line_number_from_pos(app, buffer, markers[j].pos);
+			if(line_error == end_line_num){
+				has_compile_error = true;
+				break;
+			}
+		}
+		if(has_compile_error){ continue; }
 
 		Token *start_token = 0;
 		Token_Iterator_Array it = token_iterator_pos(0, &token_array, range.start-1);
@@ -331,42 +359,37 @@ byp_draw_comments(Application_Links *app, Buffer_ID buffer, Text_Layout_ID text_
 }
 
 function void
-byp_draw_compile_errors(Application_Links *app, Buffer_ID buffer, Text_Layout_ID text_layout_id, Buffer_ID jump_buffer){
+byp_draw_compile_errors(Application_Links *app, Buffer_ID buffer, Text_Layout_ID text_layout_id, Buffer_ID comp_buffer){
 	Scratch_Block scratch(app);
 	Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
-	if (jump_buffer != 0){
-		Heap *heap = &global_heap;
-		Marker_List *list = get_or_make_list_for_buffer(app, heap, jump_buffer);
+	FColor cl_error = fcolor_blend(fcolor_id(defcolor_highlight_junk), 0.6f, fcolor_id(defcolor_text_default));
 
-		FColor cl_error = fcolor_blend(fcolor_id(defcolor_highlight_junk), 0.6f, fcolor_id(defcolor_text_default));
+	Managed_Scope scopes[2];
+	scopes[0] = buffer_get_managed_scope(app, comp_buffer);
+	scopes[1] = buffer_get_managed_scope(app, buffer);
+	Managed_Scope scope = get_managed_scope_with_multiple_dependencies(app, scopes, 2);
+	Managed_Object *markers_object = scope_attachment(app, scope, sticky_jump_marker_handle, Managed_Object);
 
-		Managed_Scope scopes[2];
-		scopes[0] = buffer_get_managed_scope(app, jump_buffer);
-		scopes[1] = buffer_get_managed_scope(app, buffer);
-		Managed_Scope comp_scope = get_managed_scope_with_multiple_dependencies(app, scopes, ArrayCount(scopes));
-		Managed_Object *markers_object = scope_attachment(app, comp_scope, sticky_jump_marker_handle, Managed_Object);
+	i32 count = managed_object_get_item_count(app, *markers_object);
+	Marker *markers = push_array(scratch, Marker, count);
+	managed_object_load_data(app, *markers_object, 0, count, markers);
 
-		i32 count = managed_object_get_item_count(app, *markers_object);
-		Marker *markers = push_array(scratch, Marker, count);
-		managed_object_load_data(app, *markers_object, 0, count, markers);
-		for (i32 i = 0; i < count; i += 1){
-			i64 line_number = get_line_number_from_pos(app, buffer, markers[i].pos);
-			Range_i64 line_range = get_line_pos_range(app, buffer, line_number);
-			if (range_overlap(visible_range, line_range)){
-				draw_line_highlight(app, text_layout_id, line_number, fcolor_id(defcolor_highlight_junk));
+	for (i32 i = 0; i < count; i += 1){
+		i64 line_number = get_line_number_from_pos(app, buffer, markers[i].pos);
+		Range_i64 line_range = get_line_pos_range(app, buffer, line_number);
+		if (!range_overlap(visible_range, line_range)){ continue; }
 
-				i64 comp_line_number = get_line_from_list(app, list, i);
-				String_Const_u8 comp_line_string = push_buffer_line(app, scratch, jump_buffer, comp_line_number);
-				Parsed_Jump jump = parse_jump_location(comp_line_string);
-				if (jump.success){
-					i64 end_pos = get_line_end_pos(app, buffer, line_number)-1;
-					Rect_f32 end_rect = text_layout_character_on_screen(app, text_layout_id, end_pos);
-					Vec2_f32 p0 = V2f32(end_rect.x1 + 4.f, end_rect.y0 + 2.f);
-					String_Const_u8 error_string = string_skip(comp_line_string, jump.colon_position + 2);
-					draw_string(app, byp_small_italic_face, error_string, p0, cl_error);
-				}
-			}
-		}
+		i64 comp_line_number = markers[i].line;
+		String_Const_u8 comp_line_string = push_buffer_line(app, scratch, comp_buffer, comp_line_number);
+		Parsed_Jump jump = parse_jump_location(comp_line_string);
+		if (!jump.success){ continue; }
+
+		draw_line_highlight(app, text_layout_id, line_number, fcolor_id(defcolor_highlight_junk));
+		i64 end_pos = get_line_end_pos(app, buffer, line_number)-1;
+		Rect_f32 end_rect = text_layout_character_on_screen(app, text_layout_id, end_pos);
+		Vec2_f32 p0 = V2f32(end_rect.x1 + 4.f, end_rect.y0 + 2.f);
+		String_Const_u8 error_string = string_skip(comp_line_string, jump.colon_position + 2);
+		draw_string(app, byp_small_italic_face, error_string, p0, cl_error);
 	}
 }
 
@@ -428,8 +451,7 @@ byp_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, Buff
 	b32 use_jump_highlight  = def_get_config_b32(vars_save_string_lit("use_jump_highlight"));
 	if(use_error_highlight || use_jump_highlight){
 		Buffer_ID comp_buffer = get_buffer_by_name(app, string_u8_litexpr("*compilation*"), Access_Always);
-		if(use_error_highlight){
-			draw_jump_highlights(app, buffer, text_layout_id, comp_buffer, fcolor_id(defcolor_highlight_junk));
+		if(use_error_highlight && comp_buffer){
 			byp_draw_compile_errors(app, buffer, text_layout_id, comp_buffer);
 		}
 
