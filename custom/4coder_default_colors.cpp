@@ -137,7 +137,7 @@ set_default_color_scheme(Application_Links *app){
     default_color_table.arrays[defcolor_int_constant] = make_colors(arena, 0xFF50FF30);
     default_color_table.arrays[defcolor_float_constant] = make_colors(arena, 0xFF50FF30);
     default_color_table.arrays[defcolor_bool_constant] = make_colors(arena, 0xFF50FF30);
-    default_color_table.arrays[defcolor_preproc] = make_colors(arena, 0xFFA0B8A0);
+    default_color_table.arrays[defcolor_preproc] = make_colors(arena, 0xFF77FFAA);
     default_color_table.arrays[defcolor_include] = make_colors(arena, 0xFF50FF30);
     default_color_table.arrays[defcolor_special_character] = make_colors(arena, 0xFFFF0000);
     default_color_table.arrays[defcolor_ghost_character] = make_colors(arena, 0xFF4E5E46);
@@ -150,14 +150,14 @@ set_default_color_scheme(Application_Links *app){
     default_color_table.arrays[defcolor_line_numbers_back] = make_colors(arena, 0xFF101010);
     default_color_table.arrays[defcolor_line_numbers_text] = make_colors(arena, 0xFF404040);
 
-	default_color_table.arrays[defcolor_non_text] = make_colors(arena, 0xFFCCFFCC);
-	default_color_table.arrays[defcolor_function] = make_colors(arena, 0xFFDDDDDD);
-	default_color_table.arrays[defcolor_type] = make_colors(arena, 0xFF20F050);
-	default_color_table.arrays[defcolor_macro] = make_colors(arena, 0xFF579EA8);
-	default_color_table.arrays[defcolor_enum] = make_colors(arena, 0xFF9ad0f7);
-	default_color_table.arrays[defcolor_control] = make_colors(arena, 0xFF77FFAA);
-	default_color_table.arrays[defcolor_primitive] =  default_color_table.arrays[defcolor_type];
-	default_color_table.arrays[defcolor_struct] =  default_color_table.arrays[defcolor_keyword];
+	default_color_table.arrays[defcolor_non_text] = make_colors(arena, 0xFFA0B8A0);
+	default_color_table.arrays[defcolor_function] = make_colors(arena, 0xFFAAAAAA);
+	default_color_table.arrays[defcolor_type] = make_colors(arena, 0xFF20B050);
+	default_color_table.arrays[defcolor_macro] = make_colors(arena, 0xFF448844);
+	default_color_table.arrays[defcolor_enum] = default_color_table.arrays[defcolor_str_constant];
+	default_color_table.arrays[defcolor_control] = default_color_table.arrays[defcolor_preproc];
+	default_color_table.arrays[defcolor_primitive] = default_color_table.arrays[defcolor_type];
+	default_color_table.arrays[defcolor_struct] = default_color_table.arrays[defcolor_keyword];
 
 	default_color_table.arrays[defcolor_vim_filebar_pop]      =  default_color_table.arrays[defcolor_mark];
 	default_color_table.arrays[defcolor_vim_chord_text]       =  default_color_table.arrays[defcolor_text_default];
