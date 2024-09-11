@@ -10,18 +10,18 @@
 typedef i32 Doc_Month;
 enum{
     None,
-     January,
-     February,
-     March,
-     April,
-     May,
-     June,
-     July,
-     August,
-     September,
-     October,
-     November,
-     December,
+	January,
+	February,
+	March,
+	April,
+	May,
+	June,
+	July,
+	August,
+	September,
+	October,
+	November,
+	December,
 };
 char *doc_month_names[] = {
     "None",
@@ -133,12 +133,12 @@ struct Doc_Paragraph{
     Doc_Paragraph *next;
     Doc_Paragraph_Kind kind;
     union{
-	Doc_Content_List text;
-	Doc_Code_Sample_List code;
-	struct{
-	    Vec2_i32 dim;
-	    Doc_Content_List *vals;
-	} table;
+		Doc_Content_List text;
+		Doc_Code_Sample_List code;
+		struct{
+			Vec2_i32 dim;
+			Doc_Content_List *vals;
+		} table;
     };
 };
 

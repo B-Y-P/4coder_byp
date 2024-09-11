@@ -25,7 +25,7 @@ struct Profile_Block{
     Profile_ID id;
 
     Profile_Block(Thread_Context *tctx, Profile_Global_List *list,
-		  String_Const_u8 name, String_Const_u8 location);
+				  String_Const_u8 name, String_Const_u8 location);
     Profile_Block(Application_Links *app, String_Const_u8 name, String_Const_u8 location);
     ~Profile_Block();
     void close_now();
@@ -38,7 +38,7 @@ struct Profile_Scope_Block{
     Profile_ID id;
 
     Profile_Scope_Block(Thread_Context *tctx, Profile_Global_List *list,
-			String_Const_u8 name, String_Const_u8 location);
+						String_Const_u8 name, String_Const_u8 location);
     Profile_Scope_Block(Application_Links *app, String_Const_u8 name, String_Const_u8 location);
     ~Profile_Scope_Block();
     void close_now();

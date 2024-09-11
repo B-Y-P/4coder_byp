@@ -28,8 +28,8 @@ enum{
 struct Log_Tag_Value{
     Log_Tag_Kind kind;
     union{
-	u64 value;
-	i64 value_s;
+		u64 value;
+		i64 value_s;
     };
 };
 

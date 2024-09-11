@@ -17,13 +17,13 @@ log_event(Arena *arena, String_Const_u8 event_name, String_Const_u8 src_name, i3
     List_String_Const_u8 list = {};
     string_list_pushf(arena, &list, "%S:%d: %S", src_name, line_number, event_name);
     if (thread_id != 0){
-	string_list_pushf(arena, &list, " [thread=%d]", thread_id);
+		string_list_pushf(arena, &list, " [thread=%d]", thread_id);
     }
     if (buffer != 0){
-	string_list_pushf(arena, &list, " [buffer=%d]", buffer);
+		string_list_pushf(arena, &list, " [buffer=%d]", buffer);
     }
     if (view != 0){
-	string_list_pushf(arena, &list, " [view=%d]", view);
+		string_list_pushf(arena, &list, " [view=%d]", view);
     }
     string_list_push(arena, &list, string_u8_litexpr("\n"));
     return(string_list_flatten(arena, list));

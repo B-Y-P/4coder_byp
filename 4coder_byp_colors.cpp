@@ -2,6 +2,15 @@
 global Color_Table target_color_table = {};
 global Color_Table cached_color_table = {};
 
+function b32
+byp_is_theme(String_Const_u8 name){
+	String_Const_u8 target_prefix = string_u8_litexpr("theme-");
+	String_Const_u8 target_suffix = string_u8_litexpr(".4coder");
+	String_Const_u8 actual_prefix = string_prefix(name, target_prefix.size);
+	String_Const_u8 actual_suffix = string_postfix(name, target_suffix.size);
+	return string_match(actual_prefix, target_prefix) && string_match(actual_suffix, target_suffix);
+}
+
 // TODO(BYP): Check for way to get highest color sub_id instead of hard-coding 14
 function Color_Table
 byp_init_color_table(Application_Links *app){

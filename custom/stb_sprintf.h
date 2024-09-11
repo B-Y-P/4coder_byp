@@ -416,12 +416,12 @@ cl = lg;                                 \
 					if ((STB_SPRINTF_MIN - (int)(bf - buf)) < 4)
 					goto schk1;
 #ifdef STB_SPRINTF_NOUNALIGNED
-		if(((stbsp__uintptr)bf) & 3) {
-		    bf[0] = f[0];
-		    bf[1] = f[1];
-		    bf[2] = f[2];
-		    bf[3] = f[3];
-		} else
+				if(((stbsp__uintptr)bf) & 3) {
+					bf[0] = f[0];
+					bf[1] = f[1];
+					bf[2] = f[2];
+					bf[3] = f[3];
+				} else
 #endif
 				{
 					*(stbsp__uint32 *)bf = v;
@@ -1342,7 +1342,7 @@ cl = lg;                                 \
 						*bf++ = ' ';
 					stbsp__chk_cb_buf(1);
 				}
-	    }
+			}
 			break;
 
 			default: // unknown, just copy code

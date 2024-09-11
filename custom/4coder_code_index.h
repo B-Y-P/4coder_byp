@@ -103,7 +103,7 @@ struct Code_Index{
 ////////////////////////////////
 
 typedef void Generic_Parse_Comment_Function(Application_Links *app, Arena *arena, Code_Index_File *index,
-					    Token *token, String_Const_u8 contents);
+											Token *token, String_Const_u8 contents);
 
 struct Generic_Parse_State{
     Application_Links *app;

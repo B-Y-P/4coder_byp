@@ -367,15 +367,15 @@ build_language_model(void){
     sm_select_state(root);
 
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("EOF");
-	sm_case_eof(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("EOF");
+		sm_case_eof(emit);
     }
 
     sm_case("abcdefghijklmnopqrstvwxyz"
-	    "ABCDEFGHIJKMNOPQSTVWXYZ"
-	    "_$",
-	    identifier);
+			"ABCDEFGHIJKMNOPQSTVWXYZ"
+			"_$",
+			identifier);
     sm_case(utf8, identifier);
     sm_case("L", pre_L);
     sm_case("u", pre_u);
@@ -390,13 +390,13 @@ build_language_model(void){
     sm_case(".", operator_or_fnumber_dot);
     sm_case("/", operator_or_comment_slash);
     {
-	Character_Set *char_set = smo_new_char_set();
-	smo_char_set_union_ops_firsts(char_set, main_ops_without_dot_or_slash);
-	smo_char_set_remove(char_set, ".</");
-	char *char_set_array = smo_char_set_get_array(char_set);
-	State *operator_state = smo_op_set_lexer_root(main_ops_without_dot_or_slash, root, "LexError");
-	sm_case_peek(char_set_array, operator_state);
-	sm_case_peek_flagged(is_include_body, false, "<", operator_state);
+		Character_Set *char_set = smo_new_char_set();
+		smo_char_set_union_ops_firsts(char_set, main_ops_without_dot_or_slash);
+		smo_char_set_remove(char_set, ".</");
+		char *char_set_array = smo_char_set_get_array(char_set);
+		State *operator_state = smo_op_set_lexer_root(main_ops_without_dot_or_slash, root, "LexError");
+		sm_case_peek(char_set_array, operator_state);
+		sm_case_peek_flagged(is_include_body, false, "<", operator_state);
     }
 
     sm_case_flagged(is_include_body, true, "<", include_pointy);
@@ -409,30 +409,30 @@ build_language_model(void){
     sm_case("\'", character);
     sm_case_flagged(is_pp_body, false, "#", pp_directive_whitespace);
     {
-	State *operator_state = smo_op_set_lexer_root(pp_ops, root, "LexError");
-	sm_case_peek_flagged(is_pp_body, true, "#", operator_state);
+		State *operator_state = smo_op_set_lexer_root(pp_ops, root, "LexError");
+		sm_case_peek_flagged(is_pp_body, true, "#", operator_state);
     }
 
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LexError");
-	sm_fallback(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LexError");
+		sm_fallback(emit);
     }
 
     ////
 
     sm_select_state(identifier);
     sm_case("abcdefghijklmnopqrstuvwxyz"
-	    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	    "_$"
-	    "0123456789",
-	    identifier);
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+			"_$"
+			"0123456789",
+			identifier);
     sm_case(utf8, identifier);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_keys(is_pp_body, pp_keys);
-	sm_emit_handler_keys(main_keys);
-	sm_fallback_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_keys(is_pp_body, pp_keys);
+		sm_emit_handler_keys(main_keys);
+		sm_fallback_peek(emit);
     }
 
     ////
@@ -441,9 +441,9 @@ build_language_model(void){
     sm_case(" \t\r\f\v", whitespace);
     sm_case("\n", whitespace_end_pp);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("Whitespace");
-	sm_fallback_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("Whitespace");
+		sm_fallback_peek(emit);
     }
 
     ////
@@ -459,14 +459,14 @@ build_language_model(void){
     sm_select_state(error_body);
     sm_case("\r", error_body);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("PPErrorMessage");
-	sm_case_peek("\n", emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("PPErrorMessage");
+		sm_case_peek("\n", emit);
     }
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("PPErrorMessage");
-	sm_case_eof_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("PPErrorMessage");
+		sm_case_eof_peek(emit);
     }
     sm_fallback(error_body);
 
@@ -475,14 +475,14 @@ build_language_model(void){
     sm_select_state(backslash);
     sm_case("\r", backslash);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("Backslash");
-	sm_case("\n", emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("Backslash");
+		sm_case("\n", emit);
     }
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("Backslash");
-	sm_fallback_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("Backslash");
+		sm_fallback_peek(emit);
     }
 
     ////
@@ -491,14 +491,14 @@ build_language_model(void){
     sm_case("*", comment_block);
     sm_case("/", comment_line);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("DivEq");
-	sm_case("=", emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("DivEq");
+		sm_case("=", emit);
     }
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("Div");
-	sm_fallback_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("Div");
+		sm_fallback_peek(emit);
     }
 
     ////
@@ -506,16 +506,16 @@ build_language_model(void){
     sm_select_state(operator_or_fnumber_dot);
     sm_case("0123456789", fnumber_decimal);
     {
-	Character_Set *char_set = smo_new_char_set();
-	smo_char_set_union_ops_firsts(char_set, main_ops_with_dot);
-	char *char_set_array = smo_char_set_get_array(char_set);
-	State *operator_state = smo_op_set_lexer_root(main_ops_with_dot, root, "LexError");
-	sm_case_peek(char_set_array, operator_state);
+		Character_Set *char_set = smo_new_char_set();
+		smo_char_set_union_ops_firsts(char_set, main_ops_with_dot);
+		char *char_set_array = smo_char_set_get_array(char_set);
+		State *operator_state = smo_op_set_lexer_root(main_ops_with_dot, root, "LexError");
+		sm_case_peek(char_set_array, operator_state);
     }
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("Dot");
-	sm_fallback_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("Dot");
+		sm_fallback_peek(emit);
     }
 
     ////
@@ -528,9 +528,9 @@ build_language_model(void){
     sm_case("L", L_number);
     sm_case("l", l_number);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LiteralInteger");
-	sm_fallback_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LiteralInteger");
+		sm_fallback_peek(emit);
     }
 
     ////
@@ -544,9 +544,9 @@ build_language_model(void){
     sm_case("Xx", number_hex_first);
     sm_case("01234567", number_oct);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LiteralInteger");
-	sm_fallback_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LiteralInteger");
+		sm_fallback_peek(emit);
     }
 
     ////
@@ -555,19 +555,19 @@ build_language_model(void){
     sm_case("0123456789", fnumber_decimal);
     sm_case("Ee", fnumber_exponent);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LiteralFloat32");
-	sm_case("Ff", emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LiteralFloat32");
+		sm_case("Ff", emit);
     }
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LiteralFloat64");
-	sm_case("Ll", emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LiteralFloat64");
+		sm_case("Ll", emit);
     }
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LiteralFloat64");
-	sm_fallback_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LiteralFloat64");
+		sm_fallback_peek(emit);
     }
 
     ////
@@ -576,19 +576,19 @@ build_language_model(void){
     sm_case("+-", fnumber_exponent_sign);
     sm_case("0123456789", fnumber_exponent_digits);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LiteralFloat32");
-	sm_case("Ff", emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LiteralFloat32");
+		sm_case("Ff", emit);
     }
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LiteralFloat64");
-	sm_case("Ll", emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LiteralFloat64");
+		sm_case("Ll", emit);
     }
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LiteralFloat64");
-	sm_fallback_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LiteralFloat64");
+		sm_fallback_peek(emit);
     }
 
     ////
@@ -596,19 +596,19 @@ build_language_model(void){
     sm_select_state(fnumber_exponent_sign);
     sm_case("0123456789", fnumber_exponent_digits);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LiteralFloat32");
-	sm_case("Ff", emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LiteralFloat32");
+		sm_case("Ff", emit);
     }
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LiteralFloat64");
-	sm_case("Ll", emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LiteralFloat64");
+		sm_case("Ll", emit);
     }
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LiteralFloat64");
-	sm_fallback_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LiteralFloat64");
+		sm_fallback_peek(emit);
     }
 
     ////
@@ -616,19 +616,19 @@ build_language_model(void){
     sm_select_state(fnumber_exponent_digits);
     sm_case("0123456789", fnumber_exponent_digits);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LiteralFloat32");
-	sm_case("Ff", emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LiteralFloat32");
+		sm_case("Ff", emit);
     }
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LiteralFloat64");
-	sm_case("Ll", emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LiteralFloat64");
+		sm_case("Ll", emit);
     }
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LiteralFloat64");
-	sm_fallback_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LiteralFloat64");
+		sm_fallback_peek(emit);
     }
 
     ////
@@ -637,9 +637,9 @@ build_language_model(void){
     sm_set_flag(is_hex, true);
     sm_case("0123456789abcdefABCDEF", number_hex);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LexError");
-	sm_fallback_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LexError");
+		sm_fallback_peek(emit);
     }
 
     ////
@@ -650,9 +650,9 @@ build_language_model(void){
     sm_case("L", L_number);
     sm_case("l", l_number);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LiteralIntegerHex");
-	sm_fallback_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LiteralIntegerHex");
+		sm_fallback_peek(emit);
     }
 
     ////
@@ -664,9 +664,9 @@ build_language_model(void){
     sm_case("L", L_number);
     sm_case("l", l_number);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LiteralIntegerOct");
-	sm_fallback_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LiteralIntegerOct");
+		sm_fallback_peek(emit);
     }
 
     ////
@@ -675,11 +675,11 @@ build_language_model(void){
     sm_case("L", UL_number);
     sm_case("l", Ul_number);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct(is_hex, "LiteralIntegerHexU");
-	sm_emit_handler_direct(is_oct, "LiteralIntegerOctU");
-	sm_emit_handler_direct("LiteralIntegerU");
-	sm_fallback_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct(is_hex, "LiteralIntegerHexU");
+		sm_emit_handler_direct(is_oct, "LiteralIntegerOctU");
+		sm_emit_handler_direct("LiteralIntegerU");
+		sm_fallback_peek(emit);
     }
 
     ////
@@ -688,11 +688,11 @@ build_language_model(void){
     sm_case("L", LL_number);
     sm_case("Uu", LU_number);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct(is_hex, "LiteralIntegerHexL");
-	sm_emit_handler_direct(is_oct, "LiteralIntegerOctL");
-	sm_emit_handler_direct("LiteralIntegerL");
-	sm_fallback_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct(is_hex, "LiteralIntegerHexL");
+		sm_emit_handler_direct(is_oct, "LiteralIntegerOctL");
+		sm_emit_handler_direct("LiteralIntegerL");
+		sm_fallback_peek(emit);
     }
 
     ////
@@ -701,11 +701,11 @@ build_language_model(void){
     sm_case("l", LL_number);
     sm_case("Uu", lU_number);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct(is_hex, "LiteralIntegerHexL");
-	sm_emit_handler_direct(is_oct, "LiteralIntegerOctL");
-	sm_emit_handler_direct("LiteralIntegerL");
-	sm_fallback_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct(is_hex, "LiteralIntegerHexL");
+		sm_emit_handler_direct(is_oct, "LiteralIntegerOctL");
+		sm_emit_handler_direct("LiteralIntegerL");
+		sm_fallback_peek(emit);
     }
 
     ////
@@ -713,11 +713,11 @@ build_language_model(void){
     sm_select_state(LL_number);
     sm_case("Uu", ULL_number);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct(is_hex, "LiteralIntegerHexLL");
-	sm_emit_handler_direct(is_oct, "LiteralIntegerOctLL");
-	sm_emit_handler_direct("LiteralIntegerLL");
-	sm_fallback_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct(is_hex, "LiteralIntegerHexLL");
+		sm_emit_handler_direct(is_oct, "LiteralIntegerOctLL");
+		sm_emit_handler_direct("LiteralIntegerLL");
+		sm_fallback_peek(emit);
     }
 
     ////
@@ -725,11 +725,11 @@ build_language_model(void){
     sm_select_state(UL_number);
     sm_case("L", ULL_number);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct(is_hex, "LiteralIntegerHexUL");
-	sm_emit_handler_direct(is_oct, "LiteralIntegerOctUL");
-	sm_emit_handler_direct("LiteralIntegerUL");
-	sm_fallback_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct(is_hex, "LiteralIntegerHexUL");
+		sm_emit_handler_direct(is_oct, "LiteralIntegerOctUL");
+		sm_emit_handler_direct("LiteralIntegerUL");
+		sm_fallback_peek(emit);
     }
 
     ////
@@ -737,44 +737,44 @@ build_language_model(void){
     sm_select_state(Ul_number);
     sm_case("l", ULL_number);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct(is_hex, "LiteralIntegerHexUL");
-	sm_emit_handler_direct(is_oct, "LiteralIntegerOctUL");
-	sm_emit_handler_direct("LiteralIntegerUL");
-	sm_fallback_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct(is_hex, "LiteralIntegerHexUL");
+		sm_emit_handler_direct(is_oct, "LiteralIntegerOctUL");
+		sm_emit_handler_direct("LiteralIntegerUL");
+		sm_fallback_peek(emit);
     }
 
     ////
 
     sm_select_state(LU_number);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct(is_hex, "LiteralIntegerHexUL");
-	sm_emit_handler_direct(is_oct, "LiteralIntegerOctUL");
-	sm_emit_handler_direct("LiteralIntegerUL");
-	sm_fallback_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct(is_hex, "LiteralIntegerHexUL");
+		sm_emit_handler_direct(is_oct, "LiteralIntegerOctUL");
+		sm_emit_handler_direct("LiteralIntegerUL");
+		sm_fallback_peek(emit);
     }
 
     ////
 
     sm_select_state(lU_number);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct(is_hex, "LiteralIntegerHexUL");
-	sm_emit_handler_direct(is_oct, "LiteralIntegerOctUL");
-	sm_emit_handler_direct("LiteralIntegerUL");
-	sm_fallback_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct(is_hex, "LiteralIntegerHexUL");
+		sm_emit_handler_direct(is_oct, "LiteralIntegerOctUL");
+		sm_emit_handler_direct("LiteralIntegerUL");
+		sm_fallback_peek(emit);
     }
 
     ////
 
     sm_select_state(ULL_number);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct(is_hex, "LiteralIntegerHexULL");
-	sm_emit_handler_direct(is_oct, "LiteralIntegerOctULL");
-	sm_emit_handler_direct("LiteralIntegerULL");
-	sm_fallback_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct(is_hex, "LiteralIntegerHexULL");
+		sm_emit_handler_direct(is_oct, "LiteralIntegerOctULL");
+		sm_emit_handler_direct("LiteralIntegerULL");
+		sm_fallback_peek(emit);
     }
 
     ////
@@ -782,14 +782,14 @@ build_language_model(void){
     sm_select_state(pp_directive_whitespace);
     sm_case(" \t\f\v", pp_directive_whitespace);
     sm_case_peek("abcdefghijklmnopqrstuvwxyz"
-		 "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-		 "_"
-		 "0123456789",
-		 pp_directive_first);
+				 "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+				 "_"
+				 "0123456789",
+				 pp_directive_first);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LexError");
-	sm_fallback_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LexError");
+		sm_fallback_peek(emit);
     }
 
     ////
@@ -803,10 +803,10 @@ build_language_model(void){
 
     sm_select_state(pp_directive);
     sm_case("abcdefghijklmnopqrstuvwxyz"
-	    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	    "_"
-	    "0123456789",
-	    pp_directive);
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+			"_"
+			"0123456789",
+			pp_directive);
     sm_fallback_peek(pp_directive_emit);
 
     ////
@@ -814,49 +814,49 @@ build_language_model(void){
     sm_select_state(pp_directive_emit);
     sm_delim_mark_one_past_last();
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_check_set_flag("PPInclude", is_include_body, true);
-	sm_emit_check_set_flag("PPError", is_error_body, true);
-	sm_emit_handler_keys_delim(pp_directive_set);
-	sm_fallback_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_check_set_flag("PPInclude", is_include_body, true);
+		sm_emit_check_set_flag("PPError", is_error_body, true);
+		sm_emit_handler_keys_delim(pp_directive_set);
+		sm_fallback_peek(emit);
     }
 
     ////
 
     sm_select_state(include_pointy);
     sm_case("abcdefghijklmnopqrstuvwxyz"
-	    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	    "!@#$%^&*()-=_+[]{}\\|;:',./? '\""
-	    "0123456789",
-	    include_pointy);
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+			"!@#$%^&*()-=_+[]{}\\|;:',./? '\""
+			"0123456789",
+			include_pointy);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("PPIncludeFile");
-	sm_case(">", emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("PPIncludeFile");
+		sm_case(">", emit);
     }
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LexError");
-	sm_fallback_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LexError");
+		sm_fallback_peek(emit);
     }
 
     ////
 
     sm_select_state(include_quotes);
     sm_case("abcdefghijklmnopqrstuvwxyz"
-	    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	    "!@#$%^&*()-=_+[]{}\\|;:',./<>? "
-	    "0123456789",
-	    include_quotes);
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+			"!@#$%^&*()-=_+[]{}\\|;:',./<>? "
+			"0123456789",
+			include_quotes);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("PPIncludeFile");
-	sm_case("\"", emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("PPIncludeFile");
+		sm_case("\"", emit);
     }
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LexError");
-	sm_fallback_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LexError");
+		sm_fallback_peek(emit);
     }
 
     ////
@@ -908,33 +908,33 @@ build_language_model(void){
 
     sm_select_state(string);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct(is_wide, "LiteralStringWide");
-	sm_emit_handler_direct(is_utf8 , "LiteralStringUTF8");
-	sm_emit_handler_direct(is_utf16, "LiteralStringUTF16");
-	sm_emit_handler_direct(is_utf32, "LiteralStringUTF32");
-	sm_emit_handler_direct("LiteralString");
-	sm_case_flagged(is_char, false, "\"", emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct(is_wide, "LiteralStringWide");
+		sm_emit_handler_direct(is_utf8 , "LiteralStringUTF8");
+		sm_emit_handler_direct(is_utf16, "LiteralStringUTF16");
+		sm_emit_handler_direct(is_utf32, "LiteralStringUTF32");
+		sm_emit_handler_direct("LiteralString");
+		sm_case_flagged(is_char, false, "\"", emit);
     }
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct(is_wide, "LiteralCharacterWide");
-	sm_emit_handler_direct(is_utf8 , "LiteralCharacterUTF8");
-	sm_emit_handler_direct(is_utf16, "LiteralCharacterUTF16");
-	sm_emit_handler_direct(is_utf32, "LiteralCharacterUTF32");
-	sm_emit_handler_direct("LiteralCharacter");
-	sm_case_flagged(is_char, true, "\'", emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct(is_wide, "LiteralCharacterWide");
+		sm_emit_handler_direct(is_utf8 , "LiteralCharacterUTF8");
+		sm_emit_handler_direct(is_utf16, "LiteralCharacterUTF16");
+		sm_emit_handler_direct(is_utf32, "LiteralCharacterUTF32");
+		sm_emit_handler_direct("LiteralCharacter");
+		sm_case_flagged(is_char, true, "\'", emit);
     }
     sm_case("\\", string_esc);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LexError");
-	sm_case_peek("\n", emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LexError");
+		sm_case_peek("\n", emit);
     }
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LexError");
-	sm_case_eof_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LexError");
+		sm_case_eof_peek(emit);
     }
     sm_case_flagged(is_char, true, "\"", string);
     sm_case_flagged(is_char, false, "\'", string);
@@ -949,14 +949,14 @@ build_language_model(void){
     sm_case("u", string_esc_universal_4);
     sm_case("U", string_esc_universal_8);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LexError");
-	sm_case_peek("\n", emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LexError");
+		sm_case_peek("\n", emit);
     }
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LexError");
-	sm_case_eof_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LexError");
+		sm_case_eof_peek(emit);
     }
     sm_fallback(string);
 
@@ -1037,14 +1037,14 @@ build_language_model(void){
     sm_select_state(raw_string_get_delim);
     sm_case_peek("(", raw_string_finish_delim);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LexError");
-	sm_case(" \\)", emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LexError");
+		sm_case(" \\)", emit);
     }
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LexError");
-	sm_case_eof_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LexError");
+		sm_case_eof_peek(emit);
     }
     sm_fallback(raw_string_get_delim);
 
@@ -1059,9 +1059,9 @@ build_language_model(void){
     sm_select_state(raw_string_find_close);
     sm_case(")", raw_string_try_delim);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LexError");
-	sm_case_eof_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LexError");
+		sm_case_eof_peek(emit);
     }
     sm_fallback(raw_string_find_close);
 
@@ -1074,13 +1074,13 @@ build_language_model(void){
 
     sm_select_state(raw_string_try_quote);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct(is_wide, "LiteralStringWideRaw");
-	sm_emit_handler_direct(is_utf8 , "LiteralStringUTF8Raw");
-	sm_emit_handler_direct(is_utf16, "LiteralStringUTF16Raw");
-	sm_emit_handler_direct(is_utf32, "LiteralStringUTF32Raw");
-	sm_emit_handler_direct("LiteralStringRaw");
-	sm_case("\"", emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct(is_wide, "LiteralStringWideRaw");
+		sm_emit_handler_direct(is_utf8 , "LiteralStringUTF8Raw");
+		sm_emit_handler_direct(is_utf16, "LiteralStringUTF16Raw");
+		sm_emit_handler_direct(is_utf32, "LiteralStringUTF32Raw");
+		sm_emit_handler_direct("LiteralStringRaw");
+		sm_case("\"", emit);
     }
     sm_fallback_peek(raw_string_find_close);
 
@@ -1090,9 +1090,9 @@ build_language_model(void){
     sm_case("*", comment_block_try_close);
     sm_case("\n", comment_block_newline);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("BlockComment");
-	sm_case_eof_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("BlockComment");
+		sm_case_eof_peek(emit);
     }
     sm_fallback(comment_block);
 
@@ -1100,14 +1100,14 @@ build_language_model(void){
 
     sm_select_state(comment_block_try_close);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("BlockComment");
-	sm_case("/", emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("BlockComment");
+		sm_case("/", emit);
     }
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("BlockComment");
-	sm_case_eof_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("BlockComment");
+		sm_case_eof_peek(emit);
     }
     sm_case("*", comment_block_try_close);
     sm_fallback(comment_block);
@@ -1123,14 +1123,14 @@ build_language_model(void){
 
     sm_select_state(comment_line);
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LineComment");
-	sm_case_peek("\n", emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LineComment");
+		sm_case_peek("\n", emit);
     }
     {
-	Emit_Rule *emit = sm_emit_rule();
-	sm_emit_handler_direct("LineComment");
-	sm_case_eof_peek(emit);
+		Emit_Rule *emit = sm_emit_rule();
+		sm_emit_handler_direct("LineComment");
+		sm_case_eof_peek(emit);
     }
     sm_case("\\", comment_line_backslashing);
     sm_fallback(comment_line);

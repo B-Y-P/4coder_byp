@@ -48,7 +48,7 @@ function void
 string_list_pushfv(Arena *arena, List_String_Const_char *list, char *format, va_list args){
     String_Const_u8 string = push_stringfv(arena, format, args);
     if (arena->alignment < sizeof(u64)){
-	push_align(arena, sizeof(u64));
+		push_align(arena, sizeof(u64));
     }
     string_list_push(arena, list, SCchar(string));
 }
@@ -63,7 +63,7 @@ function void
 string_list_pushfv(Arena *arena, List_String_Const_u8 *list, char *format, va_list args){
     String_Const_u8 string = push_u8_stringfv(arena, format, args);
     if (arena->alignment < sizeof(u64)){
-	push_align(arena, sizeof(u64));
+		push_align(arena, sizeof(u64));
     }
     string_list_push(arena, list, string);
 }
@@ -149,10 +149,10 @@ push_hour_12_zeroes(Arena *arena, List_String_Const_u8 *list, u8 hour){
 function void
 push_hour_am_pm(Arena *arena, List_String_Const_u8 *list, u8 hour){
     if (hour >= 12){
-	string_list_push(arena, list, string_u8_litexpr("pm"));
+		string_list_push(arena, list, string_u8_litexpr("pm"));
     }
     else{
-	string_list_push(arena, list, string_u8_litexpr("am"));
+		string_list_push(arena, list, string_u8_litexpr("am"));
     }
 }
 
@@ -189,112 +189,112 @@ date_time_format(Arena *arena, List_String_Const_u8 *list, String_Const_u8 forma
     u8 *ptr = format.str;
     u8 *end = format.str + format.size;
     for (;ptr < end;){
-	if (character_is_alpha_numeric(*ptr)){
-	    u8 *start = ptr;
-	    for (;ptr < end; ptr += 1){
-		if (!character_is_alpha_numeric(*ptr)){
-		    break;
-		}
-	    }
-
-	    String_Const_u8 field = SCu8(start, ptr);
-	    for (; field.size > 0;){
-		if (string_match(string_prefix(field, 5), string_u8_litexpr("month"))){
-		    field = string_skip(field, 5);
-		    push_month_name(arena, list, date_time->mon);
-		}
-
-		else if (string_match(string_prefix(field, 4), string_u8_litexpr("yyyy"))){
-		    field = string_skip(field, 4);
-		    push_year_full(arena, list, date_time->year);
-		}
-		else if (string_match(string_prefix(field, 4), string_u8_litexpr("hh24"))){
-		    field = string_skip(field, 4);
-		    push_hour_24_zeroes(arena, list, date_time->hour);
-		}
-		else if (string_match(string_prefix(field, 4), string_u8_litexpr("ampm"))){
-		    field = string_skip(field, 4);
-		    push_hour_am_pm(arena, list, date_time->hour);
-		}
-		else if (string_match(string_prefix(field, 4), string_u8_litexpr("mimi"))){
-		    field = string_skip(field, 4);
-		    push_minute_zeroes(arena, list, date_time->min);
-		}
-
-		else if (string_match(string_prefix(field, 3), string_u8_litexpr("mon"))){
-		    field = string_skip(field, 3);
-		    push_month_abrev(arena, list, date_time->mon);
-		}
-		else if (string_match(string_prefix(field, 3), string_u8_litexpr("day"))){
-		    field = string_skip(field, 3);
-		    push_day_ord(arena, list, date_time->day);
-		}
-		else if (string_match(string_prefix(field, 3), string_u8_litexpr("h24"))){
-		    field = string_skip(field, 3);
-		    push_hour_24(arena, list, date_time->hour);
-		}
-
-		else if (string_match(string_prefix(field, 2), string_u8_litexpr("yy"))){
-		    field = string_skip(field, 2);
-		    push_year_abrev(arena, list, date_time->year);
-		}
-		else if (string_match(string_prefix(field, 2), string_u8_litexpr("mm"))){
-		    field = string_skip(field, 2);
-		    push_month_num_zeros(arena, list, date_time->mon);
-		}
-		else if (string_match(string_prefix(field, 2), string_u8_litexpr("dd"))){
-		    field = string_skip(field, 2);
-		    push_day_num_zeroes(arena, list, date_time->day);
-		}
-		else if (string_match(string_prefix(field, 2), string_u8_litexpr("hh"))){
-		    field = string_skip(field, 2);
-		    push_hour_12_zeroes(arena, list, date_time->hour);
-		}
-		else if (string_match(string_prefix(field, 2), string_u8_litexpr("mi"))){
-		    field = string_skip(field, 2);
-		    push_minute(arena, list, date_time->min);
-		}
-		else if (string_match(string_prefix(field, 2), string_u8_litexpr("ss"))){
-		    field = string_skip(field, 2);
-		    push_second_zeroes(arena, list, date_time->sec);
-		}
-		else if (string_match(string_prefix(field, 2), string_u8_litexpr("ms"))){
-		    field = string_skip(field, 2);
-		    push_millisecond_zeroes(arena, list, date_time->msec);
-		}
-
-		else if (string_match(string_prefix(field, 1), string_u8_litexpr("m"))){
-		    field = string_skip(field, 1);
-		    push_month_num(arena, list, date_time->mon);
-		}
-		else if (string_match(string_prefix(field, 1), string_u8_litexpr("d"))){
-		    field = string_skip(field, 1);
-		    push_day_num(arena, list, date_time->day);
-		}
-		else if (string_match(string_prefix(field, 1), string_u8_litexpr("h"))){
-		    field = string_skip(field, 1);
-		    push_hour_12(arena, list, date_time->hour);
-		}
-		else if (string_match(string_prefix(field, 1), string_u8_litexpr("s"))){
-		    field = string_skip(field, 1);
-		    push_second(arena, list, date_time->sec);
-		}
-
-		else{
-		    string_list_push(arena, list, SCu8(start, ptr));
-		    break;
-		}
-	    }
-	}
-	else{
-	    u8 *start = ptr;
-	    for (;ptr < end; ptr += 1){
 		if (character_is_alpha_numeric(*ptr)){
-		    break;
+			u8 *start = ptr;
+			for (;ptr < end; ptr += 1){
+				if (!character_is_alpha_numeric(*ptr)){
+					break;
+				}
+			}
+
+			String_Const_u8 field = SCu8(start, ptr);
+			for (; field.size > 0;){
+				if (string_match(string_prefix(field, 5), string_u8_litexpr("month"))){
+					field = string_skip(field, 5);
+					push_month_name(arena, list, date_time->mon);
+				}
+
+				else if (string_match(string_prefix(field, 4), string_u8_litexpr("yyyy"))){
+					field = string_skip(field, 4);
+					push_year_full(arena, list, date_time->year);
+				}
+				else if (string_match(string_prefix(field, 4), string_u8_litexpr("hh24"))){
+					field = string_skip(field, 4);
+					push_hour_24_zeroes(arena, list, date_time->hour);
+				}
+				else if (string_match(string_prefix(field, 4), string_u8_litexpr("ampm"))){
+					field = string_skip(field, 4);
+					push_hour_am_pm(arena, list, date_time->hour);
+				}
+				else if (string_match(string_prefix(field, 4), string_u8_litexpr("mimi"))){
+					field = string_skip(field, 4);
+					push_minute_zeroes(arena, list, date_time->min);
+				}
+
+				else if (string_match(string_prefix(field, 3), string_u8_litexpr("mon"))){
+					field = string_skip(field, 3);
+					push_month_abrev(arena, list, date_time->mon);
+				}
+				else if (string_match(string_prefix(field, 3), string_u8_litexpr("day"))){
+					field = string_skip(field, 3);
+					push_day_ord(arena, list, date_time->day);
+				}
+				else if (string_match(string_prefix(field, 3), string_u8_litexpr("h24"))){
+					field = string_skip(field, 3);
+					push_hour_24(arena, list, date_time->hour);
+				}
+
+				else if (string_match(string_prefix(field, 2), string_u8_litexpr("yy"))){
+					field = string_skip(field, 2);
+					push_year_abrev(arena, list, date_time->year);
+				}
+				else if (string_match(string_prefix(field, 2), string_u8_litexpr("mm"))){
+					field = string_skip(field, 2);
+					push_month_num_zeros(arena, list, date_time->mon);
+				}
+				else if (string_match(string_prefix(field, 2), string_u8_litexpr("dd"))){
+					field = string_skip(field, 2);
+					push_day_num_zeroes(arena, list, date_time->day);
+				}
+				else if (string_match(string_prefix(field, 2), string_u8_litexpr("hh"))){
+					field = string_skip(field, 2);
+					push_hour_12_zeroes(arena, list, date_time->hour);
+				}
+				else if (string_match(string_prefix(field, 2), string_u8_litexpr("mi"))){
+					field = string_skip(field, 2);
+					push_minute(arena, list, date_time->min);
+				}
+				else if (string_match(string_prefix(field, 2), string_u8_litexpr("ss"))){
+					field = string_skip(field, 2);
+					push_second_zeroes(arena, list, date_time->sec);
+				}
+				else if (string_match(string_prefix(field, 2), string_u8_litexpr("ms"))){
+					field = string_skip(field, 2);
+					push_millisecond_zeroes(arena, list, date_time->msec);
+				}
+
+				else if (string_match(string_prefix(field, 1), string_u8_litexpr("m"))){
+					field = string_skip(field, 1);
+					push_month_num(arena, list, date_time->mon);
+				}
+				else if (string_match(string_prefix(field, 1), string_u8_litexpr("d"))){
+					field = string_skip(field, 1);
+					push_day_num(arena, list, date_time->day);
+				}
+				else if (string_match(string_prefix(field, 1), string_u8_litexpr("h"))){
+					field = string_skip(field, 1);
+					push_hour_12(arena, list, date_time->hour);
+				}
+				else if (string_match(string_prefix(field, 1), string_u8_litexpr("s"))){
+					field = string_skip(field, 1);
+					push_second(arena, list, date_time->sec);
+				}
+
+				else{
+					string_list_push(arena, list, SCu8(start, ptr));
+					break;
+				}
+			}
 		}
-	    }
-	    string_list_push(arena, list, SCu8(start, ptr));
-	}
+		else{
+			u8 *start = ptr;
+			for (;ptr < end; ptr += 1){
+				if (character_is_alpha_numeric(*ptr)){
+					break;
+				}
+			}
+			string_list_push(arena, list, SCu8(start, ptr));
+		}
     }
 }
 function void

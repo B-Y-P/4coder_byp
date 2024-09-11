@@ -14,7 +14,7 @@ keyboard_macro_play_single_line(Application_Links *app, String_Const_u8 macro_li
     Scratch_Block scratch(app);
     Input_Event event = parse_keyboard_event(scratch, macro_line);
     if (event.kind != InputEventKind_None){
-	enqueue_virtual_event(app, &event);
+		enqueue_virtual_event(app, &event);
     }
 }
 
@@ -23,10 +23,10 @@ keyboard_macro_play(Application_Links *app, String_Const_u8 macro){
     Scratch_Block scratch(app);
     List_String_Const_u8 lines = string_split(scratch, macro, (u8*)"\n", 1);
     for (Node_String_Const_u8 *node = lines.first;
-	 node != 0;
-	 node = node->next){
-	String_Const_u8 line = string_skip_chop_whitespace(node->string);
-	keyboard_macro_play_single_line(app, line);
+		 node != 0;
+		 node = node->next){
+		String_Const_u8 line = string_skip_chop_whitespace(node->string);
+		keyboard_macro_play_single_line(app, line);
     }
 }
 
@@ -42,8 +42,8 @@ CUSTOM_COMMAND_SIG(keyboard_macro_start_recording)
 CUSTOM_DOC("Start macro recording, do nothing if macro recording is already started")
 {
     if (global_keyboard_macro_is_recording ||
-	get_current_input_is_virtual(app)){
-	return;
+		get_current_input_is_virtual(app)){
+		return;
     }
 
     Buffer_ID buffer = get_keyboard_log_buffer(app);
@@ -55,8 +55,8 @@ CUSTOM_COMMAND_SIG(keyboard_macro_finish_recording)
 CUSTOM_DOC("Stop macro recording, do nothing if macro recording is not already started")
 {
     if (!global_keyboard_macro_is_recording ||
-	get_current_input_is_virtual(app)){
-	return;
+		get_current_input_is_virtual(app)){
+		return;
     }
 
     Buffer_ID buffer = get_keyboard_log_buffer(app);
@@ -78,8 +78,8 @@ CUSTOM_COMMAND_SIG(keyboard_macro_replay)
 CUSTOM_DOC("Replay the most recently recorded keyboard macro")
 {
     if (global_keyboard_macro_is_recording ||
-	get_current_input_is_virtual(app)){
-	return;
+		get_current_input_is_virtual(app)){
+		return;
     }
 
     Buffer_ID buffer = get_keyboard_log_buffer(app);

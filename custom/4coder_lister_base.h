@@ -21,8 +21,8 @@ struct Lister_Node{
     Lister_Node *prev;
     String_Const_u8 string;
     union{
-	String_Const_u8 status;
-	i32 index;
+		String_Const_u8 status;
+		i32 index;
     };
     void *user_data;
     i32 raw_index;
@@ -42,8 +42,8 @@ struct Lister_Node_Ptr_Array{
 typedef Lister_Activation_Code Lister_Write_Character_Function(Application_Links *app);
 typedef Lister_Activation_Code Lister_Key_Stroke_Function(Application_Links *app);
 typedef void Lister_Navigate_Function(Application_Links *app,
-				      View_ID view, struct Lister *lister,
-				      i32 index_delta);
+									  View_ID view, struct Lister *lister,
+									  i32 index_delta);
 
 struct Lister_Handlers{
     Lister_Regenerate_List_Function_Type *refresh;
@@ -123,8 +123,8 @@ struct Lister_Choice{
     String_Const_u8 status;
     Key_Code key_code;
     union{
-	u64 user_data;
-	void *user_data_ptr;
+		u64 user_data;
+		void *user_data_ptr;
     };
 };
 

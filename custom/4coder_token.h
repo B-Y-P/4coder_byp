@@ -119,8 +119,8 @@ enum{
 struct Token_Iterator{
     Token_Iterator_Kind kind;
     union{
-	Token_Iterator_Array array;
-	Token_Iterator_List list;
+		Token_Iterator_Array array;
+		Token_Iterator_List list;
     };
 };
 

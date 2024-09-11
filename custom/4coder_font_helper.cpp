@@ -9,7 +9,7 @@ get_buffer_face_description(Application_Links *app, Buffer_ID buffer){
     Face_ID current_id = get_face_id(app, buffer);
     Face_Description description = {};
     if (current_id != 0){
-	description = get_face_description(app, current_id);
+		description = get_face_description(app, current_id);
     }
     return(description);
 }
@@ -33,8 +33,8 @@ internal b32
 face_description_match(Face_Description *a, Face_Description *b){
     b32 result = false;
     if (font_load_location_match(&a->font, &b->font) &&
-	face_load_parameters_match(&a->parameters, &b->parameters)){
-	result = true;
+		face_load_parameters_match(&a->parameters, &b->parameters)){
+		result = true;
     }
     return(result);
 }
@@ -44,11 +44,11 @@ face_id_from_font_load_target(Application_Links *app, Font_Load_Location *font){
     Face_ID largest_id = get_largest_face_id(app);
     Face_ID result = 0;
     for (Face_ID id = 1; id <= largest_id; ++id){
-	Face_Description compare = get_face_description(app, id);
-	if (font_load_location_match(&compare.font, font)){
-	    result = id;
-	    break;
-	}
+		Face_Description compare = get_face_description(app, id);
+		if (font_load_location_match(&compare.font, font)){
+			result = id;
+			break;
+		}
     }
     return(result);
 }
@@ -58,11 +58,11 @@ face_id_from_face_load_parameters(Application_Links *app, Face_Load_Parameters *
     Face_ID largest_id = get_largest_face_id(app);
     Face_ID result = 0;
     for (Face_ID id = 1; id <= largest_id; ++id){
-	Face_Description compare = get_face_description(app, id);
-	if (face_load_parameters_match(&compare.parameters, parameters)){
-	    result = id;
-	    break;
-	}
+		Face_Description compare = get_face_description(app, id);
+		if (face_load_parameters_match(&compare.parameters, parameters)){
+			result = id;
+			break;
+		}
     }
     return(result);
 }
@@ -72,11 +72,11 @@ face_id_from_description(Application_Links *app, Face_Description *description){
     Face_ID largest_id = get_largest_face_id(app);
     Face_ID result = 0;
     for (Face_ID id = 1; id <= largest_id; ++id){
-	Face_Description compare = get_face_description(app, id);
-	if (face_description_match(&compare, description)){
-	    result = id;
-	    break;
-	}
+		Face_Description compare = get_face_description(app, id);
+		if (face_description_match(&compare, description)){
+			result = id;
+			break;
+		}
     }
     return(result);
 }
@@ -91,10 +91,10 @@ internal void
 set_buffer_face_by_description(Application_Links *app, Buffer_ID buffer, Face_Description *description){
     Face_ID id = face_id_from_description(app, description);
     if (id == 0){
-	id = try_create_new_face(app, description);
+		id = try_create_new_face(app, description);
     }
     if (id != 0){
-	buffer_set_face(app, buffer, id);
+		buffer_set_face(app, buffer, id);
     }
 }
 

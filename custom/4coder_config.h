@@ -66,21 +66,21 @@ struct Config_Compound{
 struct Config_RValue{
     Config_RValue_Type type;
     union{
-	Config_LValue *lvalue;
-	b32 boolean;
-	i32 integer;
-	u32 uinteger;
-	String_Const_u8 string;
-	char character;
-	Config_Compound *compound;
+		Config_LValue *lvalue;
+		b32 boolean;
+		i32 integer;
+		u32 uinteger;
+		String_Const_u8 string;
+		char character;
+		Config_Compound *compound;
     };
 };
 
 struct Config_Integer{
     b32 is_signed;
     union{
-	i32 integer;
-	u32 uinteger;
+		i32 integer;
+		u32 uinteger;
     };
 };
 
@@ -95,8 +95,8 @@ struct Config_Layout{
     Config_Layout_Type type;
     u8 *pos;
     union{
-	String_Const_u8 identifier;
-	i32 integer;
+		String_Const_u8 identifier;
+		i32 integer;
     };
 };
 
@@ -146,12 +146,12 @@ struct Config_Get_Result{
     Config_RValue_Type type;
     u8 *pos;
     union{
-	b32 boolean;
-	i32 integer;
-	u32 uinteger;
-	String_Const_u8 string;
-	char character;
-	Config_Compound *compound;
+		b32 boolean;
+		i32 integer;
+		u32 uinteger;
+		String_Const_u8 string;
+		char character;
+		Config_Compound *compound;
     };
 };
 

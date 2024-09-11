@@ -34,7 +34,7 @@ global Base_Allocator base_allocator_system = {};
 internal Base_Allocator*
 get_base_allocator_system(void){
     if (base_allocator_system.reserve == 0){
-	base_allocator_system = make_base_allocator_system();
+		base_allocator_system = make_base_allocator_system();
     }
     return(&base_allocator_system);
 }

@@ -32,7 +32,7 @@ CUSTOM_DOC("Just bound to the key I spam to execute whatever test code I'm worki
 }
 
 CUSTOM_COMMAND_SIG(byp_close_all_buffers)
-CUSTOM_DOC("Reloads project.4coder")
+CUSTOM_DOC("Reloads buffers")
 {
 	for (Buffer_ID buffer = get_buffer_next(app, 0, Access_Always);
 		 buffer != 0;
@@ -50,6 +50,20 @@ CUSTOM_DOC("Reloads config.4coder file")
 	Face_ID face = get_face_id(app, buffer);
 	Face_Description face_desc = get_face_description(app, face);
 	load_config_and_apply(app, &global_config_arena, face_desc.parameters.pt_size, face_desc.parameters.hinting);
+}
+
+CUSTOM_COMMAND_SIG(byp_reload_project)
+CUSTOM_DOC("Reloads the project.4coder file")
+{
+    Scratch_Block scratch(app);
+	View_ID view = get_active_view(app, Access_Always);
+	Buffer_ID buffer = view_get_buffer(app, view, Access_Always);
+    String_Const_u8 path = push_buffer_file_name(app, scratch, buffer);
+    String_Const_u8 file = string_front_of_path(path);
+    if (string_match(file, string_u8_litexpr("project.4coder"))){
+        File_Name_Data dump = dump_file(scratch, path);
+        parse_project(app, scratch, dump);
+    }
 }
 
 CUSTOM_COMMAND_SIG(byp_reopen_all_buffers)
@@ -204,10 +218,9 @@ CUSTOM_DOC("Sets the right size of the view near the x position of the cursor.")
 
 function bool
 byp_is_divider(String_Const_u8 lexeme){
-	String_Const_u8 match = string_u8_litexpr("//");
-	String_Const_u8 start = string_prefix(lexeme, 2);
-	String_Const_u8 first_non_ws = string_skip_whitespace(string_skip(lexeme, 2));
-	return (string_match(start, match) && string_get_character(first_non_ws, 0) == '-');
+	return (string_has_prefix(lexeme, string_u8_litexpr("//-"))  ||
+			string_has_prefix(lexeme, string_u8_litexpr("// -")) ||
+			string_has_prefix(lexeme, string_u8_litexpr("//--")));
 }
 
 function void

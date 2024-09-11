@@ -23,8 +23,8 @@ struct Command_Trigger_List{
 
 struct Command_Binding{
     union{
-	Custom_Command_Function *custom;
-	char *name;
+		Custom_Command_Function *custom;
+		char *name;
     };
 
     Command_Binding();

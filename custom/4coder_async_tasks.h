@@ -20,8 +20,8 @@ struct Async_Thread{
 
 struct Async_Node{
     union{
-	Async_Node *next;
-	Node node;
+		Async_Node *next;
+		Node node;
     };
     Async_Task task;
     Async_Thread *thread;

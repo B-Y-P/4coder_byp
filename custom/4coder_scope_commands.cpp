@@ -6,22 +6,22 @@
 
 function void
 select_next_scope_after_pos(Application_Links *app, View_ID view, Buffer_ID buffer,
-			    i64 pos){
+							i64 pos){
     Find_Nest_Flag flags = FindNest_Scope;
     Range_i64 range = {};
     if (find_nest_side(app, buffer, pos + 1, flags, Scan_Forward, NestDelim_Open,
-		       &range) &&
-	find_nest_side(app, buffer, range.end,
-		       flags|FindNest_Balanced|FindNest_EndOfToken, Scan_Forward,
-		       NestDelim_Close, &range.end)){
-	select_scope(app, view, range);
+					   &range) &&
+		find_nest_side(app, buffer, range.end,
+					   flags|FindNest_Balanced|FindNest_EndOfToken, Scan_Forward,
+					   NestDelim_Close, &range.end)){
+		select_scope(app, view, range);
     }
 }
 
 function b32
 range_is_scope_selection(Application_Links *app, Buffer_ID buffer, Range_i64 range){
     return (buffer_get_char(app, buffer, range.min) == '{' &&
-	    buffer_get_char(app, buffer, range.max - 1) == '}');
+			buffer_get_char(app, buffer, range.max - 1) == '}');
 }
 
 CUSTOM_COMMAND_SIG(select_surrounding_scope)
@@ -32,7 +32,7 @@ CUSTOM_DOC("Finds the scope enclosed by '{' '}' surrounding the cursor and puts 
     i64 pos = view_get_cursor_pos(app, view);
     Range_i64 range = {};
     if (find_surrounding_nest(app, buffer, pos, FindNest_Scope, &range)){
-	select_scope(app, view, range);
+		select_scope(app, view, range);
     }
 }
 
@@ -44,13 +44,13 @@ CUSTOM_DOC("Selects the top-most scope that surrounds the cursor.")
     i64 pos = view_get_cursor_pos(app, view);
     Range_i64 range = {};
     if (find_surrounding_nest(app, buffer, pos, FindNest_Scope, &range)){
-	for (;;){
-	    pos = range.min;
-	    if (!find_surrounding_nest(app, buffer, pos, FindNest_Scope, &range)){
-		break;
-	    }
-	}
-	select_scope(app, view, range);
+		for (;;){
+			pos = range.min;
+			if (!find_surrounding_nest(app, buffer, pos, FindNest_Scope, &range)){
+				break;
+			}
+		}
+		select_scope(app, view, range);
     }
 }
 
@@ -72,10 +72,10 @@ CUSTOM_DOC("If a scope is selected, find first scope that starts after the selec
     i64 mark_pos = view_get_mark_pos(app, view);
     Range_i64 range = Ii64(cursor_pos, mark_pos);
     if (range_is_scope_selection(app, buffer, range)){
-	select_next_scope_after_pos(app, view, buffer, range.max);
+		select_next_scope_after_pos(app, view, buffer, range.max);
     }
     else{
-	select_next_scope_after_pos(app, view, buffer, cursor_pos);
+		select_next_scope_after_pos(app, view, buffer, cursor_pos);
     }
 }
 
@@ -88,11 +88,11 @@ CUSTOM_DOC("Finds the first scope started by '{' before the cursor and puts the 
     Find_Nest_Flag flags = FindNest_Scope;
     Range_i64 range = {};
     if (find_nest_side(app, buffer, pos - 1,
-		       flags, Scan_Backward, NestDelim_Open, &range) &&
-	find_nest_side(app, buffer, range.end,
-		       flags|FindNest_Balanced|FindNest_EndOfToken, Scan_Forward,
-		       NestDelim_Close, &range.end)){
-	select_scope(app, view, range);
+					   flags, Scan_Backward, NestDelim_Open, &range) &&
+		find_nest_side(app, buffer, range.end,
+					   flags|FindNest_Balanced|FindNest_EndOfToken, Scan_Forward,
+					   NestDelim_Close, &range.end)){
+		select_scope(app, view, range);
     }
 }
 
@@ -117,25 +117,25 @@ CUSTOM_DOC("Deletes the braces surrounding the currently selected scope.  Leaves
 
     Range_i64 range = get_view_range(app, view);
     if (range_is_scope_selection(app, buffer, range)){
-	i32 top_len = 1;
-	i32 bot_len = 1;
-	if (buffer_get_char(app, buffer, range.min - 1) == '\n'){
-	    top_len = 2;
-	}
-	if (buffer_get_char(app, buffer, range.max + 1) == '\n'){
-	    bot_len = 2;
-	}
+		i32 top_len = 1;
+		i32 bot_len = 1;
+		if (buffer_get_char(app, buffer, range.min - 1) == '\n'){
+			top_len = 2;
+		}
+		if (buffer_get_char(app, buffer, range.max + 1) == '\n'){
+			bot_len = 2;
+		}
 
-	Batch_Edit batch_first = {};
-	Batch_Edit batch_last = {};
+		Batch_Edit batch_first = {};
+		Batch_Edit batch_last = {};
 
-	batch_first.edit.text = SCu8();
-	batch_first.edit.range = Ii64(range.min + 1 - top_len, range.min + 1);
-	batch_first.next = &batch_last;
-	batch_last.edit.text = SCu8();
-	batch_last.edit.range = Ii64((i32)(range.max - 1), (i32)(range.max - 1 + bot_len));
+		batch_first.edit.text = SCu8();
+		batch_first.edit.range = Ii64(range.min + 1 - top_len, range.min + 1);
+		batch_first.next = &batch_last;
+		batch_last.edit.text = SCu8();
+		batch_last.edit.range = Ii64((i32)(range.max - 1), (i32)(range.max - 1 + bot_len));
 
-	buffer_batch_edit(app, buffer, &batch_first);
+		buffer_batch_edit(app, buffer, &batch_first);
     }
 }
 

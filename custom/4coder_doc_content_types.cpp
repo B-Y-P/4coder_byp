@@ -20,7 +20,7 @@ doc_date_now(void){
     date.month = time->tm_mon + 1;
     date.year = 1900 + time->tm_year;
     return(date);
-	     }
+}
 
 ////////////////////////////////
 
@@ -98,7 +98,7 @@ new_doc_page_function(Arena *arena, Doc_Cluster *cluster, String_Const_u8 name){
     return(new_doc_page_function(arena, cluster, c_name));
 }
 
- function Doc_Block*
+function Doc_Block*
 new_doc_block(Arena *arena, Doc_Page *page, char *name){
     Doc_Block *result = push_array_zero(arena, Doc_Block, 1);
     result->owner = page;
@@ -180,14 +180,14 @@ function Doc_Content*
 doc_text(Arena *arena, Doc_Block *block, char *str){
     Doc_Paragraph *par = block->last_par;
     if (par != 0){
-	if (par->kind != DocParagraphKind_Text){
-	    par = 0;
-	}
+		if (par->kind != DocParagraphKind_Text){
+			par = 0;
+		}
     }
 
     if (par == 0){
-	par = new_doc_par(arena, block);
-	par->kind = DocParagraphKind_Text;
+		par = new_doc_par(arena, block);
+		par->kind = DocParagraphKind_Text;
     }
 
     return(doc_content_push(arena, &par->text, SCu8(str)));
@@ -210,12 +210,12 @@ function Doc_Page*
 doc_get_page(Doc_Cluster *cluster, String_Const_u8 name){
     Doc_Page *result = 0;
     for (Doc_Page *page = cluster->first_page;
-	 page != 0;
-	 page = page->next){
-	if (string_match(name, page->name)){
-	    result = page;
-	    break;
-	}
+		 page != 0;
+		 page = page->next){
+		if (string_match(name, page->name)){
+			result = page;
+			break;
+		}
     }
     return(result);
 }

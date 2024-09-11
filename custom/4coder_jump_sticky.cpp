@@ -17,23 +17,23 @@ binary_search(i64 *array, i32 stride, i32 count, i64 x){
     i32 first = 0;
     i32 last = count;
     if (first < last){
-	for (;;){
-	    i = (first + last)/2;
-	    i64 k = *(i64*)(raw + stride*i);
-	    if (k < x){
-		first = i;
-	    }
-	    else if (k > x){
-		last = i;
-	    }
-	    else{ // NOTE(allen): array[i] == x
-		break;
-	    }
-	    if (first + 1 >= last){
-		i = first;
-		break;
-	    }
-	}
+		for (;;){
+			i = (first + last)/2;
+			i64 k = *(i64*)(raw + stride*i);
+			if (k < x){
+				first = i;
+			}
+			else if (k > x){
+				last = i;
+			}
+			else{ // NOTE(allen): array[i] == x
+				break;
+			}
+			if (first + 1 >= last){
+				i = first;
+				break;
+			}
+		}
     }
     return(i);
 }
@@ -45,46 +45,46 @@ parse_buffer_to_jump_array(Application_Links *app, Arena *arena, Buffer_ID buffe
     i32 jump_count = 0;
 
     for (i32 line = 1;; line += 1){
-	b32 output_jump = false;
-	i32 colon_index = 0;
-	b32 is_sub_error = false;
-	Buffer_ID out_buffer_id = 0;
-	i64 out_pos = 0;
+		b32 output_jump = false;
+		i32 colon_index = 0;
+		b32 is_sub_error = false;
+		Buffer_ID out_buffer_id = 0;
+		i64 out_pos = 0;
 
-	{
-	    Temp_Memory_Block line_auto_closer(arena);
-	    if (is_valid_line(app, buffer, line)){
-		String_Const_u8 line_str = push_buffer_line(app, arena, buffer, line);
-		Parsed_Jump parsed_jump = parse_jump_location(line_str);
-		if (parsed_jump.success){
-		    Buffer_ID jump_buffer = {};
-		    if (open_file(app, &jump_buffer, parsed_jump.location.file, false, true)){
-			if (buffer_exists(app, jump_buffer)){
-			    Buffer_Cursor cursor = buffer_compute_cursor(app, jump_buffer, seek_jump(parsed_jump));
-			    if (cursor.line > 0){
-				out_buffer_id = jump_buffer;
-				out_pos = cursor.pos;
-				output_jump = true;
-			    }
+		{
+			Temp_Memory_Block line_auto_closer(arena);
+			if (is_valid_line(app, buffer, line)){
+				String_Const_u8 line_str = push_buffer_line(app, arena, buffer, line);
+				Parsed_Jump parsed_jump = parse_jump_location(line_str);
+				if (parsed_jump.success){
+					Buffer_ID jump_buffer = {};
+					if (open_file(app, &jump_buffer, parsed_jump.location.file, false, true)){
+						if (buffer_exists(app, jump_buffer)){
+							Buffer_Cursor cursor = buffer_compute_cursor(app, jump_buffer, seek_jump(parsed_jump));
+							if (cursor.line > 0){
+								out_buffer_id = jump_buffer;
+								out_pos = cursor.pos;
+								output_jump = true;
+							}
+						}
+					}
+				}
 			}
-		    }
+			else{
+				break;
+			}
 		}
-	    }
-	    else{
-		break;
-	    }
-	}
 
-	if (output_jump){
-	    Sticky_Jump_Node *jump = push_array(arena, Sticky_Jump_Node, 1);
-	    sll_queue_push(jump_first, jump_last, jump);
-	    jump_count += 1;
-	    jump->jump.list_line = line;
-	    jump->jump.list_colon_index = colon_index;
-	    jump->jump.is_sub_error =  is_sub_error;
-	    jump->jump.jump_buffer_id = out_buffer_id;
-	    jump->jump.jump_pos = out_pos;
-	}
+		if (output_jump){
+			Sticky_Jump_Node *jump = push_array(arena, Sticky_Jump_Node, 1);
+			sll_queue_push(jump_first, jump_last, jump);
+			jump_count += 1;
+			jump->jump.list_line = line;
+			jump->jump.list_colon_index = colon_index;
+			jump->jump.is_sub_error =  is_sub_error;
+			jump->jump.jump_buffer_id = out_buffer_id;
+			jump->jump.jump_pos = out_pos;
+		}
     }
 
     Sticky_Jump_Array result = {};
@@ -92,10 +92,10 @@ parse_buffer_to_jump_array(Application_Links *app, Arena *arena, Buffer_ID buffe
     result.jumps = push_array(arena, Sticky_Jump, result.count);
     i32 index = 0;
     for (Sticky_Jump_Node *node = jump_first;
-	 node != 0;
-	 node = node->next){
-	result.jumps[index] = node->jump;
-	index += 1;
+		 node != 0;
+		 node = node->next){
+		result.jumps[index] = node->jump;
+		index += 1;
     }
 
     return(result);
@@ -109,14 +109,14 @@ init_marker_list(Application_Links *app, Heap *heap, Buffer_ID buffer, Marker_Li
     Range_i32_Array buffer_ranges = get_ranges_of_duplicate_keys(scratch, &jumps.jumps->jump_buffer_id, sizeof(*jumps.jumps), jumps.count);
     Sort_Pair_i32 *range_index_buffer_id_pairs = push_array(scratch, Sort_Pair_i32, buffer_ranges.count);
     for (i32 i = 0; i < buffer_ranges.count; i += 1){
-	range_index_buffer_id_pairs[i].index = i;
-	range_index_buffer_id_pairs[i].key = jumps.jumps[buffer_ranges.ranges[i].first].jump_buffer_id;
+		range_index_buffer_id_pairs[i].index = i;
+		range_index_buffer_id_pairs[i].key = jumps.jumps[buffer_ranges.ranges[i].first].jump_buffer_id;
     }
     sort_pairs_by_key(range_index_buffer_id_pairs, buffer_ranges.count);
     Range_i32_Array scoped_buffer_ranges = get_ranges_of_duplicate_keys(scratch,
-									&range_index_buffer_id_pairs->key,
-									sizeof(*range_index_buffer_id_pairs),
-									buffer_ranges.count);
+																		&range_index_buffer_id_pairs->key,
+																		sizeof(*range_index_buffer_id_pairs),
+																		buffer_ranges.count);
 
     Sticky_Jump_Stored *stored = push_array(scratch, Sticky_Jump_Stored, jumps.count);
 
@@ -209,11 +209,11 @@ make_new_marker_list_for_buffer(Heap *heap, i32 buffer_id){
 internal Marker_List*
 get_marker_list_for_buffer(Buffer_ID buffer_id){
     for (Marker_List_Node *node = marker_list_first;
-	 node != 0;
-	 node = node->next){
-	if (buffer_id == node->buffer_id){
-	    return(&node->list);
-	}
+		 node != 0;
+		 node = node->next){
+		if (buffer_id == node->buffer_id){
+			return(&node->list);
+		}
     }
     return(0);
 }
@@ -222,33 +222,33 @@ internal Marker_List*
 get_or_make_list_for_buffer(Application_Links *app, Heap *heap, Buffer_ID buffer_id){
     Marker_List *result = get_marker_list_for_buffer(buffer_id);
     if (result != 0){
-	i32 buffer_size = (i32)buffer_get_size(app, buffer_id);
-	// TODO(allen):  // TODO(allen): // TODO(allen): // TODO(allen): // TODO(allen): When buffers get an "edit sequence number" use that instead.
-	if (result->previous_size != buffer_size){
-	    delete_marker_list(result);
-	    result = 0;
-	}
+		i32 buffer_size = (i32)buffer_get_size(app, buffer_id);
+		// TODO(allen):  // TODO(allen): // TODO(allen): // TODO(allen): // TODO(allen): When buffers get an "edit sequence number" use that instead.
+		if (result->previous_size != buffer_size){
+			delete_marker_list(result);
+			result = 0;
+		}
     }
     if (result == 0){
-	result = make_new_marker_list_for_buffer(heap, buffer_id);
-	init_marker_list(app, heap, buffer_id, result);
-	if (result->jump_count == 0){
-	    delete_marker_list(result);
-	    result = 0;
-	}
+		result = make_new_marker_list_for_buffer(heap, buffer_id);
+		init_marker_list(app, heap, buffer_id, result);
+		if (result->jump_count == 0){
+			delete_marker_list(result);
+			result = 0;
+		}
     }
     return(result);
 }
 
 internal b32
 get_stored_jump_from_list(Application_Links *app, Marker_List *list, i32 index,
-			  Sticky_Jump_Stored *stored_out){
+						  Sticky_Jump_Stored *stored_out){
     Sticky_Jump_Stored stored = {};
     if (list != 0){
-	if (managed_object_load_data(app, list->jump_array, index, 1, &stored)){
-	    *stored_out = stored;
-	    return(true);
-	}
+		if (managed_object_load_data(app, list->jump_array, index, 1, &stored)){
+			*stored_out = stored;
+			return(true);
+		}
     }
     return(false);
 }
@@ -257,14 +257,14 @@ internal Sticky_Jump_Stored*
 get_all_stored_jumps_from_list(Application_Links *app, Arena *arena, Marker_List *list){
     Sticky_Jump_Stored *stored = 0;
     if (list != 0){
-	Temp_Memory restore_point = begin_temp(arena);
-	stored = push_array(arena, Sticky_Jump_Stored, list->jump_count);
-	if (stored != 0){
-	    if (!managed_object_load_data(app, list->jump_array, 0, list->jump_count, stored)){
-		stored = 0;
-		end_temp(restore_point);
-	    }
-	}
+		Temp_Memory restore_point = begin_temp(arena);
+		stored = push_array(arena, Sticky_Jump_Stored, list->jump_count);
+		if (stored != 0){
+			if (!managed_object_load_data(app, list->jump_array, 0, list->jump_count, stored)){
+				stored = 0;
+				end_temp(restore_point);
+			}
+		}
     }
     return(stored);
 }
@@ -274,21 +274,21 @@ get_jump_from_list(Application_Links *app, Marker_List *list, i32 index, ID_Pos_
     b32 result = false;
     Sticky_Jump_Stored stored = {};
     if (get_stored_jump_from_list(app, list, index, &stored)){
-	Buffer_ID target_buffer_id = stored.jump_buffer_id;
+		Buffer_ID target_buffer_id = stored.jump_buffer_id;
 
-	Managed_Scope scope_array[2] = {};
-	scope_array[0] = buffer_get_managed_scope(app, list->buffer_id);
-	scope_array[1] = buffer_get_managed_scope(app, target_buffer_id);
-	Managed_Scope scope = get_managed_scope_with_multiple_dependencies(app, scope_array, ArrayCount(scope_array));
+		Managed_Scope scope_array[2] = {};
+		scope_array[0] = buffer_get_managed_scope(app, list->buffer_id);
+		scope_array[1] = buffer_get_managed_scope(app, target_buffer_id);
+		Managed_Scope scope = get_managed_scope_with_multiple_dependencies(app, scope_array, ArrayCount(scope_array));
 
-	Managed_Object *marker_array = scope_attachment(app, scope, sticky_jump_marker_handle, Managed_Object);
-	if (marker_array != 0 && *marker_array != 0){
-	    Marker marker = {};
-	    managed_object_load_data(app, *marker_array, stored.index_into_marker_array, 1, &marker);
-	    location->buffer_id = target_buffer_id;
-	    location->pos = marker.pos;
-	    result = true;
-	}
+		Managed_Object *marker_array = scope_attachment(app, scope, sticky_jump_marker_handle, Managed_Object);
+		if (marker_array != 0 && *marker_array != 0){
+			Marker marker = {};
+			managed_object_load_data(app, *marker_array, stored.index_into_marker_array, 1, &marker);
+			location->buffer_id = target_buffer_id;
+			location->pos = marker.pos;
+			result = true;
+		}
     }
     return(result);
 }
@@ -297,10 +297,10 @@ internal i64
 get_line_from_list(Application_Links *app, Marker_List *list, i32 index){
     i64 result = 0;
     if (list != 0){
-	Sticky_Jump_Stored stored = {};
-	if (get_stored_jump_from_list(app, list, index, &stored)){
-	    result = stored.list_line;
-	}
+		Sticky_Jump_Stored stored = {};
+		if (get_stored_jump_from_list(app, list, index, &stored)){
+			result = stored.list_line;
+		}
     }
     return(result);
 }
@@ -309,10 +309,10 @@ internal b32
 get_is_sub_error_from_list(Application_Links *app, Marker_List *list, i32 index){
     b32 result = false;
     if (list != 0){
-	Sticky_Jump_Stored stored = {};
-	if (get_stored_jump_from_list(app, list, index, &stored)){
-	    result = stored.is_sub_error;
-	}
+		Sticky_Jump_Stored stored = {};
+		if (get_stored_jump_from_list(app, list, index, &stored)){
+			result = stored.is_sub_error;
+		}
     }
     return(result);
 }
@@ -321,11 +321,11 @@ internal i32
 get_index_nearest_from_list(Application_Links *app, Marker_List *list, i64 line){
     i32 result = -1;
     if (list != 0){
-	Scratch_Block scratch(app);
-	Sticky_Jump_Stored *stored = get_all_stored_jumps_from_list(app, scratch, list);
-	if (stored != 0){
-	    result = binary_search((i64*)&stored->list_line, sizeof(*stored), list->jump_count, line);
-	}
+		Scratch_Block scratch(app);
+		Sticky_Jump_Stored *stored = get_all_stored_jumps_from_list(app, scratch, list);
+		if (stored != 0){
+			result = binary_search((i64*)&stored->list_line, sizeof(*stored), list->jump_count, line);
+		}
     }
     return(result);
 }
@@ -334,14 +334,14 @@ internal i32
 get_index_exact_from_list(Application_Links *app, Marker_List *list, i64 line){
     i32 result = -1;
     if (list != 0){
-	Scratch_Block scratch(app);
-	Sticky_Jump_Stored *stored = get_all_stored_jumps_from_list(app, scratch, list);
-	if (stored != 0){
-	    i32 index = binary_search((i64*)&stored->list_line, sizeof(*stored), list->jump_count, line);
-	    if (stored[index].list_line == line){
-		result = index;
-	    }
-	}
+		Scratch_Block scratch(app);
+		Sticky_Jump_Stored *stored = get_all_stored_jumps_from_list(app, scratch, list);
+		if (stored != 0){
+			i32 index = binary_search((i64*)&stored->list_line, sizeof(*stored), list->jump_count, line);
+			if (stored[index].list_line == line){
+				result = index;
+			}
+		}
     }
     return(result);
 }
@@ -361,15 +361,15 @@ CUSTOM_DOC("If the cursor is found to be on a jump location, parses the jump loc
     i32 list_index = get_index_exact_from_list(app, list, cursor.line);
 
     if (list_index >= 0){
-	ID_Pos_Jump_Location location = {};
-	if (get_jump_from_list(app, list, list_index, &location)){
-	    if (get_jump_buffer(app, &buffer, &location)){
-		change_active_panel(app);
-		View_ID target_view = get_active_view(app, Access_Always);
-		switch_to_existing_view(app, target_view, buffer);
-		jump_to_location(app, target_view, buffer, location);
-	    }
-	}
+		ID_Pos_Jump_Location location = {};
+		if (get_jump_from_list(app, list, list_index, &location)){
+			if (get_jump_buffer(app, &buffer, &location)){
+				change_active_panel(app);
+				View_ID target_view = get_active_view(app, Access_Always);
+				switch_to_existing_view(app, target_view, buffer);
+				jump_to_location(app, target_view, buffer, location);
+			}
+		}
     }
 }
 
@@ -389,12 +389,12 @@ CUSTOM_DOC("If the cursor is found to be on a jump location, parses the jump loc
     i32 list_index = get_index_exact_from_list(app, list, cursor.line);
 
     if (list_index >= 0){
-	ID_Pos_Jump_Location location = {};
-	if (get_jump_from_list(app, list, list_index, &location)){
-	    if (get_jump_buffer(app, &buffer, &location)){
-		jump_to_location(app, view, buffer, location);
-	    }
-	}
+		ID_Pos_Jump_Location location = {};
+		if (get_jump_from_list(app, list, list_index, &location)){
+			if (get_jump_buffer(app, &buffer, &location)){
+				jump_to_location(app, view, buffer, location);
+			}
+		}
     }
 }
 
@@ -402,14 +402,14 @@ internal void
 goto_jump_in_order(Application_Links *app, Marker_List *list, View_ID jump_view, ID_Pos_Jump_Location location){
     Buffer_ID buffer = {};
     if (get_jump_buffer(app, &buffer, &location)){
-	View_ID target_view = get_active_view(app, Access_Always);
-	if (target_view == jump_view){
-	    change_active_panel(app);
-	    target_view = get_active_view(app, Access_Always);
-	}
-	switch_to_existing_view(app, target_view, buffer);
-	jump_to_location(app, target_view, buffer, location);
-	prev_location = location;
+		View_ID target_view = get_active_view(app, Access_Always);
+		if (target_view == jump_view){
+			change_active_panel(app);
+			target_view = get_active_view(app, Access_Always);
+		}
+		switch_to_existing_view(app, target_view, buffer);
+		jump_to_location(app, target_view, buffer, location);
+		prev_location = location;
     }
 }
 
@@ -423,27 +423,27 @@ goto_next_filtered_jump(Application_Links *app, Marker_List *list, View_ID jump_
     Assert(direction == 1 || direction == -1);
 
     if (list != 0){
-	for (;list_index >= 0 && list_index < list->jump_count;){
-	    ID_Pos_Jump_Location location = {};
-	    if (get_jump_from_list(app, list, list_index, &location)){
-		b32 skip_this = false;
-		if (skip_repeats && jump_is_repeat(prev_location, location)){
-		    skip_this = true;
-		}
-		else if (skip_sub_errors && get_is_sub_error_from_list(app, list, list_index)){
-		    skip_this = true;
-		}
+		for (;list_index >= 0 && list_index < list->jump_count;){
+			ID_Pos_Jump_Location location = {};
+			if (get_jump_from_list(app, list, list_index, &location)){
+				b32 skip_this = false;
+				if (skip_repeats && jump_is_repeat(prev_location, location)){
+					skip_this = true;
+				}
+				else if (skip_sub_errors && get_is_sub_error_from_list(app, list, list_index)){
+					skip_this = true;
+				}
 
-		if (!skip_this){
-		    goto_jump_in_order(app, list, jump_view, location);
-		    i64 updated_line = get_line_from_list(app, list, list_index);
-		    view_set_cursor_and_preferred_x(app, jump_view, seek_line_col(updated_line, 1));
-		    break;
-		}
-	    }
+				if (!skip_this){
+					goto_jump_in_order(app, list, jump_view, location);
+					i64 updated_line = get_line_from_list(app, list, list_index);
+					view_set_cursor_and_preferred_x(app, jump_view, seek_line_col(updated_line, 1));
+					break;
+				}
+			}
 
-	    list_index += direction;
-	}
+			list_index += direction;
+		}
     }
 }
 
@@ -452,12 +452,12 @@ get_locked_jump_state(Application_Links *app, Heap *heap){
     Locked_Jump_State result = {};
     result.view = get_view_for_locked_jump_buffer(app);
     if (result.view != 0){
-	Buffer_ID buffer = view_get_buffer(app, result.view, Access_Always);
-	result.list = get_or_make_list_for_buffer(app, heap, buffer);
+		Buffer_ID buffer = view_get_buffer(app, result.view, Access_Always);
+		result.list = get_or_make_list_for_buffer(app, heap, buffer);
 
-	i64 cursor_position = view_get_cursor_pos(app, result.view);
-	Buffer_Cursor cursor = buffer_compute_cursor(app, buffer, seek_pos(cursor_position));
-	result.list_index = get_index_nearest_from_list(app, result.list, cursor.line);
+		i64 cursor_position = view_get_cursor_pos(app, result.view);
+		Buffer_Cursor cursor = buffer_compute_cursor(app, buffer, seek_pos(cursor_position));
+		result.list_index = get_index_nearest_from_list(app, result.list, cursor.line);
     }
     return(result);
 }
@@ -469,13 +469,13 @@ CUSTOM_DOC("If a buffer containing jump locations has been locked in, goes to th
 
     Locked_Jump_State jump_state = get_locked_jump_state(app, heap);
     if (jump_state.view != 0){
-	i64 cursor_position = view_get_cursor_pos(app, jump_state.view);
-	Buffer_Cursor cursor = view_compute_cursor(app, jump_state.view, seek_pos(cursor_position));
-	i64 line = get_line_from_list(app, jump_state.list, jump_state.list_index);
-	if (line <= cursor.line){
-	    jump_state.list_index += 1;
-	}
-	goto_next_filtered_jump(app, jump_state.list, jump_state.view, jump_state.list_index, 1, true, true);
+		i64 cursor_position = view_get_cursor_pos(app, jump_state.view);
+		Buffer_Cursor cursor = view_compute_cursor(app, jump_state.view, seek_pos(cursor_position));
+		i64 line = get_line_from_list(app, jump_state.list, jump_state.list_index);
+		if (line <= cursor.line){
+			jump_state.list_index += 1;
+		}
+		goto_next_filtered_jump(app, jump_state.list, jump_state.view, jump_state.list_index, 1, true, true);
     }
 }
 
@@ -485,10 +485,10 @@ CUSTOM_DOC("If a buffer containing jump locations has been locked in, goes to th
 
     Locked_Jump_State jump_state = get_locked_jump_state(app, heap);
     if (jump_state.view != 0){
-	if (jump_state.list_index > 0){
-	    --jump_state.list_index;
-	}
-	goto_next_filtered_jump(app, jump_state.list, jump_state.view, jump_state.list_index, -1, true, true);
+		if (jump_state.list_index > 0){
+			--jump_state.list_index;
+		}
+		goto_next_filtered_jump(app, jump_state.list, jump_state.view, jump_state.list_index, -1, true, true);
     }
 }
 
@@ -499,13 +499,13 @@ CUSTOM_DOC("If a buffer containing jump locations has been locked in, goes to th
 
     Locked_Jump_State jump_state = get_locked_jump_state(app, heap);
     if (jump_state.view != 0){
-	i64 cursor_position = view_get_cursor_pos(app, jump_state.view);
-	Buffer_Cursor cursor = view_compute_cursor(app, jump_state.view, seek_pos(cursor_position));
-	i64 line = get_line_from_list(app, jump_state.list, jump_state.list_index);
-	if (line <= cursor.line){
-	    ++jump_state.list_index;
-	}
-	goto_next_filtered_jump(app, jump_state.list, jump_state.view, jump_state.list_index, 1, true, false);
+		i64 cursor_position = view_get_cursor_pos(app, jump_state.view);
+		Buffer_Cursor cursor = view_compute_cursor(app, jump_state.view, seek_pos(cursor_position));
+		i64 line = get_line_from_list(app, jump_state.list, jump_state.list_index);
+		if (line <= cursor.line){
+			++jump_state.list_index;
+		}
+		goto_next_filtered_jump(app, jump_state.list, jump_state.view, jump_state.list_index, 1, true, false);
     }
 }
 
@@ -516,10 +516,10 @@ CUSTOM_DOC("If a buffer containing jump locations has been locked in, goes to th
 
     Locked_Jump_State jump_state = get_locked_jump_state(app, heap);
     if (jump_state.view != 0){
-	if (jump_state.list_index > 0){
-	    --jump_state.list_index;
-	}
-	goto_next_filtered_jump(app, jump_state.list, jump_state.view, jump_state.list_index, -1, true, false);
+		if (jump_state.list_index > 0){
+			--jump_state.list_index;
+		}
+		goto_next_filtered_jump(app, jump_state.list, jump_state.view, jump_state.list_index, -1, true, false);
     }
 }
 
@@ -530,13 +530,13 @@ CUSTOM_DOC("If a buffer containing jump locations has been locked in, goes to th
 
     Locked_Jump_State jump_state = get_locked_jump_state(app, heap);
     if (jump_state.view != 0){
-	i32 list_index = 0;
-	ID_Pos_Jump_Location location = {};
-	if (get_jump_from_list(app, jump_state.list, list_index, &location)){
-	    goto_jump_in_order(app, jump_state.list, jump_state.view, location);
-	    i64 updated_line = get_line_from_list(app, jump_state.list, list_index);
-	    view_set_cursor_and_preferred_x(app, jump_state.view, seek_line_col(updated_line, 1));
-	}
+		i32 list_index = 0;
+		ID_Pos_Jump_Location location = {};
+		if (get_jump_from_list(app, jump_state.list, list_index, &location)){
+			goto_jump_in_order(app, jump_state.list, jump_state.view, location);
+			i64 updated_line = get_line_from_list(app, jump_state.list, list_index);
+			view_set_cursor_and_preferred_x(app, jump_state.view, seek_line_col(updated_line, 1));
+		}
     }
 }
 
@@ -547,14 +547,14 @@ CUSTOM_DOC("If a buffer containing jump locations has been locked in, goes to th
 
     Locked_Jump_State jump_state = get_locked_jump_state(app, heap);
     if (jump_state.view != 0){
-	i32 list_index = 0;
-	ID_Pos_Jump_Location location = {};
-	if (get_jump_from_list(app, jump_state.list, list_index, &location)){
-	    Buffer_ID buffer = {};
-	    if (get_jump_buffer(app, &buffer, &location)){
-		jump_to_location(app, jump_state.view, buffer, location);
-	    }
-	}
+		i32 list_index = 0;
+		ID_Pos_Jump_Location location = {};
+		if (get_jump_from_list(app, jump_state.list, list_index, &location)){
+			Buffer_ID buffer = {};
+			if (get_jump_buffer(app, &buffer, &location)){
+				jump_to_location(app, jump_state.view, buffer, location);
+			}
+		}
     }
 }
 
@@ -568,14 +568,14 @@ CUSTOM_DOC("If the buffer in the active view is writable, inserts a character, o
     View_ID view = get_active_view(app, Access_ReadVisible);
     Buffer_ID buffer = view_get_buffer(app, view, Access_ReadWriteVisible);
     if (buffer == 0){
-	buffer = view_get_buffer(app, view, Access_ReadVisible);
-	if (buffer != 0){
-	    goto_jump_at_cursor(app);
-	    lock_jump_buffer(app, buffer);
-	}
+		buffer = view_get_buffer(app, view, Access_ReadVisible);
+		if (buffer != 0){
+			goto_jump_at_cursor(app);
+			lock_jump_buffer(app, buffer);
+		}
     }
     else{
-	leave_current_input_unhandled(app);
+		leave_current_input_unhandled(app);
     }
 }
 
@@ -585,14 +585,14 @@ CUSTOM_DOC("If the buffer in the active view is writable, inserts a character, o
     View_ID view = get_active_view(app, Access_ReadVisible);
     Buffer_ID buffer = view_get_buffer(app, view, Access_ReadWriteVisible);
     if (buffer == 0){
-	buffer = view_get_buffer(app, view, Access_ReadVisible);
-	if (buffer != 0){
-	    goto_jump_at_cursor_same_panel(app);
-	    lock_jump_buffer(app, buffer);
-	}
+		buffer = view_get_buffer(app, view, Access_ReadVisible);
+		if (buffer != 0){
+			goto_jump_at_cursor_same_panel(app);
+			lock_jump_buffer(app, buffer);
+		}
     }
     else{
-	leave_current_input_unhandled(app);
+		leave_current_input_unhandled(app);
     }
 }
 
@@ -604,7 +604,7 @@ BUFFER_HOOK_SIG(default_end_buffer);
 BUFFER_HOOK_SIG(end_buffer_close_jump_list){
     Marker_List *list = get_marker_list_for_buffer(buffer_id);
     if (list != 0){
-	delete_marker_list(list);
+		delete_marker_list(list);
     }
     default_end_buffer(app, buffer_id);
     return(0);

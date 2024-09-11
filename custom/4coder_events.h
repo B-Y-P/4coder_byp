@@ -51,47 +51,47 @@ struct Input_Event{
     Input_Event_Kind kind;
     b32 virtual_event;
     union{
-	struct{
-	    String_Const_u8 string;
-
-	    // used internally
-	    Input_Event *next_text;
-	    b32 blocked;
-	} text;
-	struct{
-	    Key_Code code;
-	    Key_Flags flags;
-	    Input_Modifier_Set modifiers;
-
-	    // used internally
-	    Input_Event *first_dependent_text;
-	} key;
-	struct{
-	    Mouse_Code code;
-	    Vec2_i32 p;
-	    Input_Modifier_Set modifiers;
-	} mouse;
-	struct{
-	    f32 value;
-	    Vec2_i32 p;
-	    Input_Modifier_Set modifiers;
-	} mouse_wheel;
-	struct{
-	    Vec2_i32 p;
-	    Input_Modifier_Set modifiers;
-	} mouse_move;
-	struct{
-	    Core_Code code;
-	    union{
-		String_Const_u8 string;
-		i32 id;
 		struct{
-		    String_Const_u8_Array flag_strings;
-		    String_Const_u8_Array file_names;
-		};
-	    };
-	} core;
-	Custom_Command_Function *custom_func;
+			String_Const_u8 string;
+
+			// used internally
+			Input_Event *next_text;
+			b32 blocked;
+		} text;
+		struct{
+			Key_Code code;
+			Key_Flags flags;
+			Input_Modifier_Set modifiers;
+
+			// used internally
+			Input_Event *first_dependent_text;
+		} key;
+		struct{
+			Mouse_Code code;
+			Vec2_i32 p;
+			Input_Modifier_Set modifiers;
+		} mouse;
+		struct{
+			f32 value;
+			Vec2_i32 p;
+			Input_Modifier_Set modifiers;
+		} mouse_wheel;
+		struct{
+			Vec2_i32 p;
+			Input_Modifier_Set modifiers;
+		} mouse_move;
+		struct{
+			Core_Code code;
+			union{
+				String_Const_u8 string;
+				i32 id;
+				struct{
+					String_Const_u8_Array flag_strings;
+					String_Const_u8_Array file_names;
+				};
+			};
+		} core;
+		Custom_Command_Function *custom_func;
     };
 };
 
@@ -126,30 +126,30 @@ enum{
 };
 enum{
     EventPropertyGroup_AnyKeyboardEvent =
-	EventProperty_AnyKey|
-	EventProperty_Escape|
-	EventProperty_AnyKeyRelease|
-	EventProperty_TextInsert,
+		EventProperty_AnyKey|
+		EventProperty_Escape|
+		EventProperty_AnyKeyRelease|
+		EventProperty_TextInsert,
     EventPropertyGroup_AnyMouseEvent =
-	EventProperty_MouseButton|
-	EventProperty_MouseRelease|
-	EventProperty_MouseWheel|
-	EventProperty_MouseMove,
+		EventProperty_MouseButton|
+		EventProperty_MouseRelease|
+		EventProperty_MouseWheel|
+		EventProperty_MouseMove,
     EventPropertyGroup_AnyUserInput =
-	EventPropertyGroup_AnyKeyboardEvent|
-	EventPropertyGroup_AnyMouseEvent,
+		EventPropertyGroup_AnyKeyboardEvent|
+		EventPropertyGroup_AnyMouseEvent,
     EventPropertyGroup_AnyCore =
-	EventProperty_Animate|
-	EventProperty_ViewActivation|
-	EventProperty_AnyFile|
-	EventProperty_Startup|
-	EventProperty_Exit|
-	EventProperty_Clipboard|
-	EventProperty_Animate,
+		EventProperty_Animate|
+		EventProperty_ViewActivation|
+		EventProperty_AnyFile|
+		EventProperty_Startup|
+		EventProperty_Exit|
+		EventProperty_Clipboard|
+		EventProperty_Animate,
     EventPropertyGroup_Any =
-	EventPropertyGroup_AnyUserInput|
-	EventPropertyGroup_AnyCore|
-	EventProperty_CustomFunction,
+		EventPropertyGroup_AnyUserInput|
+		EventPropertyGroup_AnyCore|
+		EventProperty_CustomFunction,
 };
 
 #endif

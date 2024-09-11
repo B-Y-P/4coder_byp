@@ -141,9 +141,9 @@ struct Implicit_Map_Result{
 };
 
 typedef Implicit_Map_Result Implicit_Map_Function(Application_Links *app,
-						  String_ID buffer_language,
-						  String_ID global_mode,
-						  Input_Event *event);
+												  String_ID buffer_language,
+												  String_ID global_mode,
+												  Input_Event *event);
 
 global Implicit_Map_Function *implicit_map_function = 0;
 

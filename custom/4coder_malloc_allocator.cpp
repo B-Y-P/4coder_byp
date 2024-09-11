@@ -24,7 +24,7 @@ base_free__malloc(void *user_data, void *ptr){
 internal Base_Allocator
 make_malloc_base_allocator(void){
     return(make_base_allocator(base_reserve__malloc, 0, 0,
-			       base_free__malloc, 0, 0));
+							   base_free__malloc, 0, 0));
 }
 
 global Base_Allocator malloc_base_allocator = {};
@@ -32,7 +32,7 @@ global Base_Allocator malloc_base_allocator = {};
 internal Base_Allocator*
 get_allocator_malloc(void){
     if (malloc_base_allocator.reserve == 0){
-	malloc_base_allocator = make_malloc_base_allocator();
+		malloc_base_allocator = make_malloc_base_allocator();
     }
     return(&malloc_base_allocator);
 }

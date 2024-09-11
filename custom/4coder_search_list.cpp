@@ -36,23 +36,23 @@ def_search_get_full_path(Arena *arena, List_String_Const_u8 *list, String_Const_
     u8 slash = '/';
 
     for (Node_String_Const_u8 *node = list->first;
-	 node != 0;
-	 node = node->next){
-	String_Const_u8 full_name = {};
-	full_name.size = node->string.size + 1 + relative.size;
-	full_name.str = push_array(arena, u8, full_name.size + 1);
-	block_copy(full_name.str, node->string.str, node->string.size);
-	full_name.str[node->string.size] = slash;
-	block_copy(full_name.str + node->string.size + 1, relative.str, relative.size);
-	full_name.str[full_name.size] = 0;
+		 node != 0;
+		 node = node->next){
+		String_Const_u8 full_name = {};
+		full_name.size = node->string.size + 1 + relative.size;
+		full_name.str = push_array(arena, u8, full_name.size + 1);
+		block_copy(full_name.str, node->string.str, node->string.size);
+		full_name.str[node->string.size] = slash;
+		block_copy(full_name.str + node->string.size + 1, relative.str, relative.size);
+		full_name.str[full_name.size] = 0;
 
-	File_Attributes attribs = system_quick_file_attributes(arena, full_name);
-	if (attribs.last_write_time > 0){
-	    result = full_name;
-	    break;
-	}
+		File_Attributes attribs = system_quick_file_attributes(arena, full_name);
+		if (attribs.last_write_time > 0){
+			result = full_name;
+			break;
+		}
 
-	end_temp(temp);
+		end_temp(temp);
     }
 
     return(result);
@@ -64,7 +64,7 @@ def_search_fopen(Arena *arena, List_String_Const_u8 *list, char *file_name, char
     String_Const_u8 full_path = def_search_get_full_path(arena, list, SCu8(file_name));
     FILE *file = 0;
     if (full_path.size > 0){
-	file = fopen((char*)full_path.str, opt);
+		file = fopen((char*)full_path.str, opt);
     }
     return(file);
 }

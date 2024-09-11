@@ -24,10 +24,10 @@ write_named_comment_string(Application_Links *app, char *type_string){
     String_Const_u8 name = def_get_config_string(scratch, vars_save_string_lit("user_name"));
     String_Const_u8 str = {};
     if (name.size > 0){
-	str = push_u8_stringf(scratch, "// %s(%S): ", type_string, name);
+		str = push_u8_stringf(scratch, "// %s(%S): ", type_string, name);
     }
     else{
-	str = push_u8_stringf(scratch, "// %s: ", type_string);
+		str = push_u8_stringf(scratch, "// %s: ", type_string);
     }
     write_string(app, str);
 }
@@ -115,9 +115,9 @@ c_line_comment_starts_at_position(Application_Links *app, Buffer_ID buffer, i64 
     b32 alread_has_comment = false;
     u8 check_buffer[2];
     if (buffer_read_range(app, buffer, Ii64(pos, pos + 2), check_buffer)){
-	if (check_buffer[0] == '/' && check_buffer[1] == '/'){
-	    alread_has_comment = true;
-	}
+		if (check_buffer[0] == '/' && check_buffer[1] == '/'){
+			alread_has_comment = true;
+		}
     }
     return(alread_has_comment);
 }
@@ -130,7 +130,7 @@ CUSTOM_DOC("Insert '//' at the beginning of the line after leading whitespace.")
     i64 pos = get_start_of_line_at_cursor(app, view, buffer);
     b32 alread_has_comment = c_line_comment_starts_at_position(app, buffer, pos);
     if (!alread_has_comment){
-	buffer_replace_range(app, buffer, Ii64(pos), string_u8_litexpr("//"));
+		buffer_replace_range(app, buffer, Ii64(pos), string_u8_litexpr("//"));
     }
 }
 
@@ -142,7 +142,7 @@ CUSTOM_DOC("If present, delete '//' at the beginning of the line after leading w
     i64 pos = get_start_of_line_at_cursor(app, view, buffer);
     b32 alread_has_comment = c_line_comment_starts_at_position(app, buffer, pos);
     if (alread_has_comment){
-	buffer_replace_range(app, buffer, Ii64(pos, pos + 2), string_u8_empty);
+		buffer_replace_range(app, buffer, Ii64(pos, pos + 2), string_u8_empty);
     }
 }
 
@@ -154,10 +154,10 @@ CUSTOM_DOC("Turns uncommented lines into commented lines and vice versa for comm
     i64 pos = get_start_of_line_at_cursor(app, view, buffer);
     b32 alread_has_comment = c_line_comment_starts_at_position(app, buffer, pos);
     if (alread_has_comment){
-	buffer_replace_range(app, buffer, Ii64(pos, pos + 2), string_u8_empty);
+		buffer_replace_range(app, buffer, Ii64(pos, pos + 2), string_u8_empty);
     }
     else{
-	buffer_replace_range(app, buffer, Ii64(pos), string_u8_litexpr("//"));
+		buffer_replace_range(app, buffer, Ii64(pos), string_u8_litexpr("//"));
     }
 }
 
@@ -195,21 +195,21 @@ static Snippet default_snippets[] = {
 
 function void
 write_snippet(Application_Links *app, View_ID view, Buffer_ID buffer,
-	      i64 pos, Snippet *snippet){
+			  i64 pos, Snippet *snippet){
     if (snippet != 0){
-	String_Const_u8 snippet_text = SCu8(snippet->text);
-	buffer_replace_range(app, buffer, Ii64(pos), snippet_text);
-	i64 new_cursor = pos + snippet->cursor_offset;
-	view_set_cursor_and_preferred_x(app, view, seek_pos(new_cursor));
-	i64 new_mark = pos + snippet->mark_offset;
-	view_set_mark(app, view, seek_pos(new_mark));
-	auto_indent_buffer(app, buffer, Ii64_size(pos, snippet_text.size));
+		String_Const_u8 snippet_text = SCu8(snippet->text);
+		buffer_replace_range(app, buffer, Ii64(pos), snippet_text);
+		i64 new_cursor = pos + snippet->cursor_offset;
+		view_set_cursor_and_preferred_x(app, view, seek_pos(new_cursor));
+		i64 new_mark = pos + snippet->mark_offset;
+		view_set_mark(app, view, seek_pos(new_mark));
+		auto_indent_buffer(app, buffer, Ii64_size(pos, snippet_text.size));
     }
 }
 
 function Snippet*
 get_snippet_from_user(Application_Links *app, Snippet *snippets, i32 snippet_count,
-		      String_Const_u8 query){
+					  String_Const_u8 query){
     Scratch_Block scratch(app);
     Lister_Block lister(app, scratch);
     lister_set_query(lister, query);
@@ -217,12 +217,12 @@ get_snippet_from_user(Application_Links *app, Snippet *snippets, i32 snippet_cou
 
     Snippet *snippet = snippets;
     for (i32 i = 0; i < snippet_count; i += 1, snippet += 1){
-	lister_add_item(lister, SCu8(snippet->name), SCu8(snippet->text), snippet, 0);
+		lister_add_item(lister, SCu8(snippet->name), SCu8(snippet->text), snippet, 0);
     }
     Lister_Result l_result = run_lister(app, lister);
     Snippet *result = 0;
     if (!l_result.canceled){
-	result = (Snippet*)l_result.user_data;
+		result = (Snippet*)l_result.user_data;
     }
     return(result);
 }
@@ -230,7 +230,7 @@ get_snippet_from_user(Application_Links *app, Snippet *snippets, i32 snippet_cou
 
 function Snippet*
 get_snippet_from_user(Application_Links *app, Snippet *snippets, i32 snippet_count,
-		      char *query){
+					  char *query){
     return(get_snippet_from_user(app, snippets, snippet_count, SCu8(query)));
 }
 
@@ -239,13 +239,13 @@ CUSTOM_DOC("Opens a snippet lister for inserting whole pre-written snippets of t
 {
     View_ID view = get_this_ctx_view(app, Access_ReadWrite);
     if (view != 0){
-	Snippet *snippet = get_snippet_from_user(app, default_snippets,
-						 ArrayCount(default_snippets),
-						 "Snippet:");
+		Snippet *snippet = get_snippet_from_user(app, default_snippets,
+												 ArrayCount(default_snippets),
+												 "Snippet:");
 
-	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadWriteVisible);
-	i64 pos = view_get_cursor_pos(app, view);
-	write_snippet(app, view, buffer, pos, snippet);
+		Buffer_ID buffer = view_get_buffer(app, view, Access_ReadWriteVisible);
+		i64 pos = view_get_cursor_pos(app, view);
+		write_snippet(app, view, buffer, pos, snippet);
     }
 }
 

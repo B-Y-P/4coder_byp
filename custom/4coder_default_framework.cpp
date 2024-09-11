@@ -233,7 +233,7 @@ call_after_ctx_shutdown(Application_Links *app, View_ID view, Custom_Command_Fun
 
 function Fallback_Dispatch_Result
 fallback_command_dispatch(Application_Links *app, Mapping *mapping, Command_Map *map,
-			  User_Input *in){
+						  User_Input *in){
 	Fallback_Dispatch_Result result = {};
 	if (mapping != 0 && map != 0){
 		Command_Binding binding = map_get_binding_recursive(mapping, map, &in->event);
@@ -260,7 +260,7 @@ fallback_command_dispatch(Application_Links *app, Mapping *mapping, Command_Map 
 
 function b32
 ui_fallback_command_dispatch(Application_Links *app, View_ID view,
-			     Mapping *mapping, Command_Map *map, User_Input *in){
+							 Mapping *mapping, Command_Map *map, User_Input *in){
 	b32 result = false;
 	Fallback_Dispatch_Result disp_result =
 		fallback_command_dispatch(app, mapping, map, in);
@@ -682,7 +682,7 @@ default_4coder_initialize(Application_Links *app){
 
 function void
 default_4coder_side_by_side_panels(Application_Links *app,
-				   Buffer_Identifier left, Buffer_Identifier right){
+								   Buffer_Identifier left, Buffer_Identifier right){
 	Buffer_ID left_id = buffer_identifier_to_id(app, left);
 	Buffer_ID right_id = buffer_identifier_to_id(app, right);
 
@@ -702,8 +702,8 @@ default_4coder_side_by_side_panels(Application_Links *app,
 
 function void
 default_4coder_side_by_side_panels(Application_Links *app,
-				   Buffer_Identifier left, Buffer_Identifier right,
-				   String_Const_u8_Array file_names){
+								   Buffer_Identifier left, Buffer_Identifier right,
+								   String_Const_u8_Array file_names){
 	if (file_names.count > 0){
 		left = buffer_identifier(file_names.vals[0]);
 		if (file_names.count > 1){

@@ -12,10 +12,10 @@ CUSTOM_DOC("If the command execute_any_cli has already been used, this will exec
     String_Const_u8 hot_directory = SCu8(hot_directory_space);
 
     if (out_buffer.size > 0 && cmd.size > 0 && hot_directory.size > 0){
-	View_ID view = get_active_view(app, Access_Always);
-	Buffer_Identifier id = buffer_identifier(out_buffer);
-	exec_system_command(app, view, id, hot_directory, cmd, CLI_OverlapWithConflict|CLI_CursorAtEnd|CLI_SendEndSignal);
-	lock_jump_buffer(app, out_buffer);
+		View_ID view = get_active_view(app, Access_Always);
+		Buffer_Identifier id = buffer_identifier(out_buffer);
+		exec_system_command(app, view, id, hot_directory, cmd, CLI_OverlapWithConflict|CLI_CursorAtEnd|CLI_SendEndSignal);
+		lock_jump_buffer(app, out_buffer);
     }
 }
 
@@ -42,9 +42,9 @@ CUSTOM_DOC("Queries for an output buffer name and system command, runs the syste
 
     String_Const_u8 hot = push_hot_directory(app, scratch);
     {
-	u64 size = clamp_top(hot.size, sizeof(hot_directory_space));
-	block_copy(hot_directory_space, hot.str, size);
-	hot_directory_space[hot.size] = 0;
+		u64 size = clamp_top(hot.size, sizeof(hot_directory_space));
+		block_copy(hot_directory_space, hot.str, size);
+		hot_directory_space[hot.size] = 0;
     }
 
     execute_previous_cli(app);

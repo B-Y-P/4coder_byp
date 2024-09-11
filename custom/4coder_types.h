@@ -19,7 +19,7 @@ api(custom)
 typedef b32 _Get_Version_Type(i32 maj, i32 min, i32 patch);
 api(custom)
 typedef Custom_Layer_Init_Type *_Init_APIs_Type(struct API_VTable_custom *custom_vtable,
-						struct API_VTable_system *system_vtable);
+												struct API_VTable_system *system_vtable);
 
 ////////////////////////////////
 
@@ -686,7 +686,7 @@ typedef i32 Buffer_Hook_Function(Application_Links *app, Buffer_ID buffer_id);
 
 api(custom)
 typedef i32 Buffer_Edit_Range_Function(Application_Links *app, Buffer_ID buffer_id,
-				       Range_i64 new_range, Range_Cursor old_range);
+									   Range_i64 new_range, Range_Cursor old_range);
 #define BUFFER_EDIT_RANGE_SIG(name) i32 name(Application_Links *app, Buffer_ID buffer_id, Range_i64 new_range, Range_Cursor old_cursor_range)
 
 api(custom)
@@ -711,7 +711,7 @@ typedef void Whole_Screen_Render_Caller_Function(Application_Links *app, Frame_I
 
 api(custom)
 typedef void View_Change_Buffer_Function(Application_Links *app, View_ID view_id,
-					 Buffer_ID old_buffer_id, Buffer_ID new_buffer_id);
+										 Buffer_ID old_buffer_id, Buffer_ID new_buffer_id);
 
 api(custom)
 typedef u32 Layout_Item_Flag;

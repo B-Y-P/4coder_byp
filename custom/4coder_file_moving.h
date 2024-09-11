@@ -207,12 +207,12 @@ typedef i32  BOOL;
 typedef void*    LPSECURITY_ATTRIBUTES;
 typedef union    _LARGE_INTEGER {
     struct {
-	DWORD LowPart;
-	LONG  HighPart;
+		DWORD LowPart;
+		LONG  HighPart;
     };
     struct {
-	DWORD LowPart;
-	LONG  HighPart;
+		DWORD LowPart;
+		LONG  HighPart;
     } u;
     LONGLONG QuadPart;
 } LARGE_INTEGER, *PLARGE_INTEGER;
@@ -230,11 +230,11 @@ typedef struct _OVERLAPPED {
     ULONG_PTR Internal;
     ULONG_PTR InternalHigh;
     union {
-	struct {
-	    DWORD Offset;
-	    DWORD OffsetHigh;
-	};
-	PVOID  Pointer;
+		struct {
+			DWORD Offset;
+			DWORD OffsetHigh;
+		};
+		PVOID  Pointer;
     };
     HANDLE    hEvent;
 } OVERLAPPED, *LPOVERLAPPED;
@@ -279,7 +279,7 @@ fm_init_system(i32 det){
     detail_level = det;
     LARGE_INTEGER lint;
     if (QueryPerformanceFrequency(&lint)){
-	perf_frequency = lint.QuadPart;
+		perf_frequency = lint.QuadPart;
     }
     return(fm__init_memory());
 }
@@ -302,8 +302,8 @@ fm_get_time(){
     u64 time = 0;
     LARGE_INTEGER lint;
     if (QueryPerformanceCounter(&lint)){
-	time = lint.QuadPart;
-	time = (time * 1000000) / perf_frequency;
+		time = lint.QuadPart;
+		time = (time * 1000000) / perf_frequency;
     }
     return(time);
 }
@@ -317,31 +317,31 @@ fm_get_current_directory(char *buffer, i32 max){
 internal void
 fm_execute_in_dir(char *dir, char *str, char *args){
     if (dir){
-	Temp_Dir temp = fm_pushdir(dir);
-	if (args){
-	    systemf("call \"%s\" %s", str, args);
-	}
-	else{
-	    systemf("call \"%s\"", str);
-	}
-	fm_popdir(temp);
+		Temp_Dir temp = fm_pushdir(dir);
+		if (args){
+			systemf("call \"%s\" %s", str, args);
+		}
+		else{
+			systemf("call \"%s\"", str);
+		}
+		fm_popdir(temp);
     }
     else{
-	if (args){
-	    systemf("call \"%s\" %s", str, args);
-	}
-	else{
-	    systemf("call \"%s\"", str);
-	}
+		if (args){
+			systemf("call \"%s\" %s", str, args);
+		}
+		else{
+			systemf("call \"%s\"", str);
+		}
     }
 }
 
 internal void
 fm_slash_fix(char *path){
     if (path != 0){
-	for (i32 i = 0; path[i]; ++i){
-	    if (path[i] == '/') path[i] = '\\';
-	}
+		for (i32 i = 0; path[i]; ++i){
+			if (path[i] == '/') path[i] = '\\';
+		}
     }
 }
 
@@ -350,11 +350,11 @@ fm_make_folder_if_missing(Arena *arena, char *dir){
     char *path = fm_str(arena, dir);
     char *p = path;
     for (; *p; ++p){
-	if (*p == '\\'){
-	    *p = 0;
-	    CreateDirectoryA(path, 0);
-	    *p = '\\';
-	}
+		if (*p == '\\'){
+			*p = 0;
+			CreateDirectoryA(path, 0);
+			*p = '\\';
+		}
     }
     CreateDirectoryA(path, 0);
 }
@@ -362,7 +362,7 @@ fm_make_folder_if_missing(Arena *arena, char *dir){
 internal void
 fm_clear_folder(char *folder){
     if (fm__show_details_for_file_operations()){
-	fprintf(stdout, "clearing folder %s\n", folder);
+		fprintf(stdout, "clearing folder %s\n", folder);
     }
     fflush(stdout);
     systemf("del /S /Q /F %s\\* > nul & rmdir /S /Q %s > nul & mkdir %s > nul", folder, folder, folder);
@@ -376,7 +376,7 @@ fm_delete_file(char *file){
 internal void
 fm_copy_file(char *file, char *newname){
     if (fm__show_details_for_file_operations()){
-	printf("copy %s to %s\n", file, newname);
+		printf("copy %s to %s\n", file, newname);
     }
     fflush(stdout);
     CopyFileA(file, newname, 0);
@@ -385,7 +385,7 @@ fm_copy_file(char *file, char *newname){
 internal void
 fm_copy_all(char *source, char *folder){
     if (fm__show_details_for_file_operations()){
-	fprintf(stdout, "copy %s to %s\n", source, folder);
+		fprintf(stdout, "copy %s to %s\n", source, folder);
     }
     fflush(stdout);
     systemf("xcopy /s /e /y /q %s %s > nul", source, folder);
@@ -395,23 +395,23 @@ internal void
 fm_write_file(char *file_name, char *data, u32 size){
     HANDLE file = CreateFileA(file_name, GENERIC_WRITE, 0, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
     if (file != INVALID_HANDLE_VALUE){
-	DWORD written = 0;
-	for (;written < size;){
-	    DWORD newly_written = 0;
-	    if (!WriteFile(file, data + written, size - written, &newly_written, 0)){
-		break;
-	    }
-	    written += newly_written;
-	}
-	Assert(written == size);
-	CloseHandle(file);
+		DWORD written = 0;
+		for (;written < size;){
+			DWORD newly_written = 0;
+			if (!WriteFile(file, data + written, size - written, &newly_written, 0)){
+				break;
+			}
+			written += newly_written;
+		}
+		Assert(written == size);
+		CloseHandle(file);
     }
 }
 
 internal void
 fm_zip(char *parent, char *folder, char *dest){
     if (fm__show_details_for_file_operations()){
-	printf("zipping %s\\%s to %s\n", parent, folder, dest);
+		printf("zipping %s\\%s to %s\n", parent, folder, dest);
     }
     fflush(stdout);
 
@@ -422,7 +422,7 @@ fm_zip(char *parent, char *folder, char *dest){
     char *show_output = "";
     char *output_rule = hide_output;
     if (fm__show_details_for_zip_output()){
-	output_rule = show_output;
+		output_rule = show_output;
     }
 
     Temp_Dir temp = fm_pushdir(parent);
@@ -430,7 +430,7 @@ fm_zip(char *parent, char *folder, char *dest){
     fm_popdir(temp);
 
     systemf("copy %s\\4ed_gobble.zip %s%s & del %s\\4ed_gobble.zip%s",
-	    cdir, dest, output_rule, cdir, output_rule);
+			cdir, dest, output_rule, cdir, output_rule);
 }
 
 //
@@ -448,9 +448,9 @@ fm_pushdir(char *dir){
     char *result = getcwd(temp.dir, sizeof(temp.dir));
     i32 chresult = chdir(dir);
     if (result == 0 || chresult != 0){
-	printf("trying pushdir %s\n", dir);
-	Assert(result != 0);
-	Assert(chresult == 0);
+		printf("trying pushdir %s\n", dir);
+		Assert(result != 0);
+		Assert(chresult == 0);
     }
     return(temp);
 }
@@ -480,7 +480,7 @@ fm_get_current_directory(char *buffer, i32 max){
     i32 result = 0;
     char *d = getcwd(buffer, max);
     if (d == buffer){
-	result = strlen(buffer);
+		result = strlen(buffer);
     }
     return(result);
 }
@@ -488,24 +488,24 @@ fm_get_current_directory(char *buffer, i32 max){
 internal void
 fm_execute_in_dir(char *dir, char *str, char *args){
     if (dir){
-	if (args){
-	    Temp_Dir temp = fm_pushdir(dir);
-	    systemf("%s %s", str, args);
-	    fm_popdir(temp);
-	}
-	else{
-	    Temp_Dir temp = fm_pushdir(dir);
-	    systemf("%s", str);
-	    fm_popdir(temp);
-	}
+		if (args){
+			Temp_Dir temp = fm_pushdir(dir);
+			systemf("%s %s", str, args);
+			fm_popdir(temp);
+		}
+		else{
+			Temp_Dir temp = fm_pushdir(dir);
+			systemf("%s", str);
+			fm_popdir(temp);
+		}
     }
     else{
-	if (args){
-	    systemf("%s %s", str, args);
-	}
-	else{
-	    systemf("%s", str);
-	}
+		if (args){
+			systemf("%s %s", str, args);
+		}
+		else{
+			systemf("%s", str);
+		}
     }
 }
 
@@ -520,7 +520,7 @@ fm_make_folder_if_missing(Arena *arena, char *dir){
 internal void
 fm_clear_folder(char *folder){
     if (fm__show_details_for_file_operations()){
-	fprintf(stdout, "clearing folder %s\n", folder);
+		fprintf(stdout, "clearing folder %s\n", folder);
     }
     fflush(stdout);
     systemf("rm -rf %s* > /dev/null", folder);
@@ -534,7 +534,7 @@ fm_delete_file(char *file){
 internal void
 fm_copy_file(char *file, char *newname){
     if (fm__show_details_for_file_operations()){
-	printf("copy %s to %s\n", file, newname);
+		printf("copy %s to %s\n", file, newname);
     }
     fflush(stdout);
     systemf("cp %s %s", file, newname);
@@ -543,7 +543,7 @@ fm_copy_file(char *file, char *newname){
 internal void
 fm_copy_all(char *source, char *folder){
     if (fm__show_details_for_file_operations()){
-	fprintf(stdout, "copy %s to %s\n", source, folder);
+		fprintf(stdout, "copy %s to %s\n", source, folder);
     }
     fflush(stdout);
     systemf("cp -rf %s/* %s > /dev/null", source, folder);
@@ -554,15 +554,15 @@ fm_write_file(char *file_name, char *data, u32 size){
     // TODO(allen): Real unix version?
     FILE *file = fopen(file_name, "wb");
     if (file != 0){
-	fwrite(data, 1, size, file);
-	fclose(file);
+		fwrite(data, 1, size, file);
+		fclose(file);
     }
 }
 
 internal void
 fm_zip(char *parent, char *folder, char *file){
     if (fm__show_details_for_file_operations()){
-	printf("zipping %s/%s to %s\n", parent, folder, file);
+		printf("zipping %s/%s to %s\n", parent, folder, file);
     }
     fflush(stdout);
 
@@ -570,7 +570,7 @@ fm_zip(char *parent, char *folder, char *file){
     char *show_output = "";
     char *output_rule = hide_output;
     if (fm__show_details_for_zip_output()){
-	output_rule = show_output;
+		output_rule = show_output;
     }
 
     Temp_Dir temp = fm_pushdir(parent);
@@ -608,9 +608,9 @@ fm__prepare(Arena *arena, i32 item_size, void *i1, va_list list){
     string_list_push(arena, &out_list, SCchar((char*)i1, size));
     void *ln = va_arg(list, void*);
     for (;ln != 0;){
-	size = listsize(ln, item_size);
-	string_list_push(arena, &out_list, SCchar((char*)ln, size));
-	ln = va_arg(list, void*);
+		size = listsize(ln, item_size);
+		string_list_push(arena, &out_list, SCchar((char*)ln, size));
+		ln = va_arg(list, void*);
     }
     void *terminator = push_array_zero(arena, char, item_size);
     string_list_push(arena, &out_list, SCchar((char*)terminator, item_size));

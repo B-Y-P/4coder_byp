@@ -57,8 +57,8 @@ function char*
 insert__reserve(Buffer_Insertion *insertion, u64 size){
     char *space = push_array(insertion->cursor, char, size);
     if (space == 0){
-	insert__flush(insertion);
-	space = push_array(insertion->cursor, char, size);
+		insert__flush(insertion);
+		space = push_array(insertion->cursor, char, size);
     }
     return(space);
 }
@@ -66,23 +66,23 @@ insert__reserve(Buffer_Insertion *insertion, u64 size){
 function void
 end_buffer_insertion(Buffer_Insertion *insertion){
     if (insertion->buffering){
-	insert__flush(insertion);
+		insert__flush(insertion);
     }
 }
 
 function void
 insert_string(Buffer_Insertion *insertion, String_Const_u8 string){
     if (!insertion->buffering){
-	insert_string__no_buffering(insertion, string);
+		insert_string__no_buffering(insertion, string);
     }
     else{
-	char *space = insert__reserve(insertion, string.size);
-	if (space != 0){
-	    block_copy(space, string.str, string.size);
-	}
-	else{
-	    insert_string__no_buffering(insertion, string);
-	}
+		char *space = insert__reserve(insertion, string.size);
+		if (space != 0){
+			block_copy(space, string.str, string.size);
+		}
+		else{
+			insert_string__no_buffering(insertion, string);
+		}
     }
 }
 
@@ -106,8 +106,8 @@ function b32
 insert_line_from_buffer(Buffer_Insertion *insertion, Buffer_ID buffer_id, i32 line, i32 truncate_at){
     b32 success = is_valid_line(insertion->app, buffer_id, line);
     if (success){
-	Scratch_Block scratch(insertion->app);
-	insert_string(insertion, push_buffer_line(insertion->app, scratch, buffer_id, line));
+		Scratch_Block scratch(insertion->app);
+		insert_string(insertion, push_buffer_line(insertion->app, scratch, buffer_id, line));
     }
     return(success);
 }
