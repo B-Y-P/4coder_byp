@@ -616,7 +616,7 @@ cl = lg;                                 \
         cs = 0;
         // copy the string in
         goto scopy;
-      } break;
+      };
 
 			case 'c': // char
 			// get the character

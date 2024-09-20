@@ -1,4 +1,4 @@
-#pragma once
+#ifndef _4CODER_BYP_CPP
 
 #if OS_WINDOWS
 #define SNIPPET_EXPANSION "4coder_byp_snippets.inc"
@@ -84,3 +84,6 @@ custom_layer_init(Application_Links *app){
 	vim_default_bindings(app, KeyCode_BackwardSlash);
 	byp_vim_bindings(app);
 }
+
+#define _4CODER_BYP_CPP
+#endif
