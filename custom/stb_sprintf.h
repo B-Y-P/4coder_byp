@@ -601,20 +601,22 @@ cl = lg;                                 \
 			goto scopy;
 
 			case 'S':
-			// get the string
-			String_Const_u8 string = va_arg(va, String_Const_u8);
-			s = (char *)string.str;
-			if (s == 0)
-				s = (char *)"null";
-			// get the length
-			l = (int)string.size;
-			lead[0] = 0;
-			tail[0] = 0;
-			pr = 0;
-			dp = 0;
-			cs = 0;
-			// copy the string in
-			goto scopy;
+      {
+        // get the string
+        String_Const_u8 string = va_arg(va, String_Const_u8);
+        s = (char *)string.str;
+        if (s == 0)
+          s = (char *)"null";
+        // get the length
+        l = (int)string.size;
+        lead[0] = 0;
+        tail[0] = 0;
+        pr = 0;
+        dp = 0;
+        cs = 0;
+        // copy the string in
+        goto scopy;
+      };
 
 			case 'c': // char
 			// get the character
