@@ -15,6 +15,7 @@ CUSTOM_DOC("Responding to a startup event")
 		load_config_and_apply(app, &global_config_arena, description.parameters.pt_size, description.parameters.hinting);
 
 		// open command line files
+		Buffer_ID buffer = 0;
 		String_Const_u8 hot_directory = push_hot_directory(app, scratch);
 		for (i32 i = 0; i < file_names.count; i += 1){
 			Temp_Memory_Block temp(scratch);
@@ -22,12 +23,16 @@ CUSTOM_DOC("Responding to a startup event")
 			String_Const_u8 full_name = push_u8_stringf(scratch, "%S/%S", hot_directory, input_name);
 			Buffer_ID new_buffer = create_buffer(app, full_name, BufferCreate_NeverNew|BufferCreate_MustAttachToFile);
 			if (new_buffer == 0){
-				create_buffer(app, input_name, 0);
+				new_buffer = create_buffer(app, input_name, 0);
+			}
+			if (new_buffer != 0 && buffer == 0){
+				buffer = new_buffer;
 			}
 		}
+		if (buffer == 0){
+			buffer = buffer_identifier_to_id(app, buffer_identifier(string_u8_litexpr("*scratch*")));
+		}
 
-		String_Const_u8 iden = (file_names.count > 0 ? file_names.vals[0] : string_u8_litexpr("*scratch*"));
-		Buffer_ID buffer = buffer_identifier_to_id(app, buffer_identifier(iden));
 		View_ID view = get_active_view(app, Access_Always);
 		new_view_settings(app, view);
 		view_set_buffer(app, view, buffer, 0);
