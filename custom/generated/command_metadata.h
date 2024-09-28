@@ -636,7 +636,7 @@ static Command_Metadata fcoder_metacmd_table[326] = {
 { PROC_LINKS(toggle_mouse, 0), false, "toggle_mouse", 12, "Toggles the mouse suppression mode, see suppress_mouse and allow_mouse.", 71, "P:\\4coder\\4coder_byp\\custom\\4coder_default_framework.cpp", 56, 487 },
 { PROC_LINKS(toggle_paren_matching_helper, 0), false, "toggle_paren_matching_helper", 28, "In code files matching parentheses pairs are colored with distinguishing colors.", 80, "P:\\4coder\\4coder_byp\\custom\\4coder_default_framework.cpp", 56, 521 },
 { PROC_LINKS(toggle_show_whitespace, 0), false, "toggle_show_whitespace", 22, "Toggles the current buffer's whitespace visibility status.", 58, "P:\\4coder\\4coder_byp\\custom\\4coder_base_commands.cpp", 52, 820 },
-{ PROC_LINKS(toggle_virtual_whitespace, 0), false, "toggle_virtual_whitespace", 25, "Toggles virtual whitespace for all files.", 41, "P:\\4coder\\4coder_byp\\custom\\4coder_code_index.cpp", 49, 1363 },
+{ PROC_LINKS(toggle_virtual_whitespace, 0), false, "toggle_virtual_whitespace", 25, "Toggles virtual whitespace for all files.", 41, "P:\\4coder\\4coder_byp\\custom\\4coder_code_index.cpp", 49, 1387 },
 { PROC_LINKS(tutorial_maximize, 0), false, "tutorial_maximize", 17, "Expand the tutorial window", 26, "P:\\4coder\\4coder_byp\\custom\\4coder_tutorial.cpp", 47, 20 },
 { PROC_LINKS(tutorial_minimize, 0), false, "tutorial_minimize", 17, "Shrink the tutorial window", 26, "P:\\4coder\\4coder_byp\\custom\\4coder_tutorial.cpp", 47, 34 },
 { PROC_LINKS(uncomment_line, 0), false, "uncomment_line", 14, "If present, delete '//' at the beginning of the line after leading whitespace.", 78, "P:\\4coder\\4coder_byp\\custom\\4coder_combined_write_commands.cpp", 62, 137 },

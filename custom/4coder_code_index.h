@@ -102,15 +102,11 @@ struct Code_Index{
 
 ////////////////////////////////
 
-typedef void Generic_Parse_Comment_Function(Application_Links *app, Arena *arena, Code_Index_File *index,
-											Token *token, String_Const_u8 contents);
-
 struct Generic_Parse_State{
     Application_Links *app;
     Arena *arena;
     String_Const_u8 contents;
     Token_Iterator_Array it;
-    Generic_Parse_Comment_Function *handle_comment;
     u8 *prev_line_start;
     b32 finished;
 

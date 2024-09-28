@@ -5,6 +5,7 @@
 #endif
 
 #include "4coder_default_include.h"
+#include "4coder_byp_token.h"
 
 function Lister_Result vim_run_lister(Application_Links *app, Lister *lister);
 #define run_lister vim_run_lister
@@ -27,7 +28,6 @@ CUSTOM_ID(colors, defcolor_non_text);
 
 #include "4coder_byp_helper.h"
 
-#include "4coder_byp_token.h"
 #include "4coder_byp_token.cpp"
 
 #include "4coder_byp_build.cpp"
