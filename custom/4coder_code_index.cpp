@@ -560,9 +560,11 @@ cpp_parse_type_def(Code_Index_File *index, Generic_Parse_State *state, Code_Inde
 			if (token->sub_kind == TokenCppKind_Struct ||
 				token->sub_kind == TokenCppKind_Union){
 				cpp_parse_type_structure(index, state, 0);
+				did_advance = true;
 			}
 			else if(token->sub_kind == TokenCppKind_Enum){
 				cpp_parse_enum(index, state, parent);
+				did_advance = true;
 			}
 		}
 		if (!did_advance){
