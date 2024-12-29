@@ -333,8 +333,8 @@ layout_unwrapped_small_blank_lines(Application_Links *app, Arena *arena, Buffer_
 				}break;
 
 				case ' ':
-				case '\f':
-				case '\v':
+					case '\f':
+					case '\v':
 				{
 					newline_layout_consume_default(&newline_vars);
 					lr_tb_write_blank(&pos_vars, face, arena, &list, index);
@@ -483,7 +483,7 @@ layout_unwrapped__inner(Application_Links *app, Arena *arena, Buffer_ID buffer, 
 			i64 index = layout_index_from_ptr(ptr, text.str, range.first);
 			switch (consume.codepoint){
 				case '\t':
-				case ' ':
+					case ' ':
 				{
 					newline_layout_consume_default(&newline_vars);
 					f32 advance = lr_tb_advance(&pos_vars, face, consume.codepoint);
@@ -566,7 +566,7 @@ layout_wrap_whitespace__inner(Application_Links *app, Arena *arena, Buffer_ID bu
 		}
 
 		consuming_non_whitespace:
-		for (;ptr <= end_ptr; ptr += 1){
+			for (;ptr <= end_ptr; ptr += 1){
 			if (ptr == end_ptr || character_is_whitespace(*ptr)){
 				break;
 			}
@@ -619,7 +619,7 @@ layout_wrap_whitespace__inner(Application_Links *app, Arena *arena, Buffer_ID bu
 		}
 
 		consuming_whitespace:
-		for (; ptr < end_ptr; ptr += 1){
+			for (; ptr < end_ptr; ptr += 1){
 			if (!character_is_whitespace(*ptr)){
 				word_ptr = ptr;
 				goto consuming_non_whitespace;
@@ -628,7 +628,7 @@ layout_wrap_whitespace__inner(Application_Links *app, Arena *arena, Buffer_ID bu
 			i64 index = layout_index_from_ptr(ptr, text.str, range.first);
 			switch (*ptr){
 				case '\t':
-				case ' ':
+					case ' ':
 				{
 					newline_layout_consume_default(&newline_vars);
 					f32 advance = lr_tb_advance(&pos_vars, face, *ptr);

@@ -867,7 +867,7 @@ parse_project(Application_Links *app, Arena *arena, File_Name_Data dump)
 
 				switch (version){
 					case 0:
-					case 1:
+						case 1:
 					{
 						prj_var = prj_v1_to_v2(app, project_root, config_parse);
 					}break;

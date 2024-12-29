@@ -392,10 +392,10 @@ cl = lg;                                 \
 		for (;;) {
 			while (((stbsp__uintptr)f) & 3) {
 				schk1:
-				if (f[0] == '%')
+					if (f[0] == '%')
 					goto scandd;
 				schk2:
-				if (f[0] == 0)
+					if (f[0] == 0)
 					goto endfmt;
 				stbsp__chk_cb_buf(1);
 				*bf++ = f[0];
@@ -432,7 +432,7 @@ cl = lg;                                 \
 		}
 		scandd:
 
-		++f;
+			++f;
 
 		// ok, we have a percent, read the modifiers first
 		fw = 0;
@@ -445,32 +445,32 @@ cl = lg;                                 \
 			switch (f[0]) {
 				// if we have left justify
 				case '-':
-				fl |= STBSP__LEFTJUST;
+					fl |= STBSP__LEFTJUST;
 				++f;
 				continue;
 				// if we have leading plus
 				case '+':
-				fl |= STBSP__LEADINGPLUS;
+					fl |= STBSP__LEADINGPLUS;
 				++f;
 				continue;
 				// if we have leading space
 				case ' ':
-				fl |= STBSP__LEADINGSPACE;
+					fl |= STBSP__LEADINGSPACE;
 				++f;
 				continue;
 				// if we have leading 0x
 				case '#':
-				fl |= STBSP__LEADING_0X;
+					fl |= STBSP__LEADING_0X;
 				++f;
 				continue;
 				// if we have thousand commas
 				case '\'':
-				fl |= STBSP__TRIPLET_COMMA;
+					fl |= STBSP__TRIPLET_COMMA;
 				++f;
 				continue;
 				// if we have kilo marker (none->kilo->kibi->jedec)
 				case '$':
-				if (fl & STBSP__METRIC_SUFFIX) {
+					if (fl & STBSP__METRIC_SUFFIX) {
 					if (fl & STBSP__METRIC_1024) {
 						fl |= STBSP__METRIC_JEDEC;
 					} else {
@@ -483,12 +483,12 @@ cl = lg;                                 \
 				continue;
 				// if we don't want space between metric suffix and number
 				case '_':
-				fl |= STBSP__METRIC_NOSPACE;
+					fl |= STBSP__METRIC_NOSPACE;
 				++f;
 				continue;
 				// if we have leading zero
 				case '0':
-				fl |= STBSP__LEADINGZERO;
+					fl |= STBSP__LEADINGZERO;
 				++f;
 				goto flags_done;
 				default: goto flags_done;
@@ -496,8 +496,8 @@ cl = lg;                                 \
 		}
 		flags_done:
 
-		// get the field width
-		if (f[0] == '*') {
+			// get the field width
+			if (f[0] == '*') {
 			fw = va_arg(va, stbsp__uint32);
 			++f;
 		} else {
@@ -525,14 +525,14 @@ cl = lg;                                 \
 		switch (f[0]) {
 			// are we halfwidth?
 			case 'h':
-			fl |= STBSP__HALFWIDTH;
+				fl |= STBSP__HALFWIDTH;
 			++f;
 			if (f[0] == 'h')
 				++f;  // QUARTERWIDTH
 			break;
 			// are we 64-bit (unix style)
 			case 'l':
-			fl |= ((sizeof(long) == 8) ? STBSP__INTMAX : 0);
+				fl |= ((sizeof(long) == 8) ? STBSP__INTMAX : 0);
 			++f;
 			if (f[0] == 'l') {
 				fl |= STBSP__INTMAX;
@@ -541,21 +541,21 @@ cl = lg;                                 \
 			break;
 			// are we 64-bit on intmax? (c99)
 			case 'j':
-			fl |= (sizeof(size_t) == 8) ? STBSP__INTMAX : 0;
+				fl |= (sizeof(size_t) == 8) ? STBSP__INTMAX : 0;
 			++f;
 			break;
 			// are we 64-bit on size_t or ptrdiff_t? (c99)
 			case 'z':
-			fl |= (sizeof(ptrdiff_t) == 8) ? STBSP__INTMAX : 0;
+				fl |= (sizeof(ptrdiff_t) == 8) ? STBSP__INTMAX : 0;
 			++f;
 			break;
 			case 't':
-			fl |= (sizeof(ptrdiff_t) == 8) ? STBSP__INTMAX : 0;
+				fl |= (sizeof(ptrdiff_t) == 8) ? STBSP__INTMAX : 0;
 			++f;
 			break;
 			// are we 64-bit (msft style)
 			case 'I':
-			if ((f[1] == '6') && (f[2] == '4')) {
+				if ((f[1] == '6') && (f[2] == '4')) {
 				fl |= STBSP__INTMAX;
 				f += 3;
 			} else if ((f[1] == '3') && (f[2] == '2')) {
@@ -585,8 +585,8 @@ cl = lg;                                 \
 			char const *sn;
 
 			case 's':
-			// get the string
-			s = va_arg(va, char *);
+				// get the string
+				s = va_arg(va, char *);
 			if (s == 0)
 				s = (char *)"null";
 			// get the length, limited to desired precision
@@ -601,26 +601,26 @@ cl = lg;                                 \
 			goto scopy;
 
 			case 'S':
-      {
-        // get the string
-        String_Const_u8 string = va_arg(va, String_Const_u8);
-        s = (char *)string.str;
-        if (s == 0)
-          s = (char *)"null";
-        // get the length
-        l = (int)string.size;
-        lead[0] = 0;
-        tail[0] = 0;
-        pr = 0;
-        dp = 0;
-        cs = 0;
-        // copy the string in
-        goto scopy;
-      };
+			{
+				// get the string
+				String_Const_u8 string = va_arg(va, String_Const_u8);
+				s = (char *)string.str;
+				if (s == 0)
+					s = (char *)"null";
+				// get the length
+				l = (int)string.size;
+				lead[0] = 0;
+				tail[0] = 0;
+				pr = 0;
+				dp = 0;
+				cs = 0;
+				// copy the string in
+				goto scopy;
+			};
 
 			case 'c': // char
-			// get the character
-			s = num + STBSP__NUMSZ - 1;
+				// get the character
+				s = num + STBSP__NUMSZ - 1;
 			*s = (char)va_arg(va, int);
 			l = 1;
 			lead[0] = 0;
@@ -638,13 +638,13 @@ cl = lg;                                 \
 
 #ifdef STB_SPRINTF_NOFLOAT
 			case 'A':              // float
-			case 'a':              // hex float
-			case 'G':              // float
-			case 'g':              // float
-			case 'E':              // float
-			case 'e':              // float
-			case 'f':              // float
-			va_arg(va, double); // eat it
+				case 'a':              // hex float
+				case 'G':              // float
+				case 'g':              // float
+				case 'E':              // float
+				case 'e':              // float
+				case 'f':              // float
+				va_arg(va, double); // eat it
 			s = (char *)"No float";
 			l = 8;
 			lead[0] = 0;
@@ -655,8 +655,8 @@ cl = lg;                                 \
 			goto scopy;
 #else
 			case 'A': // hex float
-			case 'a': // hex float
-			h = (f[0] == 'A') ? hexu : hex;
+				case 'a': // hex float
+				h = (f[0] == 'A') ? hexu : hex;
 			fv = va_arg(va, double);
 			if (pr == -1)
 				pr = 6; // default is 6
@@ -727,8 +727,8 @@ cl = lg;                                 \
 			goto scopy;
 
 			case 'G': // float
-			case 'g': // float
-			h = (f[0] == 'G') ? hexu : hex;
+				case 'g': // float
+				h = (f[0] == 'G') ? hexu : hex;
 			fv = va_arg(va, double);
 			if (pr == -1)
 				pr = 6;
@@ -764,8 +764,8 @@ cl = lg;                                 \
 			goto dofloatfromg;
 
 			case 'E': // float
-			case 'e': // float
-			h = (f[0] == 'E') ? hexu : hex;
+				case 'e': // float
+				h = (f[0] == 'E') ? hexu : hex;
 			fv = va_arg(va, double);
 			if (pr == -1)
 				pr = 6; // default is 6
@@ -773,7 +773,7 @@ cl = lg;                                 \
 			if (stbsp__real_to_str(&sn, &l, num, &dp, fv, pr | 0x80000000))
 				fl |= STBSP__NEGATIVE;
 			doexpfromg:
-			tail[0] = 0;
+				tail[0] = 0;
 			stbsp__lead_sign(fl, lead);
 			if (dp == STBSP__SPECIAL) {
 				s = (char *)sn;
@@ -821,10 +821,10 @@ cl = lg;                                 \
 			goto flt_lead;
 
 			case 'f': // float
-			fv = va_arg(va, double);
+				fv = va_arg(va, double);
 			doafloat:
-			// do kilos
-			if (fl & STBSP__METRIC_SUFFIX) {
+				// do kilos
+				if (fl & STBSP__METRIC_SUFFIX) {
 				double divisor;
 				divisor = 1000.0f;
 				if (fl & STBSP__METRIC_1024)
@@ -842,7 +842,7 @@ cl = lg;                                 \
 			if (stbsp__real_to_str(&sn, &l, num, &dp, fv, pr))
 				fl |= STBSP__NEGATIVE;
 			dofloatfromg:
-			tail[0] = 0;
+				tail[0] = 0;
 			stbsp__lead_sign(fl, lead);
 			if (dp == STBSP__SPECIAL) {
 				s = (char *)sn;
@@ -987,15 +987,15 @@ cl = lg;                                 \
 			};
 
 			flt_lead:
-			// get the length that we copied
-			l = (stbsp__uint32)(s - (num + 64));
+				// get the length that we copied
+				l = (stbsp__uint32)(s - (num + 64));
 			s = num + 64;
 			goto scopy;
 #endif
 
 			case 'B': // upper binary
-			case 'b': // lower binary
-			h = (f[0] == 'B') ? hexu : hex;
+				case 'b': // lower binary
+				h = (f[0] == 'B') ? hexu : hex;
 			lead[0] = 0;
 			if (fl & STBSP__LEADING_0X) {
 				lead[0] = 2;
@@ -1006,7 +1006,7 @@ cl = lg;                                 \
 			goto radixnum;
 
 			case 'o': // octal
-			h = hexu;
+				h = hexu;
 			lead[0] = 0;
 			if (fl & STBSP__LEADING_0X) {
 				lead[0] = 1;
@@ -1016,14 +1016,14 @@ cl = lg;                                 \
 			goto radixnum;
 
 			case 'p': // pointer
-			fl |= (sizeof(void *) == 8) ? STBSP__INTMAX : 0;
+				fl |= (sizeof(void *) == 8) ? STBSP__INTMAX : 0;
 			pr = sizeof(void *) * 2;
 			fl &= ~STBSP__LEADINGZERO; // 'p' only prints the pointer with zeros
 			// fall through - to X
 
 			case 'X': // upper hex
-			case 'x': // lower hex
-			h = (f[0] == 'X') ? hexu : hex;
+				case 'x': // lower hex
+				h = (f[0] == 'X') ? hexu : hex;
 			l = (4 << 4) | (4 << 8);
 			lead[0] = 0;
 			if (fl & STBSP__LEADING_0X) {
@@ -1032,8 +1032,8 @@ cl = lg;                                 \
 				lead[2] = h[16];
 			}
 			radixnum:
-			// get the number
-			if (fl & STBSP__INTMAX)
+				// get the number
+				if (fl & STBSP__INTMAX)
 				n64 = va_arg(va, stbsp__uint64);
 			else
 				n64 = va_arg(va, stbsp__uint32);
@@ -1072,10 +1072,10 @@ cl = lg;                                 \
 			goto scopy;
 
 			case 'u': // unsigned
-			case 'i':
-			case 'd': // integer
-			// get the integer and abs it
-			if (fl & STBSP__INTMAX) {
+				case 'i':
+				case 'd': // integer
+				// get the integer and abs it
+				if (fl & STBSP__INTMAX) {
 				stbsp__int64 i64 = va_arg(va, stbsp__int64);
 				n64 = (stbsp__uint64)i64;
 				if ((f[0] != 'u') && (i64 < 0)) {
@@ -1162,8 +1162,8 @@ cl = lg;                                 \
 				pr = 0;
 
 			scopy:
-			// get fw=leading/trailing space, pr=leading zeros
-			if (pr < (stbsp__int32)l)
+				// get fw=leading/trailing space, pr=leading zeros
+				if (pr < (stbsp__int32)l)
 				pr = l;
 			n = pr + lead[0] + tail[0] + tz;
 			if (fw < (stbsp__int32)n)
@@ -1348,7 +1348,7 @@ cl = lg;                                 \
 			break;
 
 			default: // unknown, just copy code
-			s = num + STBSP__NUMSZ - 1;
+				s = num + STBSP__NUMSZ - 1;
 			*s = f[0];
 			l = 1;
 			fw = fl = 0;
@@ -1363,13 +1363,13 @@ cl = lg;                                 \
 	}
 	endfmt:
 
-	if (!callback)
+		if (!callback)
 		*bf = 0;
 	else
 		stbsp__flush_cb();
 
 	done:
-	return tlen + (int)(bf - buf);
+		return tlen + (int)(bf - buf);
 }
 
 // cleanup

@@ -268,7 +268,9 @@ BUFFER_HOOK_SIG(byp_file_save){
 		auto_indent_buffer(app, buffer_id, buffer_range(app, buffer_id));
 	}
 	vim_file_save(app, buffer_id);
-	clean_all_lines_buffer(app, buffer_id, CleanAllLinesMode_RemoveBlankLines);
+    b32 clear_blanks = def_get_config_b32(vars_save_string_lit("clear_blank_lines"));
+    Clean_All_Lines_Mode mode = (clear_blanks ? CleanAllLinesMode_RemoveBlankLines : CleanAllLinesMode_LeaveBlankLines);
+	clean_all_lines_buffer(app, buffer_id, mode);
 
 	Scratch_Block scratch(app);
 	String_Const_u8 path = push_buffer_file_name(app, scratch, buffer_id);
@@ -297,7 +299,7 @@ BUFFER_HOOK_SIG(byp_file_save){
 
 	if (string_match(name, string_u8_litexpr("project.4coder"))){
 		View_ID view = get_active_view(app, Access_Always);
-		view_enqueue_command_function(app, view, byp_reload_project);
+		view_enqueue_command_function(app, view, zbyp_reload_project);
 	}
 
 	return 0;

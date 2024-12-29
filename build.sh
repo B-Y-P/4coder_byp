@@ -2,7 +2,7 @@
 
 byp_dir=$(pwd)
 
-if [ ! -d ../test_build ]; then 
+if [ ! -d ../test_build ]; then
   mkdir ../test_build
   cp -r ../themes/   ../test_build/themes/
   cp -r ../fonts/    ../test_build/fonts/
@@ -13,5 +13,5 @@ fi
 
 
 cd ../test_build
-${byp_dir}/custom/bin/buildsuper_x64-linux.sh ${byp_dir}/4coder_byp.cpp $1 
+${byp_dir}/custom/bin/buildsuper_x64-linux.sh ${byp_dir}/4coder_byp.cpp $1
 ${byp_dir}/apply.sh

@@ -539,7 +539,7 @@ default_run_lister(Application_Links *app, Lister *lister){
 			{
 				switch (in.event.key.code){
 					case KeyCode_Return:
-					case KeyCode_Tab:
+						case KeyCode_Tab:
 					{
 						void *user_data = 0;
 						if (0 <= lister->raw_item_index &&

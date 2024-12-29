@@ -29,7 +29,7 @@ get_function_positions(Application_Links *app, Buffer_ID buffer, i64 first_token
 
 		// Look for the next token at global scope that might need to be printed.
 		mode1:
-		Assert(nest_level == 0);
+			Assert(nest_level == 0);
 		Assert(paren_nest_level == 0);
 		first_paren_index = 0;
 		first_paren_position = 0;
@@ -68,7 +68,7 @@ get_function_positions(Application_Links *app, Buffer_ID buffer, i64 first_token
 
 		// Look for a closing parenthese to mark the end of a function signature.
 		paren_mode1:
-		paren_nest_level = 0;
+			paren_nest_level = 0;
 		for (;;){
 			Token *token = token_it_read(&it);
 			if (!HasFlag(token->flags, TokenBaseFlag_PreprocessorBody)){

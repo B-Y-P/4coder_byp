@@ -16,7 +16,7 @@ get_item_margin_color(i32 level, i32 sub_id){
     FColor margin = fcolor_zero();
     switch (level){
 		default:
-		case UIHighlight_None:
+			case UIHighlight_None:
 		{
 			margin = fcolor_id(defcolor_list_item, sub_id);
 		}break;
@@ -40,7 +40,7 @@ get_panel_margin_color(i32 level){
     FColor margin = fcolor_zero();
     switch (level){
 		default:
-		case UIHighlight_None:
+			case UIHighlight_None:
 		{
 			margin = fcolor_id(defcolor_margin);
 		}break;
@@ -538,15 +538,15 @@ get_token_color_cpp(Token token){
     // specifics override generals
     switch (token.sub_kind){
 		case TokenCppKind_LiteralTrue:
-		case TokenCppKind_LiteralFalse:
+			case TokenCppKind_LiteralFalse:
 		{
 			color = defcolor_bool_constant;
 		}break;
 		case TokenCppKind_LiteralCharacter:
-		case TokenCppKind_LiteralCharacterWide:
-		case TokenCppKind_LiteralCharacterUTF8:
-		case TokenCppKind_LiteralCharacterUTF16:
-		case TokenCppKind_LiteralCharacterUTF32:
+			case TokenCppKind_LiteralCharacterWide:
+			case TokenCppKind_LiteralCharacterUTF8:
+			case TokenCppKind_LiteralCharacterUTF16:
+			case TokenCppKind_LiteralCharacterUTF32:
 		{
 			color = defcolor_char_constant;
 		}break;

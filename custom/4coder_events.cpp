@@ -242,7 +242,7 @@ get_event_properties(Input_Event *event){
 				}break;
 
 				case CoreCode_ClickActivateView:
-				case CoreCode_ClickDeactivateView:
+					case CoreCode_ClickDeactivateView:
 				{
 					flags |= EventProperty_ViewActivation;
 				}break;
@@ -305,13 +305,13 @@ copy_input_event(Arena *arena, Input_Event *event){
 		}break;
 
 		case InputEventKind_KeyStroke:
-		case InputEventKind_KeyRelease:
+			case InputEventKind_KeyRelease:
 		{
 			result.key.modifiers = copy_modifier_set(arena, &event->key.modifiers);
 		}break;
 
 		case InputEventKind_MouseButton:
-		case InputEventKind_MouseButtonRelease:
+			case InputEventKind_MouseButtonRelease:
 		{
 			result.mouse.modifiers = copy_modifier_set(arena, &event->mouse.modifiers);
 		}break;
@@ -336,7 +336,7 @@ copy_input_event(Arena *arena, Input_Event *event){
 				}break;
 
 				case CoreCode_FileExternallyModified:
-				case CoreCode_NewClipboardContents:
+					case CoreCode_NewClipboardContents:
 				{
 					result.core.string = push_string_copy(arena, event->core.string);
 				}break;
@@ -365,7 +365,7 @@ stringize_keyboard_event(Arena *arena, Input_Event *event){
 		}break;
 
 		case InputEventKind_KeyStroke:
-		case InputEventKind_KeyRelease:
+			case InputEventKind_KeyRelease:
 		{
 			string_list_pushf(arena, &list, "k%X ", event->key.code);
 			if (event->kind == InputEventKind_KeyRelease){

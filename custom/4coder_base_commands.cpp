@@ -1411,10 +1411,10 @@ CUSTOM_DOC("Deletes the file of the current buffer if 4coder has the appropriate
 						}break;
 
 						case KeyCode_Shift:
-						case KeyCode_Control:
-						case KeyCode_Alt:
-						case KeyCode_Command:
-						case KeyCode_CapsLock:
+							case KeyCode_Control:
+							case KeyCode_Alt:
+							case KeyCode_Command:
+							case KeyCode_CapsLock:
 						{}break;
 
 						default:
@@ -1763,7 +1763,7 @@ record_get_new_cursor_position_undo(Application_Links *app, Buffer_ID buffer_id,
 #if 0
 	switch (record.kind){
 		default:
-		case RecordKind_Single:
+			case RecordKind_Single:
 		{
 			new_edit_position = (i32)(record.single_first + record.single_string_backward.size);
 		}break;
@@ -1788,7 +1788,7 @@ record_get_new_cursor_position_redo(Application_Links *app, Buffer_ID buffer_id,
 	i64 new_edit_position = 0;
 	switch (record.kind){
 		default:
-		case RecordKind_Single:
+			case RecordKind_Single:
 		{
 			new_edit_position = record.single_first + record.single_string_forward.size;
 		}break;

@@ -3,12 +3,12 @@ function b32
 byp_highlight_token(Token_Base_Kind kind){
 	switch(kind){
 		case TokenBaseKind_Keyword:
-		//case TokenBaseKind_Preprocessor:
-		case TokenBaseKind_Identifier:
-		case byp_TokenKind_Primitive:
-		case byp_TokenKind_ControlFlow:
-		case byp_TokenKind_Struct:
-		return true;
+			//case TokenBaseKind_Preprocessor:
+			case TokenBaseKind_Identifier:
+			case byp_TokenKind_Primitive:
+			case byp_TokenKind_ControlFlow:
+			case byp_TokenKind_Struct:
+			return true;
 	}
 	return false;
 }
@@ -26,11 +26,11 @@ byp_get_token_color_cpp(Token token){
 		case TokenBaseKind_LiteralFloat:{ color = defcolor_float_constant; }break;
 
 		case TokenBaseKind_Operator:
-		case TokenBaseKind_ScopeOpen:
-		case TokenBaseKind_ScopeClose:
-		case TokenBaseKind_ParentheticalOpen:
-		case TokenBaseKind_ParentheticalClose:
-		case TokenBaseKind_StatementClose:{ color = defcolor_non_text; } break;
+			case TokenBaseKind_ScopeOpen:
+			case TokenBaseKind_ScopeClose:
+			case TokenBaseKind_ParentheticalOpen:
+			case TokenBaseKind_ParentheticalClose:
+			case TokenBaseKind_StatementClose:{ color = defcolor_non_text; } break;
 
 		case byp_TokenKind_ControlFlow:{ color = defcolor_control; }break;
 		case byp_TokenKind_Primitive:{ color = defcolor_primitive; }break;
@@ -39,14 +39,14 @@ byp_get_token_color_cpp(Token token){
 	// specifics override generals
 	switch (token.sub_kind){
 		case TokenCppKind_LiteralTrue:
-		case TokenCppKind_LiteralFalse:
+			case TokenCppKind_LiteralFalse:
 		{ color = defcolor_bool_constant; }break;
 
 		case TokenCppKind_LiteralCharacter:
-		case TokenCppKind_LiteralCharacterWide:
-		case TokenCppKind_LiteralCharacterUTF8:
-		case TokenCppKind_LiteralCharacterUTF16:
-		case TokenCppKind_LiteralCharacterUTF32:
+			case TokenCppKind_LiteralCharacterWide:
+			case TokenCppKind_LiteralCharacterUTF8:
+			case TokenCppKind_LiteralCharacterUTF16:
+			case TokenCppKind_LiteralCharacterUTF32:
 		{ color = defcolor_char_constant; }break;
 
 		case TokenCppKind_PPIncludeFile:
@@ -142,13 +142,13 @@ function void byp_draw_token_colors(Application_Links *app, View_ID view, Buffer
 		if(note == 0){ continue; }
 		switch(note->note_kind){
 			case CodeIndexNote_Function:
-			paint_text_color(app, text_layout_id, Ii64_size(token->pos, token->size), function_color); break;
+				paint_text_color(app, text_layout_id, Ii64_size(token->pos, token->size), function_color); break;
 			case CodeIndexNote_Type:
-			paint_text_color(app, text_layout_id, Ii64_size(token->pos, token->size), type_color); break;
+				paint_text_color(app, text_layout_id, Ii64_size(token->pos, token->size), type_color); break;
 			case CodeIndexNote_Macro:
-			paint_text_color(app, text_layout_id, Ii64_size(token->pos, token->size), macro_color); break;
+				paint_text_color(app, text_layout_id, Ii64_size(token->pos, token->size), macro_color); break;
 			case CodeIndexNote_Enum:
-			paint_text_color(app, text_layout_id, Ii64_size(token->pos, token->size), enum_color); break;
+				paint_text_color(app, text_layout_id, Ii64_size(token->pos, token->size), enum_color); break;
 		}
 
 	}

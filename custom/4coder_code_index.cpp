@@ -432,7 +432,7 @@ cpp_parse_scan_comma(Code_Index_File *index, Generic_Parse_State *state){
 
 function void
 cpp_parse_enum_list(Code_Index_File *index, Generic_Parse_State *state, Code_Index_Nest *parent, Token* open){
-	generic_parse_inc(state);
+	generic_parse_inc(state);  // "{"
 	Code_Index_Nest *nest = push_array_zero(state->arena, Code_Index_Nest, 1);
 	nest->kind = CodeIndexNest_Scope;
 	nest->is_closed = false;
@@ -472,48 +472,40 @@ cpp_parse_enum_list(Code_Index_File *index, Generic_Parse_State *state, Code_Ind
 
 function void
 cpp_parse_enum(Code_Index_File *index, Generic_Parse_State *state, Code_Index_Nest *parent){
-	generic_parse_inc(state);
+	// "enum struct Kind : unsigned long long { E1, E2, ... };"
+    generic_parse_inc(state);  // "enum"
 	generic_parse_skip_soft_tokens(index, state);
 	if (state->finished){ return; }
 
 	Token *token = token_it_read(&state->it);
 	if (token == 0){ return; }
 
+    if (token->sub_kind == TokenCppKind_Struct || token->sub_kind == TokenCppKind_Class){
+        generic_parse_inc(state);  // "struct" | "class"
+        generic_parse_skip_soft_tokens(index, state);
+        token = token_it_read(&state->it);
+        if (token == 0){ return; }
+    }
+
+    if (token->kind == TokenBaseKind_Identifier){
+        index_new_note(index, state, Ii64(token), CodeIndexNote_Type, parent);
+        generic_parse_inc(state);  // <iden>
+        generic_parse_skip_soft_tokens(index, state);
+        token = token_it_read(&state->it);
+        if (token == 0){ return; }
+    }
+
+    if (token->sub_kind == TokenCppKind_Colon){
+        do {
+            generic_parse_inc(state);  // ":" <int_type>*
+            generic_parse_skip_soft_tokens(index, state);
+            token = token_it_read(&state->it);
+            if (token == 0){ return; }
+        }while(token->kind == byp_TokenKind_Primitive || token->kind == TokenBaseKind_Identifier);
+    }
+
 	if (token->kind == TokenBaseKind_ScopeOpen){
-		cpp_parse_enum_list(index, state, parent, token);
-	}
-	else if (token->kind == TokenBaseKind_Identifier){
-		generic_parse_inc(state);
-		generic_parse_skip_soft_tokens(index, state);
-
-		Token *peek = token_it_read(&state->it);
-		if (peek == 0){ return; }
-		String_Const_u8 lexeme = string_substring(state->contents, Ii64(peek));
-
-		if (peek->kind == TokenBaseKind_ScopeOpen){
-			index_new_note(index, state, Ii64(token), CodeIndexNote_Type, parent);
-			cpp_parse_enum_list(index, state, parent, peek);
-		}
-		else if (peek->sub_kind == TokenCppKind_Semicolon){
-			index_new_note(index, state, Ii64(token), CodeIndexNote_Type, parent);
-			generic_parse_inc(state);
-		}
-		else if (peek->sub_kind == TokenCppKind_Comma){
-			index_new_note(index, state, Ii64(token), CodeIndexNote_Type, parent);
-			generic_parse_inc(state);
-			generic_parse_skip_soft_tokens(index, state);
-			peek = token_it_read(&state->it);
-
-			if (peek != 0 && peek->kind == TokenBaseKind_Identifier){
-				generic_parse_inc(state);
-				generic_parse_skip_soft_tokens(index, state);
-				peek = token_it_read(&state->it);
-			}
-
-			if (peek != 0 && peek->kind == TokenBaseKind_ScopeOpen){
-				cpp_parse_enum_list(index, state, parent, peek);
-			}
-		}
+		cpp_parse_enum_list(index, state, parent, token);  // "{" ... "}"
 	}
 }
 
@@ -1008,7 +1000,7 @@ layout_index_x_shift(Application_Links *app, Layout_Reflex *reflex, Code_Index_N
 	if (nest != 0){
 		switch (nest->kind){
 			case CodeIndexNest_Scope:
-			case CodeIndexNest_Preprocessor:
+				case CodeIndexNest_Preprocessor:
 			{
 				result = layout_index_x_shift(app, reflex, nest->parent, pos, regular_indent, unresolved_dependence);
 				if (nest->open.min < pos && nest->open.max <= pos &&
@@ -1127,7 +1119,7 @@ layout_index__inner(Application_Links *app, Arena *arena, Buffer_ID buffer, Rang
 		f32 pending_wrap_accumulated_w = 0.f;
 
 		start:
-		if (ptr == end_ptr){
+			if (ptr == end_ptr){
 			i64 index = layout_index_from_ptr(ptr, text.str, range.first);
 			f32 shift = layout_index_x_shift(app, &reflex, file, index, regular_indent);
 			lr_tb_advance_x_without_item(&pos_vars, shift);
@@ -1220,7 +1212,7 @@ layout_index__inner(Application_Links *app, Arena *arena, Buffer_ID buffer, Rang
 		}
 
 		consuming_normal_whitespace:
-		for (; ptr < end_ptr; ptr += 1){
+			for (; ptr < end_ptr; ptr += 1){
 			if (!character_is_whitespace(*ptr)){
 				u8 *new_wrap_ptr = ptr;
 
@@ -1333,7 +1325,7 @@ layout_index__inner(Application_Links *app, Arena *arena, Buffer_ID buffer, Rang
 		}
 
 		finish:
-		if (newline_layout_consume_finish(&newline_vars)){
+			if (newline_layout_consume_finish(&newline_vars)){
 			layout_index__emit_chunk(&pos_vars, face, arena, text.str, range.first, pending_wrap_ptr, ptr, &list);
 			i64 index = layout_index_from_ptr(ptr, text.str, range.first);
 			lr_tb_write_blank(&pos_vars, face, arena, &list, index);

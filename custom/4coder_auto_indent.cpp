@@ -134,8 +134,8 @@ indent__unfinished_statement(Token *token, Nest *current_nest){
 		result = true;
 		switch (token->kind){
 			case TokenBaseKind_ScopeOpen:
-			case TokenBaseKind_ScopeClose:
-			case TokenBaseKind_StatementClose:
+				case TokenBaseKind_ScopeClose:
+				case TokenBaseKind_StatementClose:
 			{
 				result = false;
 			}break;
@@ -448,11 +448,11 @@ CUSTOM_DOC("Inserts text and auto-indents the line on which the cursor sits if a
 		for (u64 i = 0; !do_auto_indent && i < insert.size; i += 1){
 			switch (insert.str[i]){
 				case ';': case ':':
-				case '{': case '}':
-				case '(': case ')':
-				case '[': case ']':
-				case '#':
-				case '\n': case '\t':
+					case '{': case '}':
+					case '(': case ')':
+					case '[': case ']':
+					case '#':
+					case '\n': case '\t':
 				{
 					do_auto_indent = true;
 				}break;

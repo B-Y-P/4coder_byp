@@ -1,6 +1,9 @@
 version(2);
 project_name = "4coder BYP";
 
+clear_blank_lines = true;
+indent_with_tabs = false;
+
 patterns = {
 	"*.c",
 	"*.cpp",

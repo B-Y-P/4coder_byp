@@ -77,7 +77,7 @@ increment_timestamp(Miblo_Timestamp t, i32 type, i32 amt){
     Miblo_Timestamp r = t;
     switch (type){
 		case MIBLO_SECOND: /* CASE second */
-		r.second += amt;
+			r.second += amt;
 
 		// 1. Modulo r.second into [0,59]
 		// 2. What is thrown away by (1) store in amt, divide by 60, round down even when negative.
@@ -93,7 +93,7 @@ increment_timestamp(Miblo_Timestamp t, i32 type, i32 amt){
 		}
 
 		case MIBLO_MINUTE:  /* CASE minute */
-		r.minute += amt;
+			r.minute += amt;
 
 		// 1. Modulo r.minute into [0,59]
 		// 2. What is thrown away by (1) store in amt, divide by 60, round down even when negative.
@@ -109,7 +109,7 @@ increment_timestamp(Miblo_Timestamp t, i32 type, i32 amt){
 		}
 
 		case MIBLO_HOUR:  /* CASE hour */
-		r.hour += amt;
+			r.hour += amt;
 		if (r.hour < 0){
 			r.second = 0;
 			r.minute = 0;

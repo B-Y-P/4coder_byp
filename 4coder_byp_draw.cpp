@@ -100,7 +100,7 @@ byp_hex_color_preview(Application_Links *app, Buffer_ID buffer_id, Text_Layout_I
 	u8 *text = push_buffer_range(app, scratch, buffer_id, visible_range).str;
 	foreach(i, range_size(visible_range)-9){
 		byp_hex_scan:
-		if(text[i] != '0' || text[i+1] != 'x'){ continue; }
+			if(text[i] != '0' || text[i+1] != 'x'){ continue; }
 		foreach(j, 8){
 			char c = text[i+2+j];
 			if(!('0' <= c && c <= '9' || 'a' <= c && c <= 'f' || 'A' <= c && c <= 'F')){
@@ -495,9 +495,9 @@ byp_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, Buff
 
 	switch(fcoder_mode){
 		case FCoderMode_Original:
-		vim_draw_cursor(app, view_id, is_active_view, buffer, text_layout_id, cursor_roundness, mark_thickness); break;
+			vim_draw_cursor(app, view_id, is_active_view, buffer, text_layout_id, cursor_roundness, mark_thickness); break;
 		case FCoderMode_NotepadLike:
-		draw_notepad_style_cursor_highlight(app, view_id, buffer, text_layout_id, cursor_roundness); break;
+			draw_notepad_style_cursor_highlight(app, view_id, buffer, text_layout_id, cursor_roundness); break;
 	}
 
 	paint_fade_ranges(app, text_layout_id, buffer);

@@ -610,13 +610,13 @@ get_word_complete_from_user_drop_down(Application_Links *app){
 						}break;
 
 						case KeyCode_F1:
-						case KeyCode_F2:
-						case KeyCode_F3:
-						case KeyCode_F4:
-						case KeyCode_F5:
-						case KeyCode_F6:
-						case KeyCode_F7:
-						case KeyCode_F8:
+							case KeyCode_F2:
+							case KeyCode_F3:
+							case KeyCode_F4:
+							case KeyCode_F5:
+							case KeyCode_F6:
+							case KeyCode_F7:
+							case KeyCode_F8:
 						{
 							i32 index = (in.event.key.code - KeyCode_F1);
 							result.text = menu.options[index];

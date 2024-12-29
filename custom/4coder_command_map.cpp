@@ -399,14 +399,14 @@ map_trigger_as_event(Command_Trigger *trigger){
 		{}break;
 
 		case InputEventKind_KeyStroke:
-		case InputEventKind_KeyRelease:
+			case InputEventKind_KeyRelease:
 		{
 			result.key.code = trigger->sub_code;
 			result.key.modifiers = trigger->mods;
 		}break;
 
 		case InputEventKind_MouseButton:
-		case InputEventKind_MouseButtonRelease:
+			case InputEventKind_MouseButtonRelease:
 		{
 			result.mouse.code = trigger->sub_code;
 			result.mouse.modifiers = trigger->mods;

@@ -2419,7 +2419,7 @@ opt_emit_rule_match(Emit_Rule *rule_a, Emit_Rule *rule_b){
 				}
 			}break;
 			case EmitHandlerKind_Keywords:
-			case EmitHandlerKind_KeywordsDelim:
+				case EmitHandlerKind_KeywordsDelim:
 			{
 				if (handler_a->keywords != handler_b->keywords){
 					result = false;
@@ -2783,7 +2783,7 @@ opt_key_layout(Arena *arena, Keyword_Set keywords){
     }
 
     optimize_max_single_error:
-    if (best_layout.max_single_error_score <= acceptable_max_single_error){
+		if (best_layout.max_single_error_score <= acceptable_max_single_error){
 		goto finished;
     }
     for (;; slot_count += 1){

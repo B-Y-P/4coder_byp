@@ -217,7 +217,7 @@ internal b32
 token_it_inc_non_whitespace(Token_Iterator_Array *it){
     b32 result = false;
     repeat:
-    if (token_it_inc_all(it)){
+		if (token_it_inc_all(it)){
 		Token *token = token_it_read(it);
 		if (token != 0 && token->kind == TokenBaseKind_Whitespace){
 			goto repeat;
@@ -231,7 +231,7 @@ internal b32
 token_it_dec_non_whitespace(Token_Iterator_Array *it){
     b32 result = false;
     repeat:
-    if (token_it_dec_all(it)){
+		if (token_it_dec_all(it)){
 		Token *token = token_it_read(it);
 		if (token != 0 && token->kind == TokenBaseKind_Whitespace){
 			goto repeat;
@@ -245,7 +245,7 @@ internal b32
 token_it_inc(Token_Iterator_Array *it){
     b32 result = false;
     repeat:
-    if (token_it_inc_all(it)){
+		if (token_it_inc_all(it)){
 		Token *token = token_it_read(it);
 		if (token != 0 && (token->kind == TokenBaseKind_Whitespace ||
 						   token->kind == TokenBaseKind_Comment)){
@@ -260,7 +260,7 @@ internal b32
 token_it_dec(Token_Iterator_Array *it){
     b32 result = false;
     repeat:
-    if (token_it_dec_all(it)){
+		if (token_it_dec_all(it)){
 		Token *token = token_it_read(it);
 		if (token != 0 && (token->kind == TokenBaseKind_Whitespace ||
 						   token->kind == TokenBaseKind_Comment)){
@@ -403,7 +403,7 @@ internal b32
 token_it_inc_non_whitespace(Token_Iterator_List *it){
     b32 result = false;
     repeat:
-    if (token_it_inc_all(it)){
+		if (token_it_inc_all(it)){
 		Token *token = token_it_read(it);
 		if (token != 0 && token->kind == TokenBaseKind_Whitespace){
 			goto repeat;
@@ -417,7 +417,7 @@ internal b32
 token_it_dec_non_whitespace(Token_Iterator_List *it){
     b32 result = false;
     repeat:
-    if (token_it_dec_all(it)){
+		if (token_it_dec_all(it)){
 		Token *token = token_it_read(it);
 		if (token != 0 && token->kind == TokenBaseKind_Whitespace){
 			goto repeat;
@@ -431,7 +431,7 @@ internal b32
 token_it_inc(Token_Iterator_List *it){
     b32 result = false;
     repeat:
-    if (token_it_inc_all(it)){
+		if (token_it_inc_all(it)){
 		Token *token = token_it_read(it);
 		if (token != 0 && (token->kind == TokenBaseKind_Whitespace ||
 						   token->kind == TokenBaseKind_Comment)){
@@ -446,7 +446,7 @@ internal b32
 token_it_dec(Token_Iterator_List *it){
     b32 result = false;
     repeat:
-    if (token_it_dec_all(it)){
+		if (token_it_dec_all(it)){
 		Token *token = token_it_read(it);
 		if (token != 0 && (token->kind == TokenBaseKind_Whitespace ||
 						   token->kind == TokenBaseKind_Comment)){
