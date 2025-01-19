@@ -43,6 +43,7 @@ initialize_managed_id_metadata(Application_Links *app){
 	defcolor_primitive = managed_id_declare(app, string_u8_litexpr("colors"), string_u8_litexpr("defcolor_primitive"));
 	defcolor_macro = managed_id_declare(app, string_u8_litexpr("colors"), string_u8_litexpr("defcolor_macro"));
 	defcolor_enum = managed_id_declare(app, string_u8_litexpr("colors"), string_u8_litexpr("defcolor_enum"));
+	defcolor_global = managed_id_declare(app, string_u8_litexpr("colors"), string_u8_litexpr("defcolor_global"));
 	defcolor_control = managed_id_declare(app, string_u8_litexpr("colors"), string_u8_litexpr("defcolor_control"));
 	defcolor_struct = managed_id_declare(app, string_u8_litexpr("colors"), string_u8_litexpr("defcolor_struct"));
 	defcolor_non_text = managed_id_declare(app, string_u8_litexpr("colors"), string_u8_litexpr("defcolor_non_text"));

@@ -15,6 +15,7 @@ CUSTOM_ID(colors, defcolor_type);
 CUSTOM_ID(colors, defcolor_primitive);
 CUSTOM_ID(colors, defcolor_macro);
 CUSTOM_ID(colors, defcolor_enum);
+CUSTOM_ID(colors, defcolor_global);
 CUSTOM_ID(colors, defcolor_control);
 CUSTOM_ID(colors, defcolor_struct);
 CUSTOM_ID(colors, defcolor_non_text);

@@ -38,7 +38,7 @@ set opts=/W4 /wd4310 /wd4100 /wd4201 /wd4505 /wd4996 /wd4127 /wd4510 /wd4512 /wd
 set opts=%opts% /GR- /nologo /FC
 set opts=%opts% -I"%custom_root%"
 set opts=%opts% /D OS_WINDOWS=1 /D OS_LINUX=0 /D OS_MAC=0
-set opts=%opts% %mode%
+REM set opts=%opts% %mode%
 
 set preproc_file=4coder_command_metadata.i
 set meta_opts=/P /Fi"%preproc_file%" /DMETA_PASS
@@ -46,13 +46,33 @@ set meta_opts=/P /Fi"%preproc_file%" /DMETA_PASS
 set build_dll=/LD /link /INCREMENTAL:NO /OPT:REF /RELEASE /PDBALTPATH:%%%%_PDB%%%%
 set build_dll=%build_dll% /EXPORT:get_version /EXPORT:init_apis
 
-call cl %opts% %meta_opts% "%target%"
-call cl %opts% "%custom_root%\4coder_metadata_generator.cpp" /Femetadata_generator
-metadata_generator -R "%custom_root%" "%cd%\%preproc_file%"
-call cl %opts% "%target%" /Fe%binname% %build_dll%
+echo.
+echo -- [%time%]: Metadata build pass
+call cl %opts% /Od %meta_opts% "%target%" || goto fail
+
+if NOT EXIST metadata_generator.exe (
+	echo -- [%time%]: Building metadata_generator
+	call cl %opts% /O2 "%custom_root%\4coder_metadata_generator.cpp" /Femetadata_generator || goto fail
+)
+
+echo.
+echo -- [%time%]: Running metadata_generator
+metadata_generator -R "%custom_root%" "%cd%\%preproc_file%" || goto fail
+
+echo.
+echo -- [%time%]: Building custom layer
+call cl %opts% %mode% "%target%" /Fe%binname% %build_dll% || goto fail
+goto skip
+
+:fail
+echo -- Failed
+
+:skip
+echo -- [%time%]: Finished
+echo.
 
 REM file spammation preventation
-del metadata_generator*
+REM del metadata_generator*
 del *.exp
 del *.obj
 del *.lib

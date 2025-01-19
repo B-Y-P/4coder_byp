@@ -3,12 +3,12 @@ function b32
 byp_highlight_token(Token_Base_Kind kind){
 	switch(kind){
 		case TokenBaseKind_Keyword:
-			//case TokenBaseKind_Preprocessor:
-			case TokenBaseKind_Identifier:
-			case byp_TokenKind_Primitive:
-			case byp_TokenKind_ControlFlow:
-			case byp_TokenKind_Struct:
-			return true;
+        //case TokenBaseKind_Preprocessor:
+        case TokenBaseKind_Identifier:
+        case byp_TokenKind_Primitive:
+        case byp_TokenKind_ControlFlow:
+        case byp_TokenKind_Struct:
+        return true;
 	}
 	return false;
 }
@@ -26,11 +26,11 @@ byp_get_token_color_cpp(Token token){
 		case TokenBaseKind_LiteralFloat:{ color = defcolor_float_constant; }break;
 
 		case TokenBaseKind_Operator:
-			case TokenBaseKind_ScopeOpen:
-			case TokenBaseKind_ScopeClose:
-			case TokenBaseKind_ParentheticalOpen:
-			case TokenBaseKind_ParentheticalClose:
-			case TokenBaseKind_StatementClose:{ color = defcolor_non_text; } break;
+        case TokenBaseKind_ScopeOpen:
+        case TokenBaseKind_ScopeClose:
+        case TokenBaseKind_ParentheticalOpen:
+        case TokenBaseKind_ParentheticalClose:
+        case TokenBaseKind_StatementClose:{ color = defcolor_non_text; } break;
 
 		case byp_TokenKind_ControlFlow:{ color = defcolor_control; }break;
 		case byp_TokenKind_Primitive:{ color = defcolor_primitive; }break;
@@ -39,14 +39,14 @@ byp_get_token_color_cpp(Token token){
 	// specifics override generals
 	switch (token.sub_kind){
 		case TokenCppKind_LiteralTrue:
-			case TokenCppKind_LiteralFalse:
+        case TokenCppKind_LiteralFalse:
 		{ color = defcolor_bool_constant; }break;
 
 		case TokenCppKind_LiteralCharacter:
-			case TokenCppKind_LiteralCharacterWide:
-			case TokenCppKind_LiteralCharacterUTF8:
-			case TokenCppKind_LiteralCharacterUTF16:
-			case TokenCppKind_LiteralCharacterUTF32:
+        case TokenCppKind_LiteralCharacterWide:
+        case TokenCppKind_LiteralCharacterUTF8:
+        case TokenCppKind_LiteralCharacterUTF16:
+        case TokenCppKind_LiteralCharacterUTF32:
 		{ color = defcolor_char_constant; }break;
 
 		case TokenCppKind_PPIncludeFile:
@@ -92,11 +92,12 @@ function void byp_draw_token_colors(Application_Links *app, View_ID view, Buffer
 		cursor_tok_rect = Rf32_xy_wh(V2f32(cursor_tok_rect.x0, cursor_tok_rect.y1 - 2.f), tok_rect_dim);
 	}
 
-	ARGB_Color function_color = fcolor_resolve(fcolor_id(defcolor_function));
-	ARGB_Color type_color     = fcolor_resolve(fcolor_id(defcolor_type));
-	ARGB_Color macro_color    = fcolor_resolve(fcolor_id(defcolor_macro));
-	ARGB_Color enum_color     = fcolor_resolve(fcolor_id(defcolor_enum));
-	ARGB_Color back_color     = fcolor_resolve(fcolor_id(defcolor_back));
+	ARGB_Color cl_func   = fcolor_resolve(fcolor_id(defcolor_function));
+	ARGB_Color cl_type   = fcolor_resolve(fcolor_id(defcolor_type));
+	ARGB_Color cl_macro  = fcolor_resolve(fcolor_id(defcolor_macro));
+	ARGB_Color cl_enum   = fcolor_resolve(fcolor_id(defcolor_enum));
+    ARGB_Color cl_global = fcolor_resolve(fcolor_id(defcolor_global));
+    ARGB_Color cl_back   = fcolor_resolve(fcolor_id(defcolor_back));
 	ARGB_Color cursor_tok_color = byp_get_token_color_cpp(*cursor_token);
 
 	if(cursor_token->kind == TokenBaseKind_Identifier){
@@ -105,11 +106,12 @@ function void byp_draw_token_colors(Application_Links *app, View_ID view, Buffer
 
 		if(note != 0){
 			switch(note->note_kind){
-				case CodeIndexNote_Function: cursor_tok_color = function_color; break;
-				case CodeIndexNote_Type:     cursor_tok_color = type_color;     break;
-				case CodeIndexNote_Macro:    cursor_tok_color = macro_color;    break;
-				case CodeIndexNote_Enum:     cursor_tok_color = enum_color;     break;
-			}
+				case CodeIndexNote_Function: cursor_tok_color = cl_func;   break;
+				case CodeIndexNote_Type:     cursor_tok_color = cl_type;   break;
+				case CodeIndexNote_Macro:    cursor_tok_color = cl_macro;  break;
+				case CodeIndexNote_Enum:     cursor_tok_color = cl_enum;   break;
+                case CodeIndexNote_Global:   cursor_tok_color = cl_global; break;
+            }
 		}
 	}
 
@@ -127,30 +129,28 @@ function void byp_draw_token_colors(Application_Links *app, View_ID view, Buffer
 	for(;;){
 		Token *token = token_it_read(&it);
 		if(token->pos > visible_range.max){ break; }
+        ARGB_Color argb = byp_get_token_color_cpp(*token);
 		String_Const_u8 lexeme = push_token_lexeme(app, scratch, buffer, token);
 		Code_Index_Note *note = code_index_note_from_string(lexeme);
 
-		if(do_cursor_tok_highlight){
-			if(data_match(lexeme, token_string)){
-				Rect_f32 cur_tok_rect = text_layout_character_on_screen(app, text_layout_id, token->pos);
-				cur_tok_rect = Rf32_xy_wh(V2f32(cur_tok_rect.x0, cur_tok_rect.y1 - 2.f), tok_rect_dim);
-				draw_rectangle(app, cur_tok_rect, 5.f, argb_color_blend(cursor_tok_color, 0.7f, back_color));
-			}
+		if(do_cursor_tok_highlight && string_match(lexeme, token_string)){
+            Rect_f32 cur_tok_rect = text_layout_character_on_screen(app, text_layout_id, token->pos);
+            cur_tok_rect = Rf32_xy_wh(V2f32(cur_tok_rect.x0, cur_tok_rect.y1 - 2.f), tok_rect_dim);
+            draw_rectangle(app, cur_tok_rect, 5.f, argb_color_blend(cursor_tok_color, 0.7f, cl_back));
 		}
 
+		if(note != 0){
+            switch(note->note_kind){
+                case CodeIndexNote_Function: argb = cl_func;   break;
+                case CodeIndexNote_Type:     argb = cl_type;   break;
+                case CodeIndexNote_Macro:    argb = cl_macro;  break;
+                case CodeIndexNote_Enum:     argb = cl_enum;   break;
+                case CodeIndexNote_Global:   argb = cl_global; break;
+            }
+        }
+
+        paint_text_color(app, text_layout_id, Ii64(token), argb);
 		if(!token_it_inc_non_whitespace(&it)){ break; }
-		if(note == 0){ continue; }
-		switch(note->note_kind){
-			case CodeIndexNote_Function:
-				paint_text_color(app, text_layout_id, Ii64_size(token->pos, token->size), function_color); break;
-			case CodeIndexNote_Type:
-				paint_text_color(app, text_layout_id, Ii64_size(token->pos, token->size), type_color); break;
-			case CodeIndexNote_Macro:
-				paint_text_color(app, text_layout_id, Ii64_size(token->pos, token->size), macro_color); break;
-			case CodeIndexNote_Enum:
-				paint_text_color(app, text_layout_id, Ii64_size(token->pos, token->size), enum_color); break;
-		}
-
 	}
 	if(do_cursor_tok_highlight){ draw_rectangle(app, cursor_tok_rect, 5.f, cursor_tok_color); }
 

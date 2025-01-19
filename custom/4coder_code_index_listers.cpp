@@ -31,21 +31,12 @@ CUSTOM_DOC("List all definitions in the code index and jump to one chosen by the
 				jump->buffer = buffer;
 				jump->pos = note->pos.first;
 
-				String_Const_u8 sort = {};
-				switch (note->note_kind){
-					case CodeIndexNote_Type:
-					{
-						sort = string_u8_litexpr("type");
-					}break;
-					case CodeIndexNote_Function:
-					{
-						sort = string_u8_litexpr("function");
-					}break;
-					case CodeIndexNote_Macro:
-					{
-						sort = string_u8_litexpr("macro");
-					}break;
-				}
+                Code_Index_Note_Kind kind = note->note_kind;
+				String_Const_u8 sort = (kind == CodeIndexNote_Type     ? string_u8_litexpr("type")     :
+                                        kind == CodeIndexNote_Function ? string_u8_litexpr("function") :
+                                        kind == CodeIndexNote_Macro    ? string_u8_litexpr("macro")    :
+                                        kind == CodeIndexNote_Enum     ? string_u8_litexpr("enum")     :
+                                        kind == CodeIndexNote_Global   ? string_u8_litexpr("global")   : string_u8_empty);
 				lister_add_item(lister, note->text, sort, jump, 0);
 			}
 		}

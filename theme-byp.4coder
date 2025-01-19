@@ -51,6 +51,7 @@ defcolor_type                       =  0xFFB84AFD;
 defcolor_primitive                  =  0xFFB84AFD;
 defcolor_macro                      =  0xFF579EA8;
 defcolor_enum                       =  0xFF9ad0f7;
+defcolor_global                     =  0xFF20A4C7;
 defcolor_control                    =  defcolor_preproc;
 defcolor_struct                     =  defcolor_keyword;
 defcolor_non_text                   =  0xFFDAAEFE;

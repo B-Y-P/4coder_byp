@@ -28,18 +28,7 @@ CUSTOM_DOC("Toggles value for `drop_shadow`")
 CUSTOM_COMMAND_SIG(byp_test)
 CUSTOM_DOC("Just bound to the key I spam to execute whatever test code I'm working on")
 {
-	//toggle_virtual_whitespace(app);
-    View_ID view = get_active_view(app, Access_Always);
-    Buffer_ID buffer = view_get_buffer(app, view, Access_Always);
-    i64 cursor_pos = view_get_cursor_pos(app, view);
-    Token* token = get_token_from_pos(app, buffer, cursor_pos);
-    if(token == NULL){ return; }
-
-    Scratch_Block scratch(app);
-    char* base_kind = token->kind < TokenBaseKind_COUNT ? token_base_kind_names[token->kind] : "byp_";
-    char* sub_kind = token_cpp_kind_names[token->sub_kind];
-    String_Const_u8 str = push_buffer_range(app, scratch, buffer, Ii64(token));
-    printf_message(app, scratch, "Token(%.*s) = (%s, %s)\n", string_expand(str), base_kind, sub_kind);
+	toggle_virtual_whitespace(app);
 }
 
 CUSTOM_COMMAND_SIG(byp_close_all_buffers)
