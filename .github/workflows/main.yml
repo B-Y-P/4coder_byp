@@ -1,0 +1,57 @@
+name: Compile 4coder_byp
+
+on: push
+
+jobs:
+  build_4coder_byp:
+    name: Build 4coder_byp
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - suffix: x64-win
+          os: windows-latest
+          build_cmd: custom\bin\buildsuper_x64-win.bat
+        - suffix: x64-linux
+          os: ubuntu-latest
+          build_cmd: ./custom/bin/buildsuper_x64-linux.sh
+        - suffix: x64-mac
+          os: macos-13
+          build_cmd: ./custom/bin/buildsuper_x64-mac.sh
+#       - suffix: arm64-mac
+#         os: macos-latest
+#         build_cmd: ./custom/bin/buildsuper_arm64-mac.sh
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+    - uses: ilammy/msvc-dev-cmd@v1.4.1  # this is a no-op on Linux and macOS
+    - name: Build 4coder_byp-${{ matrix.suffix }}
+      run: ${{ matrix.build_cmd }} 4coder_byp.cpp release
+    - name: Generate 4coder_byp Artifacts
+      uses: actions/upload-artifact@v4.6.0
+      with:
+        name: 4coder_byp-${{ matrix.suffix }}
+        compression-level: 6
+        overwrite: true
+        path: custom_4coder.*
+
+  create_gh_release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build_4coder_byp
+    name: Upload
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download 4coder_byp Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts_dir
+        pattern: 4coder_byp-*
+    - run: |
+        cd artifacts_dir
+        for f in ./* ; do zip -r "$f.zip" $f ; done;
+    - name: Upload Artifacts to Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: artifacts_dir/4coder_byp-*.zip

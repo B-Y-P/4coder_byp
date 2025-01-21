@@ -34,13 +34,13 @@ byp_reformat_buffer(Application_Links *app, Buffer_ID buffer){
       count = (i64)(x / metrics.space_advance);
       if(count < 0){ continue; }  // impossible, but better safe than sorry
 
-      // line is spaced correctly, might be able to skip
       if(count == ws_end-line_start){
+        // spaced correctly, might be able to skip
         b32 all_spaces = true;
         for(i64 i=0; i<count; i++){
           all_spaces &= (' ' == buffer_get_char(app, buffer, line_start+i));
         }
-        if(all_spaces){ continue; }  // No need to edit, line is already good to go
+        if(all_spaces){ continue; }  // No need to edit, line is good to go
       }
     }
 
