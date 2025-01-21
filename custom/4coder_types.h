@@ -3,13 +3,13 @@
 
 api(custom)
 struct Thread_Context_Extra_Info{
-	void *coroutine;
-	void *async_thread;
+  void *coroutine;
+  void *async_thread;
 };
 api(custom)
 struct Application_Links{
-	Thread_Context *tctx;
-	void *cmd_context;
+  Thread_Context *tctx;
+  void *cmd_context;
 };
 api(custom)
 typedef void Custom_Layer_Init_Type(Application_Links *app);
@@ -19,7 +19,7 @@ api(custom)
 typedef b32 _Get_Version_Type(i32 maj, i32 min, i32 patch);
 api(custom)
 typedef Custom_Layer_Init_Type *_Init_APIs_Type(struct API_VTable_custom *custom_vtable,
-												struct API_VTable_system *system_vtable);
+                                                struct API_VTable_system *system_vtable);
 
 ////////////////////////////////
 
@@ -28,41 +28,41 @@ typedef u16 ID_Color;
 
 api(custom)
 union FColor{
-	struct{
-		u8 padding__[3];
-		u8 a_byte;
-	};
-	ARGB_Color argb;
-	struct{
-		ID_Color id;
-		u8 sub_index;
-		u8 padding_;
-	};
+  struct{
+    u8 padding__[3];
+    u8 a_byte;
+  };
+  ARGB_Color argb;
+  struct{
+    ID_Color id;
+    u8 sub_index;
+    u8 padding_;
+  };
 };
 
 api(custom)
 struct Theme_Color{
-	ID_Color tag;
-	ARGB_Color color;
+  ID_Color tag;
+  ARGB_Color color;
 };
 
 api(custom)
 struct Color_Array{
-	ARGB_Color *vals;
-	i32 count;
+  ARGB_Color *vals;
+  i32 count;
 };
 
 api(custom)
 struct Color_Table{
-	Color_Array *arrays;
-	i32 count;
+  Color_Array *arrays;
+  i32 count;
 };
 
 api(custom)
 struct Color_Picker{
-	String_Const_u8 title;
-	ARGB_Color *dest;
-	b32 *finished;
+  String_Const_u8 title;
+  ARGB_Color *dest;
+  b32 *finished;
 };
 
 ////////////////////////////////
@@ -72,28 +72,28 @@ typedef u32 Face_ID;
 
 api(custom)
 struct Fancy_String{
-	Fancy_String *next;
-	String_Const_u8 value;
-	Face_ID face;
-	FColor fore;
-	f32 pre_margin;
-	f32 post_margin;
+  Fancy_String *next;
+  String_Const_u8 value;
+  Face_ID face;
+  FColor fore;
+  f32 pre_margin;
+  f32 post_margin;
 };
 
 api(custom)
 struct Fancy_Line{
-	Fancy_Line *next;
-	Face_ID face;
-	FColor fore;
-	Fancy_String *first;
-	Fancy_String *last;
+  Fancy_Line *next;
+  Face_ID face;
+  FColor fore;
+  Fancy_String *first;
+  Fancy_String *last;
 };
 
 api(custom)
 struct Fancy_Block{
-	Fancy_Line *first;
-	Fancy_Line *last;
-	i32 line_count;
+  Fancy_Line *first;
+  Fancy_Line *last;
+  i32 line_count;
 };
 
 ////////////////////////////////
@@ -116,114 +116,114 @@ typedef u32 Child_Process_ID;
 api(custom)
 typedef i32 UI_Highlight_Level;
 enum{
-	UIHighlight_None,
-	UIHighlight_Hover,
-	UIHighlight_Active,
+  UIHighlight_None,
+  UIHighlight_Hover,
+  UIHighlight_Active,
 };
 
 api(custom)
 struct Buffer_Point{
-	i64 line_number;
-	Vec2_f32 pixel_shift;
+  i64 line_number;
+  Vec2_f32 pixel_shift;
 };
 
 api(custom)
 struct Line_Shift_Vertical{
-	i64 line;
-	f32 y_delta;
+  i64 line;
+  f32 y_delta;
 };
 
 api(custom)
 struct Line_Shift_Character{
-	i64 line;
-	i64 character_delta;
+  i64 line;
+  i64 character_delta;
 };
 
 api(custom)
 typedef u32 Child_Process_Set_Target_Flags;
 enum{
-	ChildProcessSet_FailIfBufferAlreadyAttachedToAProcess = 1,
-	ChildProcessSet_FailIfProcessAlreadyAttachedToABuffer = 2,
-	ChildProcessSet_NeverOverrideExistingAttachment = 3,
-	ChildProcessSet_CursorAtEnd = 4,
+  ChildProcessSet_FailIfBufferAlreadyAttachedToAProcess = 1,
+  ChildProcessSet_FailIfProcessAlreadyAttachedToABuffer = 2,
+  ChildProcessSet_NeverOverrideExistingAttachment = 3,
+  ChildProcessSet_CursorAtEnd = 4,
 };
 
 api(custom)
 typedef u32 Memory_Protect_Flags;
 enum{
-	MemProtect_Read    = 0x1,
-	MemProtect_Write   = 0x2,
-	MemProtect_Execute = 0x4,
+  MemProtect_Read    = 0x1,
+  MemProtect_Write   = 0x2,
+  MemProtect_Execute = 0x4,
 };
 
 api(custom)
 typedef i32 Wrap_Indicator_Mode;
 enum{
-	WrapIndicator_Hide,
-	WrapIndicator_Show_After_Line,
-	WrapIndicator_Show_At_Wrap_Edge,
+  WrapIndicator_Hide,
+  WrapIndicator_Show_After_Line,
+  WrapIndicator_Show_At_Wrap_Edge,
 };
 
 api(custom)
 typedef i32 Global_Setting_ID;
 enum{
-	GlobalSetting_Null,
-	GlobalSetting_LAltLCtrlIsAltGr,
+  GlobalSetting_Null,
+  GlobalSetting_LAltLCtrlIsAltGr,
 };
 
 api(custom)
 typedef i32 Buffer_Setting_ID;
 enum{
-	BufferSetting_Null,
-	BufferSetting_Unimportant,
-	BufferSetting_ReadOnly,
-	BufferSetting_RecordsHistory,
-	BufferSetting_Unkillable,
+  BufferSetting_Null,
+  BufferSetting_Unimportant,
+  BufferSetting_ReadOnly,
+  BufferSetting_RecordsHistory,
+  BufferSetting_Unkillable,
 };
 
 api(custom)
 struct Character_Predicate{
-	u8 b[32];
+  u8 b[32];
 };
 
 api(custom)
 struct Frame_Info{
-	i32 index;
-	f32 literal_dt;
-	f32 animation_dt;
+  i32 index;
+  f32 literal_dt;
+  f32 animation_dt;
 };
 
 api(custom)
 typedef i32 View_Setting_ID;
 enum{
-	ViewSetting_Null,
-	ViewSetting_ShowWhitespace,
-	ViewSetting_ShowScrollbar,
-	ViewSetting_ShowFileBar,
+  ViewSetting_Null,
+  ViewSetting_ShowWhitespace,
+  ViewSetting_ShowScrollbar,
+  ViewSetting_ShowFileBar,
 };
 
 api(custom)
 typedef u32 Buffer_Create_Flag;
 enum{
-	BufferCreate_Background = 0x1,
-	BufferCreate_AlwaysNew  = 0x2,
-	BufferCreate_NeverNew   = 0x4,
-	BufferCreate_JustChangedFile = 0x8,
-	BufferCreate_MustAttachToFile = 0x10,
-	BufferCreate_NeverAttachToFile = 0x20,
-	BufferCreate_SuppressNewFileHook = 0x40,
+  BufferCreate_Background = 0x1,
+  BufferCreate_AlwaysNew  = 0x2,
+  BufferCreate_NeverNew   = 0x4,
+  BufferCreate_JustChangedFile = 0x8,
+  BufferCreate_MustAttachToFile = 0x10,
+  BufferCreate_NeverAttachToFile = 0x20,
+  BufferCreate_SuppressNewFileHook = 0x40,
 };
 
 api(custom)
 typedef u32 Buffer_Save_Flag;
 enum{
-	BufferSave_IgnoreDirtyFlag = 0x1,
+  BufferSave_IgnoreDirtyFlag = 0x1,
 };
 
 api(custom)
 typedef u32 Buffer_Kill_Flag;
 enum{
-	BufferKill_AlwaysKill  = 0x2,
+  BufferKill_AlwaysKill  = 0x2,
 };
 
 api(custom)
@@ -233,80 +233,80 @@ enum{};
 api(custom)
 typedef u32 Buffer_Kill_Result;
 enum{
-	BufferKillResult_Killed = 0,
-	BufferKillResult_Dirty = 1,
-	BufferKillResult_Unkillable = 2,
-	BufferKillResult_DoesNotExist = 3,
+  BufferKillResult_Killed = 0,
+  BufferKillResult_Dirty = 1,
+  BufferKillResult_Unkillable = 2,
+  BufferKillResult_DoesNotExist = 3,
 };
 
 api(custom)
 typedef u32 Buffer_Reopen_Result;
 enum{
-	BufferReopenResult_Reopened = 0,
-	BufferReopenResult_Failed = 1,
+  BufferReopenResult_Reopened = 0,
+  BufferReopenResult_Failed = 1,
 };
 
 api(custom)
 typedef u32 Access_Flag;
 enum{
-	Access_Write = 0x1,
-	Access_Read = 0x2,
-	Access_Visible = 0x4,
+  Access_Write = 0x1,
+  Access_Read = 0x2,
+  Access_Visible = 0x4,
 };
 enum{
-	Access_Always = 0,
-	Access_ReadWrite = Access_Write|Access_Read,
-	Access_ReadVisible = Access_Read|Access_Visible,
-	Access_ReadWriteVisible = Access_Write|Access_Read|Access_Visible,
+  Access_Always = 0,
+  Access_ReadWrite = Access_Write|Access_Read,
+  Access_ReadVisible = Access_Read|Access_Visible,
+  Access_ReadWriteVisible = Access_Write|Access_Read|Access_Visible,
 };
 
 api(custom)
 typedef i32 Dirty_State;
 enum{
-	DirtyState_UpToDate = 0,
-	DirtyState_UnsavedChanges = 1,
-	DirtyState_UnloadedChanges = 2,
-	DirtyState_UnsavedChangesAndUnloadedChanges = 3,
+  DirtyState_UpToDate = 0,
+  DirtyState_UnsavedChanges = 1,
+  DirtyState_UnloadedChanges = 2,
+  DirtyState_UnsavedChangesAndUnloadedChanges = 3,
 };
 
 api(custom)
 typedef u32 Command_Line_Interface_Flag;
 enum{
-	CLI_OverlapWithConflict = 0x1,
-	CLI_AlwaysBindToView    = 0x2,
-	CLI_CursorAtEnd         = 0x4,
-	CLI_SendEndSignal       = 0x8,
+  CLI_OverlapWithConflict = 0x1,
+  CLI_AlwaysBindToView    = 0x2,
+  CLI_CursorAtEnd         = 0x4,
+  CLI_SendEndSignal       = 0x8,
 };
 
 api(custom)
 typedef u32 Set_Buffer_Flag;
 enum{
-	SetBuffer_KeepOriginalGUI = 0x1
+  SetBuffer_KeepOriginalGUI = 0x1
 };
 
 api(custom)
 typedef i32 Mouse_Cursor_Show_Type;
 enum{
-	MouseCursorShow_Never,
-	MouseCursorShow_Always,
+  MouseCursorShow_Never,
+  MouseCursorShow_Always,
 };
 
 api(custom)
 typedef i32 View_Split_Position;
 enum{
-	ViewSplit_Top,
-	ViewSplit_Bottom,
-	ViewSplit_Left,
-	ViewSplit_Right,
+  ViewSplit_Top,
+  ViewSplit_Bottom,
+  ViewSplit_Left,
+  ViewSplit_Right,
 };
 
 api(custom)
 typedef i32 Panel_Split_Kind;
 enum{
-	PanelSplitKind_Ratio_Min = 0,
-	PanelSplitKind_Ratio_Max = 1,
-	PanelSplitKind_FixedPixels_Min = 2,
-	PanelSplitKind_FixedPixels_Max = 3,
+  PanelSplitKind_Ratio_Min = 0,
+  PanelSplitKind_Ratio_Max = 1,
+  PanelSplitKind_FixedPixels_Min = 2,
+  PanelSplitKind_FixedPixels_Max = 3,
 };
 
 api(custom)
@@ -314,141 +314,141 @@ typedef u8 Key_Modifier;
 
 api(custom)
 struct Mouse_State{
-	b8 l;
-	b8 r;
-	b8 press_l;
-	b8 press_r;
-	b8 release_l;
-	b8 release_r;
-	b8 out_of_window;
-	i32 wheel;
-	union{
-		struct{
-			i32 x;
-			i32 y;
-		};
-		Vec2_i32 p;
-	};
+  b8 l;
+  b8 r;
+  b8 press_l;
+  b8 press_r;
+  b8 release_l;
+  b8 release_r;
+  b8 out_of_window;
+  i32 wheel;
+  union{
+    struct{
+      i32 x;
+      i32 y;
+    };
+    Vec2_i32 p;
+  };
 };
 
 api(custom)
 struct Parser_String_And_Type{
-	char *str;
-	u32 length;
-	u32 type;
+  char *str;
+  u32 length;
+  u32 type;
 };
 
 api(custom)
 typedef u32 File_Attribute_Flag;
 enum{
-	FileAttribute_IsDirectory = 1,
+  FileAttribute_IsDirectory = 1,
 };
 
 api(custom)
 struct File_Attributes{
-	u64 size;
-	u64 last_write_time;
-	File_Attribute_Flag flags;
+  u64 size;
+  u64 last_write_time;
+  File_Attribute_Flag flags;
 };
 
 api(custom)
 struct File_Info{
-	File_Info *next;
-	String_Const_u8 file_name;
-	File_Attributes attributes;
+  File_Info *next;
+  String_Const_u8 file_name;
+  File_Attributes attributes;
 };
 
 api(custom)
 struct File_List{
-	File_Info **infos;
-	u32 count;
+  File_Info **infos;
+  u32 count;
 };
 
 api(custom)
 struct Buffer_Identifier{
-	char *name;
-	i32 name_len;
-	Buffer_ID id;
+  char *name;
+  i32 name_len;
+  Buffer_ID id;
 };
 
 api(custom)
 typedef i32 Set_Buffer_Scroll_Rule;
 enum{
-	SetBufferScroll_NoCursorChange,
-	SetBufferScroll_SnapCursorIntoView,
+  SetBufferScroll_NoCursorChange,
+  SetBufferScroll_SnapCursorIntoView,
 };
 
 api(custom)
 struct Buffer_Scroll{
-	Buffer_Point position;
-	Buffer_Point target;
+  Buffer_Point position;
+  Buffer_Point target;
 };
 
 api(custom)
 struct Basic_Scroll{
-	Vec2_f32 position;
-	Vec2_f32 target;
+  Vec2_f32 position;
+  Vec2_f32 target;
 };
 
 api(custom)
 typedef i32 Buffer_Seek_Type;
 enum{
-	buffer_seek_pos,
-	buffer_seek_line_col,
+  buffer_seek_pos,
+  buffer_seek_line_col,
 };
 
 api(custom)
 struct Buffer_Seek{
-	Buffer_Seek_Type type;
-	union{
-		struct{
-			i64 pos;
-		};
-		struct{
-			i64 line;
-			i64 col;
-		};
-	};
+  Buffer_Seek_Type type;
+  union{
+    struct{
+      i64 pos;
+    };
+    struct{
+      i64 line;
+      i64 col;
+    };
+  };
 };
 
 api(custom)
 struct Buffer_Cursor{
-	i64 pos;
-	i64 line;
-	i64 col;
+  i64 pos;
+  i64 line;
+  i64 col;
 };
 
 api(custom)
 union Range_Cursor{
-	struct{
-		Buffer_Cursor min;
-		Buffer_Cursor max;
-	};
-	struct{
-		Buffer_Cursor start;
-		Buffer_Cursor end;
-	};
-	struct{
-		Buffer_Cursor first;
-		Buffer_Cursor one_past_last;
-	};
+  struct{
+    Buffer_Cursor min;
+    Buffer_Cursor max;
+  };
+  struct{
+    Buffer_Cursor start;
+    Buffer_Cursor end;
+  };
+  struct{
+    Buffer_Cursor first;
+    Buffer_Cursor one_past_last;
+  };
 };
 
 api(custom)
 struct Marker{
-	i64 pos;
-	b32 lean_right;
-	i32 line; // NOTE(BYP): This used to be padding
+  i64 pos;
+  b32 lean_right;
+  i32 line; // NOTE(BYP): This used to be padding
 };
 
 api(custom)
 typedef i32 Managed_Object_Type;
 enum{
-	ManagedObjectType_Error = 0,
-	ManagedObjectType_Memory = 1,
-	ManagedObjectType_Markers = 2,
+  ManagedObjectType_Error = 0,
+  ManagedObjectType_Memory = 1,
+  ManagedObjectType_Markers = 2,
 
-	ManagedObjectType_COUNT = 4,
+  ManagedObjectType_COUNT = 4,
 };
 
 api(custom)
@@ -461,142 +461,142 @@ typedef u64 Managed_Object;
 
 api(custom)
 struct Marker_Visual{
-	Managed_Scope scope;
-	u32 slot_id;
-	u32 gen_id;
+  Managed_Scope scope;
+  u32 slot_id;
+  u32 gen_id;
 };
 
 api(custom)
 typedef u32 Glyph_Flag;
 enum{
-	GlyphFlag_None = 0x0,
+  GlyphFlag_None = 0x0,
 };
 
 api(custom)
 struct Query_Bar{
-	String_Const_u8 prompt;
-	String_Const_u8 string;
-	u64 string_capacity;
+  String_Const_u8 prompt;
+  String_Const_u8 string;
+  u64 string_capacity;
 };
 
 api(custom)
 struct Query_Bar_Ptr_Array{
-	Query_Bar **ptrs;
-	i32 count;
+  Query_Bar **ptrs;
+  i32 count;
 };
 
 api(custom)
 struct Query_Bar_Group{
-	Application_Links *app;
-	View_ID view;
+  Application_Links *app;
+  View_ID view;
 
-	Query_Bar_Group(Application_Links *app);
-	Query_Bar_Group(Application_Links *app, View_ID view);
-	~Query_Bar_Group();
+  Query_Bar_Group(Application_Links *app);
+  Query_Bar_Group(Application_Links *app, View_ID view);
+  ~Query_Bar_Group();
 };
 
 api(custom)
 struct Font_Load_Location{
-	String_Const_u8 file_name;
+  String_Const_u8 file_name;
 };
 
 api(custom)
 typedef u32 Face_Antialiasing_Mode;
 enum{
-	FaceAntialiasingMode_8BitMono,
-	FaceAntialiasingMode_1BitMono,
+  FaceAntialiasingMode_8BitMono,
+  FaceAntialiasingMode_1BitMono,
 };
 
 api(custom)
 struct Face_Load_Parameters{
-	u32 pt_size;
-	Face_Antialiasing_Mode aa_mode;
-	b8 bold;
-	b8 italic;
-	b8 underline;
-	b8 hinting;
+  u32 pt_size;
+  Face_Antialiasing_Mode aa_mode;
+  b8 bold;
+  b8 italic;
+  b8 underline;
+  b8 hinting;
 };
 
 api(custom)
 struct Face_Description{
-	Font_Load_Location font;
-	Face_Load_Parameters parameters;
+  Font_Load_Location font;
+  Face_Load_Parameters parameters;
 };
 
 api(custom)
 struct Face_Metrics{
-	f32 text_height;
-	f32 line_height;
-	f32 ascent;
-	f32 descent;
-	f32 line_skip;
+  f32 text_height;
+  f32 line_height;
+  f32 ascent;
+  f32 descent;
+  f32 line_skip;
 
-	f32 underline_yoff1;
-	f32 underline_yoff2;
+  f32 underline_yoff1;
+  f32 underline_yoff2;
 
-	f32 max_advance;
-	f32 space_advance;
-	f32 decimal_digit_advance;
-	f32 hex_digit_advance;
-	f32 byte_advance;
-	f32 byte_sub_advances[3];
-	f32 normal_lowercase_advance;
-	f32 normal_uppercase_advance;
-	f32 normal_advance;
+  f32 max_advance;
+  f32 space_advance;
+  f32 decimal_digit_advance;
+  f32 hex_digit_advance;
+  f32 byte_advance;
+  f32 byte_sub_advances[3];
+  f32 normal_lowercase_advance;
+  f32 normal_uppercase_advance;
+  f32 normal_advance;
 };
 
 api(custom)
 struct Codepoint_Index_Map{
-	b32 has_zero_index;
-	u16 zero_index;
-	u16 max_index;
-	Table_u32_u16 table;
+  b32 has_zero_index;
+  u16 zero_index;
+  u16 max_index;
+  Table_u32_u16 table;
 };
 
 api(custom)
 struct Face_Advance_Map{
-	Codepoint_Index_Map codepoint_to_index;
-	f32 *advance;
-	u16 index_count;
+  Codepoint_Index_Map codepoint_to_index;
+  f32 *advance;
+  u16 index_count;
 };
 
 api(custom)
 struct Edit{
-	String_Const_u8 text;
-	Range_i64 range;
+  String_Const_u8 text;
+  Range_i64 range;
 };
 
 api(custom)
 struct Batch_Edit{
-	Batch_Edit *next;
-	Edit edit;
+  Batch_Edit *next;
+  Edit edit;
 };
 
 api(custom)
 typedef i32 Record_Kind;
 enum{
-	RecordKind_Single,
-	RecordKind_Group,
+  RecordKind_Single,
+  RecordKind_Group,
 };
 
 api(custom)
 typedef i32 Record_Error;
 enum{
-	RecordError_NoError,
-	RecordError_InvalidBuffer,
-	RecordError_NoHistoryAttached,
-	RecordError_IndexOutOfBounds,
-	RecordError_SubIndexOutOfBounds,
-	RecordError_InitialStateDummyRecord,
-	RecordError_WrongRecordTypeAtIndex,
+  RecordError_NoError,
+  RecordError_InvalidBuffer,
+  RecordError_NoHistoryAttached,
+  RecordError_IndexOutOfBounds,
+  RecordError_SubIndexOutOfBounds,
+  RecordError_InitialStateDummyRecord,
+  RecordError_WrongRecordTypeAtIndex,
 };
 
 api(custom)
 typedef u32 Record_Merge_Flag;
 enum{
-	RecordMergeFlag_StateInRange_MoveStateForward = 0x0,
-	RecordMergeFlag_StateInRange_MoveStateBackward = 0x1,
-	RecordMergeFlag_StateInRange_ErrorOut = 0x2,
+  RecordMergeFlag_StateInRange_MoveStateForward = 0x0,
+  RecordMergeFlag_StateInRange_MoveStateBackward = 0x1,
+  RecordMergeFlag_StateInRange_ErrorOut = 0x2,
 };
 
 api(custom)
@@ -604,20 +604,20 @@ typedef i32 History_Record_Index;
 
 api(custom)
 struct Record_Info{
-	Record_Error error;
-	Record_Kind kind;
-	i64 pos_before_edit;
-	i32 edit_number;
-	union{
-		struct{
-			String_Const_u8 single_string_forward;
-			String_Const_u8 single_string_backward;
-			i64 single_first;
-		};
-		struct{
-			i32 group_count;
-		};
-	};
+  Record_Error error;
+  Record_Kind kind;
+  i64 pos_before_edit;
+  i32 edit_number;
+  union{
+    struct{
+      String_Const_u8 single_string_forward;
+      String_Const_u8 single_string_backward;
+      i64 single_first;
+    };
+    struct{
+      i32 group_count;
+    };
+  };
 };
 
 #if defined(CUSTOM_COMMAND_SIG) || defined(CUSTOM_UI_COMMAND_SIG) || defined(CUSTOM_DOC) || defined(CUSTOM_COMMAND)
@@ -638,28 +638,28 @@ struct Record_Info{
 
 api(custom)
 struct User_Input{
-	Input_Event event;
-	b32 abort;
+  Input_Event event;
+  b32 abort;
 };
 
 api(custom)
 typedef i32 Hook_ID;
 enum{
-	HookID_Tick,
-	HookID_RenderCaller,
-	HookID_WholeScreenRenderCaller,
-	HookID_DeltaRule,
-	HookID_BufferViewerUpdate,
-	HookID_ViewEventHandler,
-	HookID_BufferNameResolver,
-	HookID_BeginBuffer,
-	HookID_EndBuffer,
-	HookID_NewFile,
-	HookID_SaveFile,
-	HookID_BufferEditRange,
-	HookID_BufferRegion,
-	HookID_Layout,
-	HookID_ViewChangeBuffer,
+  HookID_Tick,
+  HookID_RenderCaller,
+  HookID_WholeScreenRenderCaller,
+  HookID_DeltaRule,
+  HookID_BufferViewerUpdate,
+  HookID_ViewEventHandler,
+  HookID_BufferNameResolver,
+  HookID_BeginBuffer,
+  HookID_EndBuffer,
+  HookID_NewFile,
+  HookID_SaveFile,
+  HookID_BufferEditRange,
+  HookID_BufferRegion,
+  HookID_Layout,
+  HookID_ViewChangeBuffer,
 };
 
 api(custom)
@@ -668,12 +668,12 @@ typedef i32 Hook_Function(Application_Links *app);
 
 api(custom)
 struct Buffer_Name_Conflict_Entry{
-	Buffer_ID buffer_id;
-	String_Const_u8 file_name;
-	String_Const_u8 base_name;
-	u8 *unique_name_in_out;
-	u64 unique_name_len_in_out;
-	u64 unique_name_capacity;
+  Buffer_ID buffer_id;
+  String_Const_u8 file_name;
+  String_Const_u8 base_name;
+  u8 *unique_name_in_out;
+  u64 unique_name_len_in_out;
+  u64 unique_name_capacity;
 };
 
 api(custom)
@@ -686,7 +686,7 @@ typedef i32 Buffer_Hook_Function(Application_Links *app, Buffer_ID buffer_id);
 
 api(custom)
 typedef i32 Buffer_Edit_Range_Function(Application_Links *app, Buffer_ID buffer_id,
-									   Range_i64 new_range, Range_Cursor old_range);
+                                       Range_i64 new_range, Range_Cursor old_range);
 #define BUFFER_EDIT_RANGE_SIG(name) i32 name(Application_Links *app, Buffer_ID buffer_id, Range_i64 new_range, Range_Cursor old_cursor_range)
 
 api(custom)
@@ -711,44 +711,44 @@ typedef void Whole_Screen_Render_Caller_Function(Application_Links *app, Frame_I
 
 api(custom)
 typedef void View_Change_Buffer_Function(Application_Links *app, View_ID view_id,
-										 Buffer_ID old_buffer_id, Buffer_ID new_buffer_id);
+                                         Buffer_ID old_buffer_id, Buffer_ID new_buffer_id);
 
 api(custom)
 typedef u32 Layout_Item_Flag;
 enum{
-	LayoutItemFlag_Special_Character = (1 << 0),
-	LayoutItemFlag_Ghost_Character = (1 << 1)
+  LayoutItemFlag_Special_Character = (1 << 0),
+  LayoutItemFlag_Ghost_Character = (1 << 1)
 };
 
 api(custom)
 struct Layout_Item{
-	i64 index;
-	u32 codepoint;
-	Layout_Item_Flag flags;
-	Rect_f32 rect;
-	f32 padded_y1;
+  i64 index;
+  u32 codepoint;
+  Layout_Item_Flag flags;
+  Rect_f32 rect;
+  f32 padded_y1;
 };
 
 api(custom)
 struct Layout_Item_Block{
-	Layout_Item_Block *next;
-	Layout_Item *items;
-	i64 item_count;
-	i64 character_count;
-	Face_ID face;
+  Layout_Item_Block *next;
+  Layout_Item *items;
+  i64 item_count;
+  i64 character_count;
+  Face_ID face;
 };
 
 api(custom)
 struct Layout_Item_List{
-	Layout_Item_Block *first;
-	Layout_Item_Block *last;
-	i64 item_count;
-	i64 character_count;
-	i32 node_count;
-	f32 height;
-	f32 bottom_padding;
-	Range_i64 input_index_range;
-	Range_i64 manifested_index_range;
+  Layout_Item_Block *first;
+  Layout_Item_Block *last;
+  i64 item_count;
+  i64 character_count;
+  i32 node_count;
+  f32 height;
+  f32 bottom_padding;
+  Range_i64 input_index_range;
+  Range_i64 manifested_index_range;
 };
 
 api(custom)
@@ -756,44 +756,44 @@ typedef Layout_Item_List Layout_Function(Application_Links *app, Arena *arena, B
 
 api(custom)
 struct View_Context{
-	Render_Caller_Function *render_caller;
-	Delta_Rule_Function *delta_rule;
-	u64 delta_rule_memory_size;
-	b32 hides_buffer;
-	struct Mapping *mapping;
-	i64 map_id;
+  Render_Caller_Function *render_caller;
+  Delta_Rule_Function *delta_rule;
+  u64 delta_rule_memory_size;
+  b32 hides_buffer;
+  struct Mapping *mapping;
+  i64 map_id;
 };
 
 api(custom)
 typedef u32 String_Match_Flag;
 enum{
-	StringMatch_CaseSensitive = 1,
-	StringMatch_LeftSideSloppy = 2,
-	StringMatch_RightSideSloppy = 4,
-	StringMatch_Straddled = 8,
+  StringMatch_CaseSensitive = 1,
+  StringMatch_LeftSideSloppy = 2,
+  StringMatch_RightSideSloppy = 4,
+  StringMatch_Straddled = 8,
 };
 
 api(custom)
 struct String_Match{
-	String_Match *next;
-	Buffer_ID buffer;
-	i32 string_id;
-	String_Match_Flag flags;
-	Range_i64 range;
+  String_Match *next;
+  Buffer_ID buffer;
+  i32 string_id;
+  String_Match_Flag flags;
+  Range_i64 range;
 };
 
 api(custom)
 struct String_Match_List{
-	String_Match *first;
-	String_Match *last;
-	i32 count;
+  String_Match *first;
+  String_Match *last;
+  i32 count;
 };
 
 api(custom)
 struct Process_State{
-	b32 valid;
-	b32 is_updating;
-	i64 return_code;
+  b32 valid;
+  b32 is_updating;
+  i64 return_code;
 };
 
 ////////////////////////////////

@@ -39,16 +39,16 @@ CUSTOM_ID(command_map, mapid_code);
 global b32 allow_immediate_close_without_checking_for_changes = false;
 
 global char *default_extensions[] = {
-    "cpp",
-    "hpp",
-    "c",
-    "h",
-    "cc",
-    "cs",
-    "java",
-    "rs",
-    "glsl",
-    "m",
+  "cpp",
+  "hpp",
+  "c",
+  "h",
+  "cc",
+  "cs",
+  "java",
+  "rs",
+  "glsl",
+  "m",
 };
 
 #if !defined(AUTO_CENTER_AFTER_JUMPS)
@@ -73,8 +73,8 @@ global b32 show_fps_hud = false;
 global Heap global_heap;
 
 enum{
-    FCoderMode_Original = 0,
-    FCoderMode_NotepadLike = 1,
+  FCoderMode_Original = 0,
+  FCoderMode_NotepadLike = 1,
 };
 global i32 fcoder_mode = FCoderMode_Original;
 

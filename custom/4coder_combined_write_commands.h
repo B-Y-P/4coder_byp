@@ -5,15 +5,15 @@
 // TOP
 
 struct Snippet{
-    char *name;
-    char *text;
-    i32 cursor_offset;
-    i32 mark_offset;
+  char *name;
+  char *text;
+  i32 cursor_offset;
+  i32 mark_offset;
 };
 
 struct Snippet_Array{
-    Snippet *snippets;
-    i32 count;
+  Snippet *snippets;
+  i32 count;
 };
 
 // BOTTOM

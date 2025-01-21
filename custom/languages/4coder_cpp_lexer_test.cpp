@@ -433,61 +433,61 @@ R"bar(foo
 
 internal void
 print_token_list(Token_List *list, String_Const_u8 text){
-    for (Token_Block *block = list->first;
-		 block != 0;
-		 block = block->next){
-		i32 count = block->count;
-		Token *token = block->tokens;
-		for (i32 i = 0; i < count; i += 1, token += 1){
-			printf("[%5llu, %5llu) %20s / %20s : 0x%04x / 0x%04x\n",
-				   token->pos, token->pos + token->size,
-				   token_base_kind_names[token->kind],
-				   token_cpp_kind_names[token->sub_kind],
-				   token->flags, token->sub_flags);
-			printf("\t:%.*s:\n", (i32)token->size, text.str + token->pos);
-		}
+  for (Token_Block *block = list->first;
+       block != 0;
+       block = block->next){
+    i32 count = block->count;
+    Token *token = block->tokens;
+    for (i32 i = 0; i < count; i += 1, token += 1){
+      printf("[%5llu, %5llu) %20s / %20s : 0x%04x / 0x%04x\n",
+             token->pos, token->pos + token->size,
+             token_base_kind_names[token->kind],
+             token_cpp_kind_names[token->sub_kind],
+             token->flags, token->sub_flags);
+      printf("\t:%.*s:\n", (i32)token->size, text.str + token->pos);
     }
+  }
 }
 
 internal String_Const_u8
 file_read_all(Arena *arena, FILE *file){
-    String_Const_u8 result = {};
-    fseek(file, 0, SEEK_END);
-    result.size = ftell(file);
-    fseek(file, 0, SEEK_SET);
-    result.str = push_array(arena, u8, result.size + 1);
-    fread(result.str, result.size, 1, file);
-    result.str[result.size] = 0;
-    return(result);
+  String_Const_u8 result = {};
+  fseek(file, 0, SEEK_END);
+  result.size = ftell(file);
+  fseek(file, 0, SEEK_SET);
+  result.str = push_array(arena, u8, result.size + 1);
+  fread(result.str, result.size, 1, file);
+  result.str[result.size] = 0;
+  return(result);
 }
 
 int main(void){
-    Arena arena_ = make_arena_malloc();
-    Arena *arena = &arena_;
+  Arena arena_ = make_arena_malloc();
+  Arena *arena = &arena_;
 
-    String_Const_u8 path_to_self = string_u8_litexpr(__FILE__);
-    path_to_self = string_remove_last_folder(path_to_self);
-    String_Const_u8 path_to_src = string_remove_last_folder(path_to_self);
+  String_Const_u8 path_to_self = string_u8_litexpr(__FILE__);
+  path_to_self = string_remove_last_folder(path_to_self);
+  String_Const_u8 path_to_src = string_remove_last_folder(path_to_self);
 
-    String_Const_u8 test_file_name = push_u8_stringf(arena, "%S/languages/4coder_lexer_cpp_test.cpp", path_to_src);
+  String_Const_u8 test_file_name = push_u8_stringf(arena, "%S/languages/4coder_lexer_cpp_test.cpp", path_to_src);
 
-    FILE *test_file = fopen((char*)test_file_name.str, "rb");
-    if (test_file == 0){
-		printf("error: count not open test file %s\n", test_file_name.str);
-		exit(1);
-    }
-    String_Const_u8 text = file_read_all(arena, test_file);
-    fclose(test_file);
+  FILE *test_file = fopen((char*)test_file_name.str, "rb");
+  if (test_file == 0){
+    printf("error: count not open test file %s\n", test_file_name.str);
+    exit(1);
+  }
+  String_Const_u8 text = file_read_all(arena, test_file);
+  fclose(test_file);
 
-    Token_List list = lex_full_input_cpp(arena, text);
-    print_token_list(&list, text);
+  Token_List list = lex_full_input_cpp(arena, text);
+  print_token_list(&list, text);
 
-    for (i32 i = 0; i < KB(4); i += 1){
-		fprintf(stdout, "\n");
-    }
-    fflush(stdout);
+  for (i32 i = 0; i < KB(4); i += 1){
+    fprintf(stdout, "\n");
+  }
+  fflush(stdout);
 
-    return(0);
+  return(0);
 }
 
 // BOTTOM

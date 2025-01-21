@@ -5,16 +5,16 @@
 // TOP
 
 Mutex_Lock::Mutex_Lock(System_Mutex m){
-    system_mutex_acquire(m);
-    this->mutex = m;
+  system_mutex_acquire(m);
+  this->mutex = m;
 }
 
 Mutex_Lock::~Mutex_Lock(){
-    system_mutex_release(this->mutex);
+  system_mutex_release(this->mutex);
 }
 
 Mutex_Lock::operator System_Mutex(){
-    return(this->mutex);
+  return(this->mutex);
 }
 
 // BOTTOM

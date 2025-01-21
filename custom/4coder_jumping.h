@@ -9,7 +9,7 @@
 
 typedef u32 Jump_Flag;
 enum{
-    JumpFlag_SkipSubs = 1,
+  JumpFlag_SkipSubs = 1,
 };
 
 #endif

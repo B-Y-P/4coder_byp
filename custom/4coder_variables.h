@@ -13,16 +13,16 @@
 typedef u64 String_ID;
 
 struct Variable{
-    Variable *parent;
-    Variable *next;
-    String_ID key;
-    String_ID string;
-    Variable *first;
-    Variable *last;
+  Variable *parent;
+  Variable *next;
+  String_ID key;
+  String_ID string;
+  Variable *first;
+  Variable *last;
 };
 
 struct Variable_Handle{
-    Variable *ptr;
+  Variable *ptr;
 };
 
 ////////////////////////////////

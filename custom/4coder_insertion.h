@@ -8,12 +8,12 @@
 #define FRED_INSERTION_H
 
 struct Buffer_Insertion{
-    Application_Links *app;
-    Buffer_ID buffer;
-    i64 at;
-    b32 buffering;
-    Cursor *cursor;
-    Temp_Memory temp;
+  Application_Links *app;
+  Buffer_ID buffer;
+  i64 at;
+  b32 buffering;
+  Cursor *cursor;
+  Temp_Memory temp;
 };
 
 #endif

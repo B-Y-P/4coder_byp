@@ -11,48 +11,48 @@
 // NOTE(allen): Match Pattern Types
 
 struct Prj_Pattern{
-    String8List absolutes;
+  String8List absolutes;
 };
 
 struct Prj_Pattern_Node{
-    Prj_Pattern_Node *next;
-    Prj_Pattern pattern;
+  Prj_Pattern_Node *next;
+  Prj_Pattern pattern;
 };
 
 struct Prj_Pattern_List{
-    Prj_Pattern_Node *first;
-    Prj_Pattern_Node *last;
-    i32 count;
+  Prj_Pattern_Node *first;
+  Prj_Pattern_Node *last;
+  i32 count;
 };
 
 typedef u32 Prj_Open_File_Flags;
 enum{
-    PrjOpenFileFlag_Recursive = 1,
+  PrjOpenFileFlag_Recursive = 1,
 };
 
 ///////////////////////////////
 // NOTE(allen): Project Files
 
 struct Prj_Setup_Status{
-    b32 bat_exists;
-    b32 sh_exists;
-    b32 project_exists;
-    b32 everything_exists;
+  b32 bat_exists;
+  b32 sh_exists;
+  b32 project_exists;
+  b32 everything_exists;
 };
 
 struct Prj_Key_Strings{
-    b32 success;
-    String8 script_file;
-    String8 code_file;
-    String8 output_dir;
-    String8 binary_file;
+  b32 success;
+  String8 script_file;
+  String8 code_file;
+  String8 output_dir;
+  String8 binary_file;
 };
 
 typedef u32 Prj_Setup_Script_Flags;
 enum{
-    PrjSetupScriptFlag_Project = 0x1,
-    PrjSetupScriptFlag_Bat     = 0x2,
-    PrjSetupScriptFlag_Sh      = 0x4,
+  PrjSetupScriptFlag_Project = 0x1,
+  PrjSetupScriptFlag_Bat     = 0x2,
+  PrjSetupScriptFlag_Sh      = 0x4,
 };
 
 ////////////////////////////////

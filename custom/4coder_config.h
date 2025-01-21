@@ -11,124 +11,124 @@
 // NOTE(allen): Config Parser Types
 
 struct Error_Location{
-    i32 line_number;
-    i32 column_number;
+  i32 line_number;
+  i32 column_number;
 };
 
 struct Config_Error{
-    Config_Error *next;
-    Config_Error *prev;
-    String_Const_u8 file_name;
-    u8 *pos;
-    String_Const_u8 text;
+  Config_Error *next;
+  Config_Error *prev;
+  String_Const_u8 file_name;
+  u8 *pos;
+  String_Const_u8 text;
 };
 
 struct Config_Error_List{
-    Config_Error *first;
-    Config_Error *last;
-    i32 count;
+  Config_Error *first;
+  Config_Error *last;
+  i32 count;
 };
 
 struct Config_Parser{
-    Token *token;
-    Token *opl;
+  Token *token;
+  Token *opl;
 
-    String_Const_u8 file_name;
-    String_Const_u8 data;
+  String_Const_u8 file_name;
+  String_Const_u8 data;
 
-    Arena *arena;
+  Arena *arena;
 
-    Config_Error_List errors;
+  Config_Error_List errors;
 };
 
 struct Config_LValue{
-    String_Const_u8 identifier;
-    i32 index;
+  String_Const_u8 identifier;
+  i32 index;
 };
 
 typedef i32 Config_RValue_Type;
 enum{
-    ConfigRValueType_Null,
-    ConfigRValueType_LValue,
-    ConfigRValueType_Boolean,
-    ConfigRValueType_Integer,
-    ConfigRValueType_String,
-    ConfigRValueType_Compound,
-    ConfigRValueType_COUNT
+  ConfigRValueType_Null,
+  ConfigRValueType_LValue,
+  ConfigRValueType_Boolean,
+  ConfigRValueType_Integer,
+  ConfigRValueType_String,
+  ConfigRValueType_Compound,
+  ConfigRValueType_COUNT
 };
 
 struct Config_Compound{
-    struct Config_Compound_Element *first;
-    struct Config_Compound_Element *last;
-    i32 count;
+  struct Config_Compound_Element *first;
+  struct Config_Compound_Element *last;
+  i32 count;
 };
 
 struct Config_RValue{
-    Config_RValue_Type type;
-    union{
-		Config_LValue *lvalue;
-		b32 boolean;
-		i32 integer;
-		u32 uinteger;
-		String_Const_u8 string;
-		char character;
-		Config_Compound *compound;
-    };
+  Config_RValue_Type type;
+  union{
+    Config_LValue *lvalue;
+    b32 boolean;
+    i32 integer;
+    u32 uinteger;
+    String_Const_u8 string;
+    char character;
+    Config_Compound *compound;
+  };
 };
 
 struct Config_Integer{
-    b32 is_signed;
-    union{
-		i32 integer;
-		u32 uinteger;
-    };
+  b32 is_signed;
+  union{
+    i32 integer;
+    u32 uinteger;
+  };
 };
 
 typedef i32 Config_Layout_Type;
 enum{
-    ConfigLayoutType_Unset,
-    ConfigLayoutType_Identifier,
-    ConfigLayoutType_Integer,
-    ConfigLayoutType_COUNT,
+  ConfigLayoutType_Unset,
+  ConfigLayoutType_Identifier,
+  ConfigLayoutType_Integer,
+  ConfigLayoutType_COUNT,
 };
 struct Config_Layout{
-    Config_Layout_Type type;
-    u8 *pos;
-    union{
-		String_Const_u8 identifier;
-		i32 integer;
-    };
+  Config_Layout_Type type;
+  u8 *pos;
+  union{
+    String_Const_u8 identifier;
+    i32 integer;
+  };
 };
 
 struct Config_Compound_Element{
-    Config_Compound_Element *next;
-    Config_Compound_Element *prev;
+  Config_Compound_Element *next;
+  Config_Compound_Element *prev;
 
-    Config_Layout l;
-    Config_RValue *r;
+  Config_Layout l;
+  Config_RValue *r;
 };
 
 struct Config_Assignment{
-    Config_Assignment *next;
-    Config_Assignment *prev;
+  Config_Assignment *next;
+  Config_Assignment *prev;
 
-    u8 *pos;
-    Config_LValue *l;
-    Config_RValue *r;
+  u8 *pos;
+  Config_LValue *l;
+  Config_RValue *r;
 
-    b32 visited;
+  b32 visited;
 };
 
 struct Config{
-    i32 *version;
-    Config_Assignment *first;
-    Config_Assignment *last;
-    i32 count;
+  i32 *version;
+  Config_Assignment *first;
+  Config_Assignment *last;
+  i32 count;
 
-    Config_Error_List errors;
+  Config_Error_List errors;
 
-    String_Const_u8 file_name;
-    String_Const_u8 data;
+  String_Const_u8 file_name;
+  String_Const_u8 data;
 };
 
 ////////////////////////////////
@@ -136,40 +136,40 @@ struct Config{
 
 typedef i32 Iteration_Step_Result;
 enum{
-    Iteration_Good = 0,
-    Iteration_Skip = 1,
-    Iteration_Quit = 2,
+  Iteration_Good = 0,
+  Iteration_Skip = 1,
+  Iteration_Quit = 2,
 };
 
 struct Config_Get_Result{
-    b32 success;
-    Config_RValue_Type type;
-    u8 *pos;
-    union{
-		b32 boolean;
-		i32 integer;
-		u32 uinteger;
-		String_Const_u8 string;
-		char character;
-		Config_Compound *compound;
-    };
+  b32 success;
+  Config_RValue_Type type;
+  u8 *pos;
+  union{
+    b32 boolean;
+    i32 integer;
+    u32 uinteger;
+    String_Const_u8 string;
+    char character;
+    Config_Compound *compound;
+  };
 };
 
 struct Config_Iteration_Step_Result{
-    Iteration_Step_Result step;
-    Config_Get_Result get;
+  Iteration_Step_Result step;
+  Config_Get_Result get;
 };
 
 struct Config_Get_Result_Node{
-    Config_Get_Result_Node *next;
-    Config_Get_Result_Node *prev;
-    Config_Get_Result result;
+  Config_Get_Result_Node *next;
+  Config_Get_Result_Node *prev;
+  Config_Get_Result result;
 };
 
 struct Config_Get_Result_List{
-    Config_Get_Result_Node *first;
-    Config_Get_Result_Node *last;
-    i32 count;
+  Config_Get_Result_Node *first;
+  Config_Get_Result_Node *last;
+  i32 count;
 };
 
 ////////////////////////////////

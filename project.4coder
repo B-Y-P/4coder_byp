@@ -5,16 +5,16 @@ clear_blank_lines = true;
 indent_with_tabs = false;
 
 patterns = {
-	"*.c",
-	"*.cpp",
-	"*.hpp",
-	"*.h",
-	"*.m",
-	"*.mm",
-	"*.bat",
-	"*.sh",
-	"*.4coder",
-	"*.txt",
+  "*.c",
+  "*.cpp",
+  "*.hpp",
+  "*.h",
+  "*.m",
+  "*.mm",
+  "*.bat",
+  "*.sh",
+  "*.4coder",
+  "*.txt",
 };
 
 blacklist_patterns = { ".*", };
@@ -23,13 +23,13 @@ paths = { { .path = ".", .recursive = true, .relative = true, }, };
 load_paths = { .win = paths, };
 
 commands = {
-	.run      = { .win = "run_test.bat", .out = "*compilation*", .footer_panel = true, .save_dirty_files = true,  .cursor_at_end = true,  },
-	.build    = { .win = "build.bat",    .out = "*compilation*", .footer_panel = true, .save_dirty_files = true,  .cursor_at_end = true,  },
-	.debugger = { .win = "remedybg .",   .out = "*run*",         .footer_panel = true, .save_dirty_files = false, .cursor_at_end = false, },
+  .run      = { .win = "run_test.bat", .out = "*compilation*", .footer_panel = true, .save_dirty_files = true,  .cursor_at_end = true,  },
+  .build    = { .win = "build.bat",    .out = "*compilation*", .footer_panel = true, .save_dirty_files = true,  .cursor_at_end = true,  },
+  .debugger = { .win = "remedybg .",   .out = "*run*",         .footer_panel = true, .save_dirty_files = false, .cursor_at_end = false, },
 };
 
 fkey_command = {
-	.F2 = "run",
-	.F5 = "build",
-	.F9 = "debugger",
+  .F2 = "run",
+  .F5 = "build",
+  .F9 = "debugger",
 };
