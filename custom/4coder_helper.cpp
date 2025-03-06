@@ -1652,6 +1652,7 @@ buffer_identifier_to_id_create_out_buffer(Application_Links *app, Buffer_Identif
       if (buffer_attach_id != 0){
         buffer_set_setting(app, buffer_attach_id, BufferSetting_ReadOnly, true);
         buffer_set_setting(app, buffer_attach_id, BufferSetting_Unimportant, true);
+        buffer_set_setting(app, buffer_attach_id, BufferSetting_RecordsHistory, false);
         result = buffer_attach_id;
       }
     }

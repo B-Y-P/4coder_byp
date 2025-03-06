@@ -175,12 +175,14 @@ byp_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view_id
   Buffer_Scroll scroll = view_get_buffer_scroll(app, view_id);
   Buffer_Point_Delta_Result delta = delta_apply(app, view_id, frame_info.animation_dt, scroll);
   if(!block_match_struct(&scroll.position, &delta.point)){
+    Vec2_f32 d = view_point_difference(app, view_id, delta.point, scroll.position);
+    vim_cur_cursor_pos -= d;
+    vim_nxt_cursor_pos -= d;
     block_copy_struct(&scroll.position, &delta.point);
     view_set_buffer_scroll(app, view_id, scroll, SetBufferScroll_NoCursorChange);
   }
   if(delta.still_animating){ animate_in_n_milliseconds(app, 0); }
-  Buffer_Point buffer_point = scroll.position;
-  Text_Layout_ID text_layout_id = text_layout_create(app, buffer, region, buffer_point);
+  Text_Layout_ID text_layout_id = text_layout_create(app, buffer, region, scroll.position);
 
   if(show_line_number_margins){
     if(byp_relative_numbers)
@@ -193,16 +195,6 @@ byp_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view_id
 
   if(show_scrollbar){
     byp_draw_scrollbars(app, view_id, buffer, text_layout_id, scrollbar_pair.b);
-  }
-
-  if(byp_drop_shadow){
-    Buffer_Point shadow_point = buffer_point;
-    Face_Description desc = get_face_description(app, face_id);
-    shadow_point.pixel_shift -= Max((f32(desc.parameters.pt_size) / 8), 1.f)*V2f32(1.f, 1.f);
-    Text_Layout_ID shadow_layout_id = text_layout_create(app, buffer, region, shadow_point);
-    paint_text_color(app, shadow_layout_id, text_layout_get_visible_range(app, text_layout_id), 0xBB000000);
-    draw_text_layout_default(app, shadow_layout_id);
-    text_layout_free(app, shadow_layout_id);
   }
 
   byp_render_buffer(app, view_id, face_id, buffer, text_layout_id, region);

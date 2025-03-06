@@ -323,6 +323,16 @@ byp_draw_scope_brackets(Application_Links *app, View_ID view, Buffer_ID buffer, 
 function void
 byp_draw_comments(Application_Links *app, Buffer_ID buffer, Text_Layout_ID text_layout_id, Token_Array *array, Rect_f32 rect){
   Scratch_Block scratch(app);
+
+  b32 use_comment_keyword = def_get_config_b32(vars_save_string_lit("use_comment_keyword"));
+  if (use_comment_keyword){
+    Comment_Highlight_Pair pairs[] = {
+      {string_u8_litexpr("NOTE"), finalize_color(defcolor_comment_pop, 0)},
+      {string_u8_litexpr("TODO"), finalize_color(defcolor_comment_pop, 1)},
+    };
+    draw_comment_highlights(app, buffer, text_layout_id, array, pairs, ArrayCount(pairs));
+  }
+
   Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
   i64 first_index = token_index_from_pos(array, visible_range.first);
   Token_Iterator_Array it = token_iterator_index(buffer, array, first_index);

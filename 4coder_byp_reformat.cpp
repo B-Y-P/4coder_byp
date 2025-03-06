@@ -94,5 +94,3 @@ trim_leading_whitespace(Application_Links *app, Buffer_ID buffer){
     buffer_batch_edit(app, buffer, batch_first);
   }
 }
-
-

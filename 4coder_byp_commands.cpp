@@ -6,7 +6,6 @@ global Face_ID byp_minimal_face;
 global b32 byp_show_hex_colors;
 global b32 byp_relative_numbers;
 global b32 byp_show_scrollbars;
-global b32 byp_drop_shadow;
 
 CUSTOM_COMMAND_SIG(byp_toggle_show_hex_colors)
 CUSTOM_DOC("Toggles value for `show_hex_colors`")
@@ -19,10 +18,6 @@ CUSTOM_DOC("Toggles value for `relative_numbers`")
 CUSTOM_COMMAND_SIG(byp_toggle_show_scrollbars)
 CUSTOM_DOC("Toggles value for `show_scrollbars`")
 { byp_show_scrollbars ^= 1; }
-
-CUSTOM_COMMAND_SIG(byp_toggle_drop_shadow)
-CUSTOM_DOC("Toggles value for `drop_shadow`")
-{ byp_drop_shadow ^= 1; }
 
 
 CUSTOM_COMMAND_SIG(byp_test)
