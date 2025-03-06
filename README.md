@@ -1,4 +1,4 @@
-# 4coder_byp
+# 4coder_byp [![badge](https://github.com/B-Y-P/4coder_byp/actions/workflows/main.yml/badge.svg)](https://github.com/B-Y-P/4coder_byp/releases/)
 My personal 4coder custom layer
 
 `cd \path\to\4ed.exe`\
