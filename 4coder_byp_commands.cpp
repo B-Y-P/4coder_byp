@@ -19,7 +19,6 @@ CUSTOM_COMMAND_SIG(byp_toggle_show_scrollbars)
 CUSTOM_DOC("Toggles value for `show_scrollbars`")
 { byp_show_scrollbars ^= 1; }
 
-
 CUSTOM_COMMAND_SIG(byp_test)
 CUSTOM_DOC("Just bound to the key I spam to execute whatever test code I'm working on")
 {
@@ -28,6 +27,12 @@ CUSTOM_DOC("Just bound to the key I spam to execute whatever test code I'm worki
   Buffer_ID buffer = view_get_buffer(app, view, Access_ReadWrite);
 
   byp_reformat_buffer(app, buffer);
+}
+
+CUSTOM_COMMAND_SIG(byp_clear_jumps)
+CUSTOM_DOC("Clears jump buffer")
+{
+  unlock_jump_buffer();
 }
 
 CUSTOM_COMMAND_SIG(byp_close_all_buffers)
