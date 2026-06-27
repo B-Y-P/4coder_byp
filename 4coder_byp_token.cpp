@@ -15,9 +15,9 @@ byp_highlight_token(Token_Base_Kind kind){
 
 
 function ARGB_Color
-byp_get_token_color_cpp(Token token){
+byp_get_token_color_cpp(Token *token){
   Managed_ID color = defcolor_text_default;
-  switch (token.kind){
+  switch (token->kind){
     case TokenBaseKind_Preprocessor:{ color = defcolor_preproc; }break;
     case TokenBaseKind_Keyword:{ color = defcolor_keyword; }break;
     case TokenBaseKind_Comment:{ color = defcolor_comment; }break;
@@ -37,7 +37,7 @@ byp_get_token_color_cpp(Token token){
     case byp_TokenKind_Struct:{ color = defcolor_struct; }break;
   }
   // specifics override generals
-  switch (token.sub_kind){
+  switch (token->sub_kind){
     case TokenCppKind_LiteralTrue:
     case TokenCppKind_LiteralFalse:
     { color = defcolor_bool_constant; }break;
@@ -63,7 +63,7 @@ byp_draw_cpp_token_colors(Application_Links *app, Text_Layout_ID text_layout_id,
   for(;;){
     Token *token = token_it_read(&it);
     if(token->pos >= visible_range.one_past_last){ break; }
-    ARGB_Color argb = byp_get_token_color_cpp(*token);
+    ARGB_Color argb = byp_get_token_color_cpp(token);
     paint_text_color(app, text_layout_id, Ii64_size(token->pos, token->size), argb);
     if(!token_it_inc_all(&it)){ break; }
   }
@@ -98,7 +98,7 @@ function void byp_draw_token_colors(Application_Links *app, View_ID view, Buffer
   ARGB_Color cl_enum   = fcolor_resolve(fcolor_id(defcolor_enum));
   ARGB_Color cl_global = fcolor_resolve(fcolor_id(defcolor_global));
   ARGB_Color cl_back   = fcolor_resolve(fcolor_id(defcolor_back));
-  ARGB_Color cursor_tok_color = byp_get_token_color_cpp(*cursor_token);
+  ARGB_Color cursor_tok_color = byp_get_token_color_cpp(cursor_token);
 
   if(cursor_token->kind == TokenBaseKind_Identifier){
     String_Const_u8 lexeme = push_token_lexeme(app, scratch, buffer, cursor_token);
@@ -129,7 +129,7 @@ function void byp_draw_token_colors(Application_Links *app, View_ID view, Buffer
   for(;;){
     Token *token = token_it_read(&it);
     if(token->pos > visible_range.max){ break; }
-    ARGB_Color argb = byp_get_token_color_cpp(*token);
+    ARGB_Color argb = byp_get_token_color_cpp(token);
     String_Const_u8 lexeme = push_token_lexeme(app, scratch, buffer, token);
     Code_Index_Note *note = code_index_note_from_string(lexeme);
 
@@ -154,4 +154,41 @@ function void byp_draw_token_colors(Application_Links *app, View_ID view, Buffer
   }
   if(do_cursor_tok_highlight){ draw_rectangle(app, cursor_tok_rect, 5.f, cursor_tok_color); }
 
+}
+
+function void byp_paint_token_colors(Application_Links *app, View_ID view, Buffer_ID buffer, Token_Array *token_array, Text_Layout_ID text_layout_id){
+  Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
+  Token_Iterator_Array it = token_iterator_pos(0, token_array, visible_range.first);
+
+  ARGB_Color cl_func   = fcolor_resolve(fcolor_id(defcolor_function));
+  ARGB_Color cl_type   = fcolor_resolve(fcolor_id(defcolor_type));
+  ARGB_Color cl_macro  = fcolor_resolve(fcolor_id(defcolor_macro));
+  ARGB_Color cl_enum   = fcolor_resolve(fcolor_id(defcolor_enum));
+  ARGB_Color cl_global = fcolor_resolve(fcolor_id(defcolor_global));
+
+  Scratch_Block scratch(app);
+  for(;;){
+    Temp_Memory_Block temp(scratch);
+    Token *token = token_it_read(&it);
+    if (token == 0 || visible_range.max <= token->pos){ break; }
+    ARGB_Color argb = byp_get_token_color_cpp(token);
+
+    if(token->kind == TokenBaseKind_Identifier){
+      String_Const_u8 lexeme = push_token_lexeme(app, scratch, buffer, token);
+      Code_Index_Note *note = code_index_note_from_string(lexeme);
+
+      if(note != 0){
+        switch(note->note_kind){
+          case CodeIndexNote_Function: argb = cl_func;   break;
+          case CodeIndexNote_Type:     argb = cl_type;   break;
+          case CodeIndexNote_Macro:    argb = cl_macro;  break;
+          case CodeIndexNote_Enum:     argb = cl_enum;   break;
+          case CodeIndexNote_Global:   argb = cl_global; break;
+        }
+      }
+    }
+
+    MM_paint_token_color(app, text_layout_id, token, argb);
+    if(!token_it_inc_all(&it)){ break; }
+  }
 }

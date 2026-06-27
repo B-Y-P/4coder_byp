@@ -2,7 +2,6 @@
 global Face_ID byp_small_italic_face;
 global Face_ID byp_minimal_face;
 
-
 global b32 byp_show_hex_colors;
 global b32 byp_relative_numbers;
 global b32 byp_show_scrollbars;
@@ -27,6 +26,56 @@ CUSTOM_DOC("Just bound to the key I spam to execute whatever test code I'm worki
   Buffer_ID buffer = view_get_buffer(app, view, Access_ReadWrite);
 
   byp_reformat_buffer(app, buffer);
+}
+
+CUSTOM_COMMAND_SIG(clear_cr)
+CUSTOM_DOC("Clears all carriage returns")
+{
+  global_history_edit_group_begin(app);
+  for(Buffer_ID b=0; b=get_buffer_next(app, b, Access_ReadWrite);){
+    Range_i64 range = buffer_range(app, b);
+    replace_in_range(app, b, range, string_u8_litexpr("\r"), string_u8_empty);
+  }
+  global_history_edit_group_end(app);
+}
+
+CUSTOM_COMMAND_SIG(qol_jump_to_definition)
+CUSTOM_DOC("[QOL] Jump to the definition in the code index matching an identifier at the cursor")
+{
+  View_ID view = get_active_view(app, Access_Visible);
+  if (view == 0){ return; }
+
+  Scratch_Block scratch(app);
+  String_Const_u8 query = push_token_or_word_under_active_cursor(app, scratch);
+
+  code_index_lock();
+  defer{ code_index_unlock(); };
+  Code_Index_Note_List* list = code_index__list_from_string(query);
+
+  // Prefer function definitions over declarations
+  for (Code_Index_Note *note = list->first; note != 0; note = note->next_in_hash){
+    if (!string_match(query, note->text)){ continue; }
+    if (note->note_kind == CodeIndexNote_Macro){
+      point_stack_push_view_cursor(app, view);
+      jump_to_location(app, view, note->file->buffer, note->pos.first);
+      return;
+    }
+    if (note->note_kind == CodeIndexNote_Function && note->parent != 0){
+      Code_Index_Nest* scope = note->parent->next;
+      if (scope != 0 && scope->kind == CodeIndexNest_Scope){
+        point_stack_push_view_cursor(app, view);
+        jump_to_location(app, view, note->file->buffer, note->pos.first);
+        return;
+      }
+    }
+  }
+
+  for (Code_Index_Note *note = list->first; note != 0; note = note->next_in_hash){
+    if (!string_match(query, note->text)){ continue; }
+    point_stack_push_view_cursor(app, view);
+    jump_to_location(app, view,  note->file->buffer, note->pos.first);
+    return;
+  }
 }
 
 CUSTOM_COMMAND_SIG(byp_clear_jumps)

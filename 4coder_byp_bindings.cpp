@@ -15,10 +15,10 @@ byp_essential_mapping(Mapping *mapping, i64 global_id, i64 file_id, i64 code_id)
   SelectMap(file_id);
   ParentMap(global_id);
   BindTextInput(byp_write_text_input);
-  BindMouse(click_set_cursor_and_mark, MouseCode_Left);
-  BindMouseRelease(click_set_cursor, MouseCode_Left);
+  BindMouse(MM_Wrap(click_set_cursor_and_mark), MouseCode_Left);
+  BindMouseRelease(MM_Wrap(click_set_cursor), MouseCode_Left);
   BindCore(click_set_cursor_and_mark, CoreCode_ClickActivateView);
-  BindMouseMove(click_set_cursor_if_lbutton);
+  BindMouseMove(MM_Wrap(click_set_cursor_if_lbutton));
 
   SelectMap(code_id);
   ParentMap(file_id);

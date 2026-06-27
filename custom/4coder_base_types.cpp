@@ -1621,10 +1621,10 @@ unpack_color(ARGB_Color color){
 function ARGB_Color
 pack_color(Vec4_f32 color){
   ARGB_Color result =
-  ((u8)(color.a*255) << 24) |
-  ((u8)(color.r*255) << 16) |
-  ((u8)(color.g*255) << 8) |
-  ((u8)(color.b*255) << 0);
+    ((u8)(color.a*255) << 24) |
+    ((u8)(color.r*255) << 16) |
+    ((u8)(color.g*255) << 8) |
+    ((u8)(color.b*255) << 0);
   return(result);
 }
 

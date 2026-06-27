@@ -311,7 +311,7 @@ map_get_binding_non_recursive(Command_Map *map, Input_Event *event, Binding_Matc
               }
             }break;
           }
-          done:;
+done:;
         }
         else{
           Command_Modified_Binding *mod_binding = CastFromMember(Command_Modified_Binding, order_node, list->first);

@@ -1,5 +1,5 @@
 
-{"ints", "#include <stdint.h>\ntypedef uint8_t  b8; \ntypedef uint16_t b16; \ntypedef uint32_t b32; \ntypedef uint64_t b64; \n\ntypedef uint8_t  u8; \ntypedef uint16_t u16; \ntypedef uint32_t u32; \ntypedef uint64_t u64; \n\ntypedef  int8_t  i8; \ntypedef  int16_t i16; \ntypedef  int32_t i32; \ntypedef  int64_t i64; \n\ntypedef float  f32; \ntypedef double f64; \n\n#define function static \n#define local    static \n#define global   static \n#define global_const static const \n\n#define ArrayCount(a) (sizeof(a)/sizeof((a)[0])) \n#define InRange(a,v,b) ((a) <= (v) && (v) < (b)) \n#define foreach(i,N) for(i32 i=0; i<N; i++)", 0, 0},
+{"ints", "#include <stdint.h>\ntypedef uint8_t  b8; \ntypedef uint16_t b16; \ntypedef uint32_t b32; \ntypedef uint64_t b64; \n\ntypedef uint8_t  u8; \ntypedef uint16_t u16; \ntypedef uint32_t u32; \ntypedef uint64_t u64; \n\ntypedef  int8_t  i8; \ntypedef  int16_t i16; \ntypedef  int32_t i32; \ntypedef  int64_t i64; \n\ntypedef float  f32; \ntypedef double f64; \n\n#define func static \n#define local    static \n#define global   static \n\n#define countof(a) (sizeof(a)/sizeof((a)[0])) \n#define in_range(a,v,b) ((a) <= (v) && (v) < (b)) \n#define foreach(i,z,N) for(auto i=(z); i<(N); i++)", 0, 0},
 
 {"constants", "global_const u8 max_u8 = 0xFF;\nglobal_const u16 max_u16 = 0xFFFF;\n\nglobal_const u32 max_u32 = 0xFFFFFFFF;\nglobal_const u64 max_u64 = 0xFFFFFFFFFFFFFFFF;\n\nglobal_const i8 max_i8 = 127;\nglobal_const i16 max_i16 = 32767;\nglobal_const i32 max_i32 = 2147483647;\nglobal_const i64 max_i64 = 9223372036854775807;\n\nglobal_const i8 min_i8   = -127 - 1;\nglobal_const i16 min_i16 = -32767 - 1;\nglobal_const i32 min_i32 = -2147483647 - 1;\nglobal_const i64 min_i64 = -9223372036854775807 - 1;\n\nglobal_const f32 max_f32 = 3.402823466e+38f;\nglobal_const f32 min_f32 = -max_f32;\nglobal_const f32 smallest_positive_f32 = 1.1754943508e-38f;\nglobal_const f32 epsilon_f32 = 5.96046448e-8f;\n\nglobal_const f32 pi_f32 = 3.14159265359f;\nglobal_const f32 tau_f32 = 6.28318530718f;\nglobal_const f32 half_pi_f32 = 1.5707963267f;\n\nglobal_const f64 max_f64 = 1.79769313486231e+308;\nglobal_const f64 min_f64 = -max_f64;\nglobal_const f64 smallest_positive_f64 = 4.94065645841247e-324;\nglobal_const f64 epsilon_f64 = 1.11022302462515650e-16;", 0, 0},
 
@@ -7,5 +7,6 @@
 
 {"BMP", "#pragma pack(push, 1)\nstruct BMP_Header{\nu16 file_type;\nu32 file_size, reserve_zeroes;\nu32 offset, size;\ni32 wid, hit;\nu16 planes, bits_per_pixel;\nu32 compression, bitmap_size;\ni32 horz_res, vert_res;\nu32 colors_used, colors_important;\nu32 rmask, gmask, bmask;\nu8  padding[84];\n};\n#pragma pack(pop)\n", 0, 0},
 
-{"BMP default",
-"BMP_Header{\n0x4d42, byte_count,\n0, 150, 124,\nWID, HIT,\n1, 8*sizeof(u32),\n3, 0,\n2835, 2835, 0, 0,\n0xFF0000, 0xFF00, 0xFF,\n};", 0, 0},
+{"BMP default", "BMP_Header{\n0x4d42, byte_count,\n0, 150, 124,\nWID, HIT,\n1, 8*sizeof(u32),\n3, 0,\n2835, 2835, 0, 0,\n0xFF0000, 0xFF00, 0xFF,\n};", 0, 0},
+
+{"FNV", "func u64 FNV(u8* k, i64 l, u64 h=0X100000001B3){ return l==0 ? h : FNV(k+1, l-1, (h^k[0]) * 0XCBF29CE484222325); }", 0, 0}

@@ -126,30 +126,30 @@ enum{
 };
 enum{
   EventPropertyGroup_AnyKeyboardEvent =
-  EventProperty_AnyKey|
-  EventProperty_Escape|
-  EventProperty_AnyKeyRelease|
-  EventProperty_TextInsert,
+    EventProperty_AnyKey|
+    EventProperty_Escape|
+    EventProperty_AnyKeyRelease|
+    EventProperty_TextInsert,
   EventPropertyGroup_AnyMouseEvent =
-  EventProperty_MouseButton|
-  EventProperty_MouseRelease|
-  EventProperty_MouseWheel|
-  EventProperty_MouseMove,
+    EventProperty_MouseButton|
+    EventProperty_MouseRelease|
+    EventProperty_MouseWheel|
+    EventProperty_MouseMove,
   EventPropertyGroup_AnyUserInput =
-  EventPropertyGroup_AnyKeyboardEvent|
-  EventPropertyGroup_AnyMouseEvent,
+    EventPropertyGroup_AnyKeyboardEvent|
+    EventPropertyGroup_AnyMouseEvent,
   EventPropertyGroup_AnyCore =
-  EventProperty_Animate|
-  EventProperty_ViewActivation|
-  EventProperty_AnyFile|
-  EventProperty_Startup|
-  EventProperty_Exit|
-  EventProperty_Clipboard|
-  EventProperty_Animate,
+    EventProperty_Animate|
+    EventProperty_ViewActivation|
+    EventProperty_AnyFile|
+    EventProperty_Startup|
+    EventProperty_Exit|
+    EventProperty_Clipboard|
+    EventProperty_Animate,
   EventPropertyGroup_Any =
-  EventPropertyGroup_AnyUserInput|
-  EventPropertyGroup_AnyCore|
-  EventProperty_CustomFunction,
+    EventPropertyGroup_AnyUserInput|
+    EventPropertyGroup_AnyCore|
+    EventProperty_CustomFunction,
 };
 
 #endif

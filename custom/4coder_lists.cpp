@@ -38,7 +38,7 @@ generate_all_buffers_list(Application_Links *app, Lister *lister){
       }
     }
     viewed_buffers[viewed_buffer_count++] = new_buffer_id;
-    skip0:;
+skip0:;
   }
 
   // Regular Buffers
@@ -53,7 +53,7 @@ generate_all_buffers_list(Application_Links *app, Lister *lister){
     if (!buffer_has_name_with_star(app, buffer)){
       generate_all_buffers_list__output_buffer(app, lister, buffer);
     }
-    skip1:;
+skip1:;
   }
 
   // Buffers Starting with *
@@ -68,7 +68,7 @@ generate_all_buffers_list(Application_Links *app, Lister *lister){
     if (buffer_has_name_with_star(app, buffer)){
       generate_all_buffers_list__output_buffer(app, lister, buffer);
     }
-    skip2:;
+skip2:;
   }
 
   // Buffers That Are Open in Views

@@ -165,6 +165,7 @@ build_language_model(void){
   Keyword_Set *main_keys = sm_begin_key_set("main_keys");
 
   sm_select_base_kind(TokenBaseKind_Keyword);
+  sm_key("Mutable");
   sm_key("Const");
   sm_key("Constexpr");
   sm_key("Volatile");
@@ -226,6 +227,10 @@ build_language_model(void){
   sm_key("int32_t");
   sm_key("int64_t");
 
+  sm_key("char8_t");
+  sm_key("char16_t");
+  sm_key("char32_t");
+  sm_key("wchar_t");
   sm_key("size_t");
   sm_key("ptrdiff_t");
 
@@ -289,6 +294,11 @@ build_language_model(void){
 
   sm_select_base_kind(TokenBaseKind_Keyword);
   sm_key("PPDefined", "defined");
+  sm_key("PPPack", "pack");
+  sm_key("PPComment", "comment");
+  sm_key("PPIntrinsic", "intrinsic");
+  sm_key("PPOptimize", "optimize");
+
 
   // State Machine
   State *root = sm_begin_state_machine();

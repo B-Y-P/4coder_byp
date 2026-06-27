@@ -81,7 +81,7 @@ CUSTOM_DOC("Jump to the first definition in the code index matching an identifie
         }
       }
     }
-    done:;
+done:;
     code_index_unlock();
   }
 }

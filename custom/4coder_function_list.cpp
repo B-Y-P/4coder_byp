@@ -28,7 +28,7 @@ get_function_positions(Application_Links *app, Buffer_ID buffer, i64 first_token
     i64 last_paren_index = 0;
 
     // Look for the next token at global scope that might need to be printed.
-    mode1:
+mode1:
     Assert(nest_level == 0);
     Assert(paren_nest_level == 0);
     first_paren_index = 0;
@@ -67,7 +67,7 @@ get_function_positions(Application_Links *app, Buffer_ID buffer, i64 first_token
     }
 
     // Look for a closing parenthese to mark the end of a function signature.
-    paren_mode1:
+paren_mode1:
     paren_nest_level = 0;
     for (;;){
       Token *token = token_it_read(&it);
@@ -94,7 +94,7 @@ get_function_positions(Application_Links *app, Buffer_ID buffer, i64 first_token
     }
 
     // Look backwards from an open parenthese to find the start of a function signature.
-    paren_mode2:
+paren_mode2:
     {
       Token_Iterator_Array restore_point = it;
       it = first_paren_it;
@@ -122,7 +122,7 @@ get_function_positions(Application_Links *app, Buffer_ID buffer, i64 first_token
       // signature start to 0 and fall through to the printing phase.
       signature_start_index = 0;
 
-      paren_mode2_done:;
+paren_mode2_done:;
       {
         Function_Positions positions = {};
         positions.sig_start_index = signature_start_index;
@@ -140,7 +140,7 @@ get_function_positions(Application_Links *app, Buffer_ID buffer, i64 first_token
 
       goto mode1;
     }
-    end:;
+end:;
   }
 
   return(result);

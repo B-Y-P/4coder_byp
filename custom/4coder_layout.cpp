@@ -48,7 +48,7 @@ layout_nearest_pos_to_xy(Layout_Item_List list, Vec2_f32 p){
           }
         }
       }
-      double_break:;
+double_break:;
     }
     else{
 
@@ -73,7 +73,7 @@ layout_nearest_pos_to_xy(Layout_Item_List list, Vec2_f32 p){
           }
         }
 
-        double_break_2:;
+double_break_2:;
         if (prev_item != 0){
           closest_match = prev_item->index;
         }
@@ -104,7 +104,7 @@ layout_nearest_pos_to_xy(Layout_Item_List list, Vec2_f32 p){
           }
         }
 
-        double_break_3:;
+double_break_3:;
         if (closest_item != 0){
           closest_match = closest_item->index;
         }
@@ -145,7 +145,7 @@ layout_get_first_with_index(Layout_Item_List list, i64 index){
   if (result == 0){
     result = prev;
   }
-  done:;
+done:;
   return(result);
 }
 
@@ -241,7 +241,7 @@ layout_character_from_pos(Layout_Item_List list, i64 index){
       }
     }
   }
-  double_break:;
+double_break:;
   return(result);
 }
 

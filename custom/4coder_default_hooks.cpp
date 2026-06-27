@@ -136,6 +136,7 @@ code_index_update_tick(Application_Links *app){
     Code_Index_File *index = push_array_zero(&arena, Code_Index_File, 1);
     index->buffer = buffer_id;
 
+#if 0
     Generic_Parse_State state = {};
     generic_parse_init(app, &arena, contents, &tokens, &state);
     // TODO(allen): Actually determine this in a fair way.
@@ -143,6 +144,11 @@ code_index_update_tick(Application_Links *app){
     // Actually probably a pointer to a struct that defines the language.
     state.do_cpp_parse = true;
     generic_parse_full_input_breaks(index, &state, max_i32);
+#else
+    QOL_Parse_State state = {};
+    qol_parse_init(app, &arena, contents, &tokens, &state);
+    cpp_parse_file(index, &state, max_i32);
+#endif
 
     code_index_lock();
     code_index_set_file(buffer_id, arena, index);

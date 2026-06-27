@@ -223,7 +223,7 @@ prj_v1_parse_from_config(Application_Links *app, Arena *arena, String8 dir, Conf
         dst->save_dirty_files = save_dirty_files;
         dst->cursor_at_end = cursor_at_end;
 
-        finish_command:;
+finish_command:;
       }
     }
   }

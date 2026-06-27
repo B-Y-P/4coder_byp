@@ -347,7 +347,7 @@ get_indentation_array(Application_Links *app, Arena *arena, Buffer_ID buffer, Ra
     }
   }
 
-  finished:;
+finished:;
   return(indentations);
 }
 

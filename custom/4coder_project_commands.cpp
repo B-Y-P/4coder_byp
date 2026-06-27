@@ -516,8 +516,8 @@ prj_setup_scripts(Application_Links *app, Prj_Setup_Script_Flags flags){
     status = prj_file_is_setup(app, script_path, string_u8_litexpr("build"));
     needs_to_do_work =
       !status.project_exists ||
-    (do_bat_script && !status.bat_exists) ||
-    (do_sh_script && !status.sh_exists);
+        (do_bat_script && !status.bat_exists) ||
+        (do_sh_script && !status.sh_exists);
   }
   else{
     needs_to_do_work = true;
@@ -590,7 +590,7 @@ prj_setup_scripts(Application_Links *app, Prj_Setup_Script_Flags flags){
       output_dir  = output_dir_bar.string;
       binary_file = binary_file_bar.string;
 
-      fail_out:;
+fail_out:;
     }
 
     if (!finished_queries){

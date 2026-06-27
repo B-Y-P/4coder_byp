@@ -941,7 +941,7 @@ clipboard_post_internal_only(Clipboard *clipboard, String_Const_u8 string){
     }
   }
   else{
-    alloc_new:;
+alloc_new:;
     u8 *new_buf = (u8*)heap_allocate(&clipboard->heap, string.size);
     slot->str = new_buf;
   }

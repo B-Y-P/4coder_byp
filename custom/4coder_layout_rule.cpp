@@ -565,7 +565,7 @@ layout_wrap_whitespace__inner(Application_Links *app, Arena *arena, Buffer_ID bu
       goto consuming_whitespace;
     }
 
-    consuming_non_whitespace:
+consuming_non_whitespace:
     for (;ptr <= end_ptr; ptr += 1){
       if (ptr == end_ptr || character_is_whitespace(*ptr)){
         break;
@@ -618,7 +618,7 @@ layout_wrap_whitespace__inner(Application_Links *app, Arena *arena, Buffer_ID bu
       first_of_the_line = false;
     }
 
-    consuming_whitespace:
+consuming_whitespace:
     for (; ptr < end_ptr; ptr += 1){
       if (!character_is_whitespace(*ptr)){
         word_ptr = ptr;

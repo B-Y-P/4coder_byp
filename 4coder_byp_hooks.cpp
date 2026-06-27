@@ -41,9 +41,9 @@ CUSTOM_DOC("Responding to a startup event")
     // NOTE/TODO: (BYP) This is a hack until buffer_peek has it's own View_ID (allows comp jump list)
     byp_get_or_open_build_panel(app);
 
-    if(def_get_config_b32(vars_save_string_lit("automatically_load_project"))){
-      load_project(app);
-    }
+    //if(def_get_config_b32(vars_save_string_lit("automatically_load_project"))){
+    //	view_enqueue_command_function(app, view, load_project);
+    //}
   }
 
   def_audio_init();
@@ -62,6 +62,7 @@ CUSTOM_DOC("Responding to a startup event")
   desc.parameters.bold = 0;
   byp_minimal_face = try_create_new_face(app, &desc);
 
+  suppressing_mouse = true;
   system_set_fullscreen(true);
   set_window_title(app, string_u8_litexpr("4coder BYP"));
 
@@ -93,6 +94,10 @@ byp_tick(Application_Links *app, Frame_Info frame_info){
 
   vim_cursor_blink += frame_info.animation_dt;
 
+  if(frame_info.index == 3 && def_get_config_b32(vars_save_string_lit("automatically_load_project"))){
+    load_project(app);
+  }
+
   b32 enable_virtual_whitespace = def_get_config_b32(vars_save_string_lit("enable_virtual_whitespace"));
   if(enable_virtual_whitespace != def_enable_virtual_whitespace){
     def_enable_virtual_whitespace = enable_virtual_whitespace;
@@ -108,8 +113,9 @@ byp_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view_id
   Buffer_ID buffer = view_get_buffer(app, view_id, Access_Always);
   Face_ID face_id = get_face_id(app, 0);
   Face_Metrics face_metrics = get_face_metrics(app, face_id);
-  f32 line_height = face_metrics.line_height;
-  f32 digit_advance = face_metrics.decimal_digit_advance;
+  f32 normal_advance = face_metrics.normal_advance;
+  f32 line_height    = face_metrics.line_height;
+  f32 digit_advance  = face_metrics.decimal_digit_advance;
 
   Rect_f32 region = view_get_screen_rect(app, view_id);
   Rect_f32 prev_clip = draw_set_clip(app, region);
@@ -171,6 +177,11 @@ byp_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view_id
           rect_split_left_right(region, digit_advance));
   Rect_f32 line_number_rect = pair.min;
   region = pair.max;
+
+  f32 char_count = 16.f;
+  f32 line_count = 2.f;
+  Vec2_f32 margin = V2f32(char_count*normal_advance, line_count*line_height);
+  view_set_camera_bounds(app, view_id, margin, V2f32(1,1));
 
   Buffer_Scroll scroll = view_get_buffer_scroll(app, view_id);
   Buffer_Point_Delta_Result delta = delta_apply(app, view_id, frame_info.animation_dt, scroll);
@@ -255,15 +266,16 @@ byp_buffer_region(Application_Links *app, View_ID view_id, Rect_f32 region){
 
 BUFFER_HOOK_SIG(byp_file_save){
 #if 0
-  b32 auto_indent = def_get_config_b32(vars_save_string_lit("automatically_indent_text_on_save"));
-  b32 is_virtual = def_get_config_b32(vars_save_string_lit("enable_virtual_whitespace"));
+  b32 auto_indent  = def_get_config_b32(vars_save_string_lit("automatically_indent_text_on_save"));
+  b32 is_virtual   = def_get_config_b32(vars_save_string_lit("enable_virtual_whitespace"));
+  b32 clear_blanks = def_get_config_b32(vars_save_string_lit("clear_blank_lines"));
   if (auto_indent && is_virtual){
     //auto_indent_buffer(app, buffer_id, buffer_range(app, buffer_id));
-    byp_reformat_buffer(app, buffer_id);
+    //byp_reformat_buffer(app, buffer_id);
   }
-  b32 clear_blanks = def_get_config_b32(vars_save_string_lit("clear_blank_lines"));
   Clean_All_Lines_Mode mode = (clear_blanks ? CleanAllLinesMode_RemoveBlankLines : CleanAllLinesMode_LeaveBlankLines);
   clean_all_lines_buffer(app, buffer_id, mode);
+#endif
 
   vim_file_save(app, buffer_id);
 
@@ -297,7 +309,6 @@ BUFFER_HOOK_SIG(byp_file_save){
     view_enqueue_command_function(app, view, zbyp_reload_project);
   }
 
-#endif
   return 0;
 }
 

@@ -3152,8 +3152,7 @@ internal void
 gen_tokens(Arena *scratch, Token_Kind_Set tokens, FILE *out){
   Temp_Memory temp = begin_temp(scratch);
   i32 counter = 0;
-  fprintf(out, "typedef u16 Token_" LANG_NAME_CAMEL_STR "_Kind;\n");
-  fprintf(out, "enum{\n");
+  fprintf(out, "enum Token_" LANG_NAME_CAMEL_STR "_Kind : u16 {\n");
   for (Token_Kind_Node *node = tokens.first;
        node != 0;
        node = node->next){

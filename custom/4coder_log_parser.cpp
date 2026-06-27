@@ -845,7 +845,7 @@ log_graph_render(Application_Links *app, Frame_Info frame_info, View_ID view){
           }
         }
 
-        finish_list_display:;
+finish_list_display:;
       }
 
       Log_Event *view_event = (hover_event!=0)?hover_event:log_graph.selected_event;
@@ -909,7 +909,7 @@ log_graph_render(Application_Links *app, Frame_Info frame_info, View_ID view){
           }
         }
 
-        finish_event_display:;
+finish_event_display:;
       }
     }
 

@@ -642,7 +642,7 @@ draw_fancy_string__inner(Application_Links *app, Face_ID face, FColor fore, Fanc
       }
       else{
         f32 adv =
-        (string->pre_margin + string->post_margin)*metrics.normal_advance;
+          (string->pre_margin + string->post_margin)*metrics.normal_advance;
         adv += get_string_advance(app, use_face, string->value);
         p_shifted += adv*delta;
       }

@@ -11,7 +11,6 @@
 #include "4coder_default_include.h"
 #endif
 
-#include "4coder_base_types.cpp"
 #include "4coder_stringf.cpp"
 #include "4coder_app_links_allocator.cpp"
 #include "4coder_system_allocator.cpp"

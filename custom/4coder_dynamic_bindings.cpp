@@ -121,7 +121,7 @@ dynamic_binding_load_from_file(Application_Links *app, Mapping *mapping, String_
                 }
               }
 
-              finish_map:;
+finish_map:;
             }
 
 
