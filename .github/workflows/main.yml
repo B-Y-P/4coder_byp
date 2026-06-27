@@ -16,7 +16,7 @@ jobs:
           os: ubuntu-latest
           build_cmd: ./custom/bin/buildsuper_x64-linux.sh
         - suffix: x64-mac
-          os: macos-13
+          os: macos-15-intel
           build_cmd: ./custom/bin/buildsuper_x64-mac.sh
 #       - suffix: arm64-mac
 #         os: macos-latest
