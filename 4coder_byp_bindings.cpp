@@ -41,8 +41,6 @@ byp_vim_bindings(Application_Links *app){
   VimBind(N|MAP, byp_space,                                  KeyCode_Space);
   VimBind(N|MAP, move_line_up,                          (Alt|KeyCode_K));
   VimBind(N|MAP, move_line_down,                        (Alt|KeyCode_J));
-  VimBind(N|MAP, change_active_panel_backwards,         (Ctl|KeyCode_H));
-  VimBind(N|MAP, change_active_panel,                   (Ctl|KeyCode_L));
   VimBind(N|MAP, goto_next_jump,                        (Alt|KeyCode_N));
   VimBind(N|MAP, goto_prev_jump,                    (Alt|Sft|KeyCode_N));
   VimBind(N|MAP, vim_switch_lister,                 (Ctl|Sft|KeyCode_I));
