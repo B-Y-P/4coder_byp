@@ -1,0 +1,39 @@
+version(2);
+project_name = "4coder BYP";
+
+clear_blank_lines = true;
+indent_with_tabs = false;
+
+indent_width = 2;
+default_tab_width = 2;
+session_file = ".session.4coder";
+automatically_indent_text_on_save = true;
+
+patterns = { "*.c", "*.cpp", "*.h", "*.hpp", "*.m", "*.mm", "*.bat", "*.sh", "*.4coder", "*.txt", };
+
+blacklist_patterns = { ".*", "4coder_cpp_lexer_test.cpp" };
+paths = {
+  { .path=".",             .recursive=false, .relative=true, },
+  { .path="./4coder_vim/", .recursive=true,  .relative=true, },
+  { .path="./4coder_qol/", .recursive=true,  .relative=true, }
+};
+
+load_paths = {
+  .win   = paths,
+  .mac   = paths,
+  .linux = paths,
+};
+
+run_cmd = "..\\test_build\\4ed.exe -W";
+
+commands = {
+  .run   = { .win = run_cmd,        .out = "*compilation*", .footer_panel=true, .save_dirty_files=true,  .cursor_at_end=true,  },
+  .build = { .win = "build.bat",    .out = "*compilation*", .footer_panel=true, .save_dirty_files=true,  .cursor_at_end=true,  },
+  .debug = { .win = "remedybg .",   .out = "*compilation*", .footer_panel=true, .save_dirty_files=false, .cursor_at_end=false, },
+};
+
+fkey_command = {
+  .F2 = "run",
+  .F5 = "build",
+  .F9 = "debug",
+};
