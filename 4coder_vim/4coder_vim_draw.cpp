@@ -3,6 +3,7 @@ function void
 vim_draw_visual_mode(Application_Links *app, View_ID view, Buffer_ID buffer, Face_ID face_id, Text_Layout_ID text_layout_id){
   Range_i64 range = Ii64(view_get_cursor_pos(app, view), view_get_mark_pos(app, view));
   Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
+  visible_range.max++;
 
   ARGB_Color text_color = fcolor_resolve(fcolor_id(defcolor_at_highlight));
   switch(vim_state.params.edit_type){
@@ -19,6 +20,7 @@ vim_draw_visual_mode(Application_Links *app, View_ID view, Buffer_ID buffer, Fac
       i64 test_line_min = get_line_number_from_pos(app, buffer, test_range.min);
       i64 test_line_max = get_line_number_from_pos(app, buffer, test_range.max);
 
+      b32 show_helpers = def_get_config_b32(vars_save_string_lit("vim_show_visual_block_markers"));
       ARGB_Color helper_color = fcolor_resolve(fcolor_id(defcolor_mark));
       for(i64 i=test_line_min; i<=test_line_max; i++){
         if(line_is_valid_and_blank(app, buffer, i) && i != line_min && i != line_max){ continue; }
@@ -28,7 +30,7 @@ vim_draw_visual_mode(Application_Links *app, View_ID view, Buffer_ID buffer, Fac
         i64 max_pos = view_pos_from_xy(app, view, max_point);
         paint_text_color(app, text_layout_id, Ii64(min_pos, max_pos), text_color);
 
-        if(!vim_show_block_helper || min_pos == max_pos){ continue; }
+        if(!show_helpers || min_pos == max_pos){ continue; }
         Rect_f32 min_rect = text_layout_character_on_screen(app, text_layout_id, min_pos);
         Rect_f32 max_rect = text_layout_character_on_screen(app, text_layout_id, max_pos-1);
         draw_rectangle(app, rect_split_top_bottom_neg(min_rect, 3.f).b, 3.0f, helper_color);
@@ -39,35 +41,21 @@ vim_draw_visual_mode(Application_Links *app, View_ID view, Buffer_ID buffer, Fac
     } break;
 
     case EDIT_LineWise:{
-      range.min = get_line_side_pos_from_pos(app, buffer, range.min, Side_Min);
-      range.max = get_line_side_pos_from_pos(app, buffer, range.max, Side_Max) + 1; // highlight newlines
-
-      if(vim_do_full_line){
-        Range_i64 line_range = Ii64(get_line_number_from_pos(app, buffer, range.min),
-                                    get_line_number_from_pos(app, buffer, range.max)-1);
-        draw_line_highlight(app, text_layout_id, line_range, fcolor_id(defcolor_highlight));
-        paint_text_color(app, text_layout_id, range, text_color);
-        break;
+      range = range_intersect(range, visible_range);
+      i64 line_min = get_line_number_from_pos(app, buffer, range.min);
+      i64 line_max = get_line_number_from_pos(app, buffer, range.max);
+      if(def_get_config_b32(vars_save_string_lit("vim_full_visual_lines"))){
+        draw_line_highlight(app, text_layout_id, Ii64(line_min, line_max), fcolor_id(defcolor_highlight));
+      }else{
+        range.min = view_pos_at_relative_xy(app, view, line_min, V2f32(0.f,     view_relative_xy_of_pos(app, view, line_min, range.min).y));
+        range.max = view_pos_at_relative_xy(app, view, line_max, V2f32(max_f32, view_relative_xy_of_pos(app, view, line_max, range.max).y))+1;
+        draw_character_block(app, text_layout_id, range, 5.f, fcolor_id(defcolor_highlight));
       }
-
-      // TODO(BYP): There may still be weird edge cases here
-      /// Virtual Whitespace handling
-      Managed_Scope scope = buffer_get_managed_scope(app, buffer);
-      Command_Map_ID *map_id_ptr = scope_attachment(app, scope, buffer_map_id, Command_Map_ID);
-      b32 is_code = *map_id_ptr == i64(vars_save_string_lit("keys_code"));
-      b32 virtual_enabled = def_get_config_b32(vars_save_string_lit("enable_virtual_whitespace"));
-      if((virtual_enabled && is_code) && character_is_whitespace(buffer_get_char(app, buffer, range.min))){
-        //range.min = get_pos_past_lead_whitespace(app, buffer, range.min);
-        i64 line_end = get_line_end_pos(app, buffer, get_line_number_from_pos(app, buffer, range.min));
-        line_end -= (line_end > 0 && buffer_get_char(app, buffer, line_end) == '\n' && buffer_get_char(app, buffer, line_end-1) == '\r');
-        i64 non_ws = buffer_seek_character_class_change_1_0(app, buffer, &character_predicate_whitespace, Scan_Forward, range.min);
-        range.min = Min(line_end, non_ws);
-      }
-      // Fall through
-    }
+      paint_text_color(app, text_layout_id, range, text_color);
+    } break;
 
     case EDIT_CharWise:{
-      if(vim_state.params.edit_type != EDIT_LineWise){ range.max++; }
+      range.max++;
       range = range_intersect(range, visible_range);
       draw_character_block(app, text_layout_id, range, 5.f, fcolor_id(defcolor_highlight));
       paint_text_color(app, text_layout_id, range, text_color);

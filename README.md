@@ -2,9 +2,9 @@
 My personal [4coder](https://github.com/4coder-community/4cc/releases/tag/latest) custom layer
 
 ```sh
-cd \path\to\4ed.exe\
-git clone https://github.com/B-Y-P/4coder_byp.git\
-cd 4coder_byp\
+cd \path\to\4ed.exe
+git clone https://github.com/B-Y-P/4coder_byp.git
+cd 4coder_byp
 build release
 ```
 
@@ -15,13 +15,13 @@ build release
 `'cl' is not recognized as an internal or external command, operable program or batch file.`
 
 #### If you already have Visual Studio installed and just want to build
- - Search for `x64 Native Tools Command Prompt for VS <YYYY>` (make sure it's `x64` not `x86_64`)\
+ - Search for `x64 Native Tools Command Prompt for VS <YYYY>` (make sure it's `x64` not `x86_64`)
  - Open and navigate to `4coder_byp\` and run `build release`
 
 </br>
 
 #### If you're looking to streamline building projects on Windows in this manner
- - In `Program Files\Microsoft Visual Studio\<YYYY>\Community\VC\Auxiliary\Build`\
+ - In `Program Files\Microsoft Visual Studio\<YYYY>\Community\VC\Auxiliary\Build`
  - Running `vcvarsall.bat amd64` sets up your environment allowing it to run `cl.exe`
 
 </br>

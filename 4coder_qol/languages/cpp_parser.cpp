@@ -125,18 +125,33 @@ function void cpp_parse_typedef(QOL_Parse_State *state){
     else if (qol_tok_peek(state, TokenBaseKind_ScopeOpen)){ break; }
     else if (qol_tok_peek(state, TokenBaseKind_ScopeClose)){ break; }
     else if (qol_tok_peek(state, TokenBaseKind_StmntClose)){ break; }
-    else if (qol_tok_accept(state, TokenBaseKind_Identifier, &iden)){
-      if (qol_tok_peek(state, TokenBaseKind_StmntClose)){ qol_note_push(state, Ii64(iden), CodeIndexNote_Type); break; } // typedef u64 uint64_t;
-      if (qol_tok_peek(state, TokenBaseKind_ParenOpen)) { qol_note_push(state, Ii64(iden), CodeIndexNote_Type); break; } // typedef void Void_Func( ... );
-    }
-    else if (qol_tok_accept(state, TokenCppKind_ParenOp, &paren)){
-      if (qol_tok_accept(state, TokenCppKind_Star) &&
-          qol_tok_accept(state, TokenBaseKind_Identifier, &iden) &&
-          qol_tok_accept(state, TokenCppKind_ParenCl)){
-        qol_note_push(state, Ii64(iden), CodeIndexNote_Type); // typedef bool (*Compare_Func)( ... );
+    else if (qol_tok_accept(state, TokenBaseKind_Identifier, &iden) || qol_tok_accept(state, qol_TokenKind_Primitive, &iden)){
+      if (qol_tok_accept(state, TokenCppKind_Comma)){ qol_note_push(state, Ii64(iden), CodeIndexNote_Type); continue; } // typedef char *LPSTR, *PSTR;
+      if (qol_tok_peek(state, TokenBaseKind_StmntClose)){ qol_note_push(state, Ii64(iden), CodeIndexNote_Type); break; } // typedef uint64_t u64;
+      if (qol_tok_peek(state, TokenBaseKind_ParenOpen, &paren)) {
+        if (qol_scan_parens(state) && qol_tok_peek(state, TokenBaseKind_StmntClose)){
+          qol_note_push(state, Ii64(iden), CodeIndexNote_Type); // typedef void Void_Func( ... );
+          qol_tok_restore(state, paren);
+          break;
+        }
+
+        qol_tok_restore(state, paren);
+        qol_tok_accept(state, TokenBaseKind_ParenOpen);
+
+        while (qol_tok_accept(state, TokenBaseKind_Identifier)){}
+        if (qol_tok_accept(state, TokenCppKind_Star) &&
+            qol_tok_accept(state, TokenBaseKind_Identifier, &iden) &&
+            qol_tok_accept(state, TokenCppKind_ParenCl)){
+          if (qol_tok_peek(state, TokenCppKind_ParenOp) && qol_scan_parens(state)){
+            qol_note_push(state, Ii64(iden), CodeIndexNote_Type); // typedef bool (__stdcall* Compare_Func)( ... );
+            qol_tok_restore(state, paren);
+            break;
+          }
+        }
+
+        qol_tok_restore(state, paren);
+        break;
       }
-      qol_tok_restore(state, paren);
-      break;
     }
     else if (qol_tok_accept(state, TokenCppKind_Struct)) { cpp_parse_struct(state); }
     else if (qol_tok_accept(state, TokenCppKind_Union))  { cpp_parse_struct(state); }
