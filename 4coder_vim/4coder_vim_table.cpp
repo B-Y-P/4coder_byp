@@ -134,7 +134,7 @@ global bool vim_was_in_sub_mode;
 
 function void vim_pre_command(Vim_Bind_Key key, Implicit_Map_Result bind){
   vim_was_in_sub_mode = (vim_state.sub_mode != SUB_None);
-  if (key.event_kind == InputEventKind_KeyStroke){
+  if (key.event_kind == InputEventKind_KeyStroke || key.event_kind == InputEventKind_TextInsert){
     vim_cursor_blink = 0;
     vim_state.active_command = bind.command;
     if (mods_from_code(key.event_code) == 0){
@@ -154,7 +154,7 @@ vim_input_map(Application_Links *app, String_ID lang, String_ID global_mode, Inp
   Vim_Bind_Key key = key_from_event(event);
 
   vim_pre_keystroke_size = vim_keystroke_text.size;
-  if (key.event_kind == InputEventKind_KeyStroke && mods_from_code(key.event_code) == 0){
+  if (vim_state.mode != VIM_Insert && vim_state.mode != VIM_Replace && key.event_kind == InputEventKind_KeyStroke && mods_from_code(key.event_code) == 0){
     if (vim_state.chord_state != VIM_CHORD_Pending){ vim_keystroke_text.size=0; }
     if (key.mods & Ctl){ string_append_character(&vim_keystroke_text, '^'); }
     if (key.mods & Alt){ string_append_character(&vim_keystroke_text, '~'); }
