@@ -156,6 +156,7 @@ keys_vim = {
 
   {"N|MAP",   "vim_open_file_in_quotes",       "SUB_G|F"},
   {"N|V|MAP", "vim_file_top",                  "SUB_G|G"},
+  {"N|V|MAP", "vim_goto_offset",               "SUB_G|O"},
   {"N|V|MAP", "vim_goto_line",                   "Sft|G"},
   {"N|V|MAP", "vim_goto_column",                 "Sft|BackwardSlash"},
   {"N|V|MAP", "vim_modal_percent",               "Sft|5"},

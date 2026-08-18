@@ -45,6 +45,16 @@ VIM_COMMAND_SIG(vim_file_top){
   move_vertical_lines(app, vim_consume_number()-1);
 }
 
+VIM_COMMAND_SIG(vim_goto_offset){
+  vim_push_jump();
+  Vim_Motion_Block vim_motion_block(app);
+  vim_state.params.edit_type = EDIT_CharWise;
+  if(vim_state.number == 0){ goto_beginning_of_file(app); }
+  else{
+    View_ID view = get_active_view(app, Access_ReadVisible);
+    view_set_cursor_and_preferred_x(app, view, seek_pos(vim_consume_number()));
+  }
+}
 
 VIM_COMMAND_SIG(vim_goto_line){
   vim_push_jump();
