@@ -191,7 +191,7 @@ vim_init(Application_Links *app){
 
 #if VIM_USE_REIGSTER_BUFFER
   Buffer_ID reg_buffer = create_buffer(app, string_u8_litexpr("*registers*"),
-  BufferCreate_NeverAttachToFile|BufferCreate_AlwaysNew);
+                                       BufferCreate_NeverAttachToFile|BufferCreate_AlwaysNew);
   buffer_set_setting(app, reg_buffer, BufferSetting_ReadOnly, true);
   buffer_set_setting(app, reg_buffer, BufferSetting_Unkillable, true);
   buffer_set_setting(app, reg_buffer, BufferSetting_Unimportant, true);
@@ -255,7 +255,7 @@ function String_Const_u8 vim_get_bot_string(){
   }
 
   if(vim_state.macro_char){
-    local_persist u8 macro_string_buffer[] = "-- RECORDING   --";
+    local_persist u8 macro_string_buffer[] = "-- RECORDING c --";
     macro_string_buffer[13] = vim_state.macro_char;
     result = SCu8(macro_string_buffer, ArrayCount(macro_string_buffer)-1);
   }

@@ -100,6 +100,14 @@ CUSTOM_DOC("[QOL] Scrolls hovered view")
   }
 }
 
+CUSTOM_COMMAND_SIG(close_all_buffers)
+CUSTOM_DOC("[QOL] Closes all buffers")
+{
+  for (Buffer_ID b = 0; b = get_buffer_next(app, b, Access_Always);){
+    buffer_kill(app, b, BufferKill_AlwaysKill);
+  }
+}
+
 // TODO(BYP): Currently checks [prj dir, user dir, 4ed dir] in that order
 CUSTOM_COMMAND_MC_GLOBAL_SIG(qol_reload_config)
 CUSTOM_DOC("[QOL] Reloads the config.4coder file")

@@ -56,7 +56,6 @@ vim_draw_visual_mode(Application_Links *app, View_ID view, Buffer_ID buffer, Fac
 
     case EDIT_CharWise:{
       range.max++;
-      range = range_intersect(range, visible_range);
       draw_character_block(app, text_layout_id, range, 5.f, fcolor_id(defcolor_highlight));
       paint_text_color(app, text_layout_id, range, text_color);
     } break;
@@ -84,9 +83,6 @@ vim_draw_filebar(Application_Links *app, View_ID view_id, Buffer_ID buffer, Face
   FColor base_color = fcolor_id(defcolor_base);
   FColor pop2_color = fcolor_id(defcolor_pop2);
 
-  i64 cursor_position = view_get_cursor_pos(app, view_id);
-  Buffer_Cursor cursor = view_compute_cursor(app, view_id, seek_pos(cursor_position));
-
   u8 space[5];
   String_u8 str = Su8(space, 0, 4);
 
@@ -97,7 +93,6 @@ vim_draw_filebar(Application_Links *app, View_ID view_id, Buffer_ID buffer, Face
     case LineEndingKind_LF:    { string_append(&str, string_u8_litexpr("lf"));   } break;
     case LineEndingKind_CRLF:  { string_append(&str, string_u8_litexpr("crlf")); } break;
   }
-
 
   Vec2_f32 p = V2f32(title_rect.x1 + 4.5f*char_wid, bar.y0 + 3.f);
   p = draw_string(app, face_id, str.string, p, base_color);
@@ -112,8 +107,12 @@ vim_draw_filebar(Application_Links *app, View_ID view_id, Buffer_ID buffer, Face
     draw_string(app, face_id, str.string, p, pop2_color);
   }
 
-  p.x = Max(p.x + 5.f*char_wid, bar.x1 - char_wid*15.f);
-  draw_string(app, face_id, push_stringf(scratch, "%d,%d", cursor.line, cursor.col), p, base_color);
+  i64 pos = view_get_cursor_pos(app, view_id);
+  Buffer_Cursor cursor = view_compute_cursor(app, view_id, seek_pos(pos));
+  String_Const_u8 str_pos = push_stringf(scratch, "[%lld] (%d,%d)", pos, cursor.line, cursor.col);
+  f32 dx = get_string_advance(app, face_id, str_pos);
+  p.x = Max(p.x + 5.f*char_wid, bar.x1 - char_wid*7.f - dx);
+  draw_string(app, face_id, str_pos, p, base_color);
 
   p.x = bar.x0 + 2.f;
   draw_string(app, face_id, unique_name, p, base_color);
@@ -123,9 +122,9 @@ vim_draw_filebar(Application_Links *app, View_ID view_id, Buffer_ID buffer, Face
 
   p.x = bar.x1 - char_wid*3.5f;
   i64 N = buffer_get_size(app, buffer);
-  String_Const_u8 pos_text = (cursor_position == 0 ? string_u8_litexpr("Top") :
-                              cursor_position == N ? string_u8_litexpr("Bot") :
-                              push_stringf(scratch, "%d%%", i64(100.f*cursor_position/(N))));
+  String_Const_u8 pos_text = (pos == 0 ? string_u8_litexpr("Top") :
+                              pos == N ? string_u8_litexpr("Bot") :
+                              push_stringf(scratch, "%d%%", i64(100.f*pos/f64(N))));
   draw_string(app, face_id, pos_text, p, base_color);
 }
 
