@@ -33,6 +33,7 @@
 #endif
 
 #include "4coder_token.h"
+#include "lexer_generator/4coder_lex_gen_hand_written.h"
 #include "generated/lexer_cpp.h"
 
 #include "4coder_variables.h"

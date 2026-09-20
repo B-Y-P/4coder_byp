@@ -37,6 +37,7 @@
 #include "4coder_token.cpp"
 #include "4coder_command_map.cpp"
 
+#include "lexer_generator/4coder_lex_gen_hand_written.cpp"
 #include "generated/lexer_cpp.cpp"
 
 #include "4coder_default_map.cpp"

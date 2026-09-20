@@ -42,4 +42,11 @@ lexeme_table_lookup(u64 *hash_array, String_Const_u8 *key_array,
   return(result);
 }
 
+Token token_emit(u8* base, u8* ptr, u8* emit){
+  Token token = {};
+  token.pos = i64(emit-base);
+  token.size = i64(ptr-emit);
+  return token;
+}
+
 #endif
