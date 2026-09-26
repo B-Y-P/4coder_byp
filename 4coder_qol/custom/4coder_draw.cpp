@@ -510,7 +510,7 @@ function FColor
 get_token_color_cpp(Token token){
   Managed_ID color = defcolor_text_default;
   switch (token.kind){
-    case TokenBaseKind_Preprocessor:
+    case TokenBaseKind_Preproc:
     {
       color = defcolor_preproc;
     }break;
@@ -764,13 +764,13 @@ draw_paren_highlight(Application_Links *app, Buffer_ID buffer, Text_Layout_ID te
   if (token_array.tokens != 0){
     Token_Iterator_Array it = token_iterator_pos(0, &token_array, pos);
     Token *token = token_it_read(&it);
-    if (token != 0 && token->kind == TokenBaseKind_ParentheticalOpen){
+    if (token != 0 && token->kind == TokenBaseKind_ParenOpen){
       pos = token->pos + token->size;
     }
     else{
       if (token_it_dec_all(&it)){
         token = token_it_read(&it);
-        if (token->kind == TokenBaseKind_ParentheticalClose &&
+        if (token->kind == TokenBaseKind_ParenClose &&
             pos == token->pos + token->size){
           pos = token->pos;
         }

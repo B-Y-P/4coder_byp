@@ -1,6 +1,3 @@
-#if !defined(FCODER_LEX_GEN_HAND_WRITTEN)
-#define FCODER_LEX_GEN_HAND_WRITTEN
-
 internal u64
 lexeme_hash(u64 seed, u8 *ptr, u64 size){
   u64 result = 0;
@@ -48,5 +45,3 @@ Token token_emit(u8* base, u8* ptr, u8* emit){
   token.size = i64(ptr-emit);
   return token;
 }
-
-#endif

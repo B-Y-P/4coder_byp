@@ -401,7 +401,50 @@ function i64 vim_bounce_pair(Application_Links *app, Buffer_ID buffer, i64 pos, 
   return pos;
 }
 
+function i64
+vim_bounce_nest(Application_Links *app, Buffer_ID buffer, i64 pos, Scan_Direction dir){
+  code_index_lock();
+  defer{ code_index_unlock(); };
+  Code_Index_File* file = code_index_get_file(buffer);
+  if (file == 0){ return -1; }  // no index nests, fallback to textual scan (could also try to use tokens, idk)
+
+  Code_Index_Nest fnest = {};
+  fnest.open  = Ii64(-1);
+  fnest.close = Ii64(-1);
+  fnest.nest_array = file->nest_array;
+
+  Code_Index_Nest* parent = code_index_get_nest(file, pos);
+  if (parent == NULL){ parent = &fnest; }
+  if (range_contains(parent->open, pos)){ return parent->close.min; }
+  if (range_contains(parent->close, pos)){ return parent->open.min; }
+
+  if (dir == Scan_Forward){
+    for (int i=0; i < parent->nest_array.count; i += 1){
+      Code_Index_Nest *nest = parent->nest_array.ptrs[i];
+      if (pos < nest->open.min){
+        return nest->close.min;
+      }
+    }
+    return parent->open.min;
+  }
+  else{
+    for (int i=0; i < parent->nest_array.count; i += 1){
+      int idx = parent->nest_array.count-1-i;
+      Code_Index_Nest *nest = parent->nest_array.ptrs[idx];
+      if (nest->close.min < pos){
+        return nest->open.min;
+      }
+    }
+    return parent->close.min;
+  }
+
+  return -1;
+}
+
 function i64 vim_scan_bounce(Application_Links *app, Buffer_ID buffer, i64 cursor_pos, Scan_Direction direction){
+  i64 p = vim_bounce_nest(app, buffer, cursor_pos, direction);
+  if (p != -1){ return p; }
+
   i64 max_pos = buffer_get_size(app, buffer);
   u8 c = buffer_get_char(app, buffer, cursor_pos);
   i64 pos = cursor_pos - (c == '\n' || c == '\r');

@@ -36,7 +36,7 @@ function void cpp_parse_enum(QOL_Parse_State *state){
     qol_note_push(state, Ii64(iden), CodeIndexNote_Type);
   }
   if (qol_tok_accept(state, TokenCppKind_Colon)){
-    while (qol_tok_accept(state, qol_TokenKind_Primitive) ||
+    while (qol_tok_accept(state, TokenBaseKind_Primitive) ||
            qol_tok_accept(state, TokenBaseKind_Identifier));
   }
   if (qol_tok_peek(state, TokenBaseKind_ScopeOpen)){
@@ -125,7 +125,7 @@ function void cpp_parse_typedef(QOL_Parse_State *state){
     else if (qol_tok_peek(state, TokenBaseKind_ScopeOpen)){ break; }
     else if (qol_tok_peek(state, TokenBaseKind_ScopeClose)){ break; }
     else if (qol_tok_peek(state, TokenBaseKind_StmntClose)){ break; }
-    else if (qol_tok_accept(state, TokenBaseKind_Identifier, &iden) || qol_tok_accept(state, qol_TokenKind_Primitive, &iden)){
+    else if (qol_tok_accept(state, TokenBaseKind_Identifier, &iden) || qol_tok_accept(state, TokenBaseKind_Primitive, &iden)){
       if (qol_tok_accept(state, TokenCppKind_Comma)){ qol_note_push(state, Ii64(iden), CodeIndexNote_Type); continue; } // typedef char *LPSTR, *PSTR;
       if (qol_tok_peek(state, TokenBaseKind_StmntClose)){ qol_note_push(state, Ii64(iden), CodeIndexNote_Type); break; } // typedef uint64_t u64;
       if (qol_tok_peek(state, TokenBaseKind_ParenOpen, &paren)) {
@@ -176,16 +176,19 @@ function void qol_parse_top(QOL_Parse_State *state){
     else if (qol_tok_accept(state, TokenCppKind_Extern   )){ cpp_parse_extern  (state); }
     else if (qol_tok_peek(state, TokenCppKind_Identifier) && cpp_parse_func    (state)){}
     else if (qol_tok_peek(state, TokenCppKind_Identifier )){ cpp_parse_global  (state); }
-    else if (qol_tok_peek(state, qol_TokenKind_Primitive )){ cpp_parse_global  (state); }
+    else if (qol_tok_peek(state, TokenBaseKind_Primitive )){ cpp_parse_global  (state); }
     else{
       qol_tok_consume(state);
     }
   }
 }
 
-function void qol_parse_file(Code_Index_File *index, QOL_Parse_State *state, i32 limit){
-  state->index = index;
-  state->generic.token_it_index_opl = token_it_index(&state->generic.it) + limit;
-  qol_parse_top(state);
-  qol_nest_resolve(state, NULL);
+function void cpp_parse_file(Application_Links *app, Code_Index_File *index, Arena *arena, String_Const_u8 contents, Token_Array *tokens){
+  i32 limit = max_i32;
+  QOL_Parse_State state = {};
+  qol_parse_init(app, arena, contents, tokens, &state);
+  state.index = index;
+  state.generic.token_it_index_opl = token_it_index(&state.generic.it) + limit;
+  qol_parse_top(&state);
+  qol_nest_resolve(&state, NULL);
 }

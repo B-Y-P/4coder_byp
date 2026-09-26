@@ -82,6 +82,7 @@ struct Code_Index_File{
   Code_Index_Note_List note_list;
   Code_Index_Note_Ptr_Array note_array;
   Buffer_ID buffer;
+  i64 lang_id;
 };
 
 struct Code_Index_File_Storage{

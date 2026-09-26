@@ -52,92 +52,83 @@ qol_draw_hex_color(Application_Links *app, View_ID view, Buffer_ID buffer, Text_
 
 function void
 qol_draw_scopes(Application_Links *app, View_ID view, Buffer_ID buffer, Text_Layout_ID text_layout_id, f32 width){
-  Scratch_Block scratch(app);
-  i64 pos = view_get_cursor_pos(app, view);
+  code_index_lock();
+  defer{ code_index_unlock(); };
+  Code_Index_File *file = code_index_get_file(buffer);
+  if (file == NULL){ return; }
+
+  Token_Array tokens = get_token_array_from_buffer(app, buffer);
+  if (tokens.tokens == 0){ return; }
+
   Rect_f32 prev_clip = draw_set_clip(app, Rect_f32{});
   Rect_f32 view_rect = prev_clip;
   view_rect.x0 -= 3.f;
+  defer{ draw_set_clip(app, prev_clip); };
 
-  b32 on_open = '{' == buffer_get_char(app, buffer, pos);
-  Range_i64_Array ranges = get_enclosure_ranges(app, scratch, buffer, pos+on_open, FindNest_Scope);
-  for (i64 i = 0; i < ranges.count; i += 1){
-    FColor color = fcolor_id(i == 0 ? defcolor_preproc : defcolor_ghost_character);
-    Range_i64 range = ranges.ranges[i];
-    range.max -= 1;
+  Lang_Spec *lang = qol_lang_for_buffer(app, buffer);
+  Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
 
-    u8 c0 = buffer_get_char(app, buffer, range.min);
-    u8 c1 = buffer_get_char(app, buffer, range.max);
-    if ((c0 != '{' && c0 != '(') || (c1 != '}' && c1 != ')')){ continue; }
-    paint_text_color_pos(app, text_layout_id, range.min, color);
-    paint_text_color_pos(app, text_layout_id, range.max, color);
+  FColor color = fcolor_id(defcolor_preproc);
+  i64 pos = view_get_cursor_pos(app, view);
+  for (Code_Index_Nest *nest = code_index_get_nest(file, pos); nest; nest = nest->parent){
+    if (nest->kind != CodeIndexNest_Scope){ continue; }
 
-    i64 line0 = get_line_number_from_pos(app, buffer, range.min);
-    i64 line1 = get_line_number_from_pos(app, buffer, range.max);
-    if (line0 == line1){ continue; }
+    FColor cl = color;
+    color = fcolor_id(defcolor_ghost_character);
 
+    // personal preference to not paint over lua keywords e.g. {do, then, else, end ...}
+    if (range_size(nest->open) == 1 && range_size(nest->close) == 1){
+      paint_text_color(app, text_layout_id, nest->open,  fcolor_resolve(cl));
+      paint_text_color(app, text_layout_id, nest->close, fcolor_resolve(cl));
+    }
+
+    i64 line_a = get_line_number_from_pos(app, buffer, nest->open.min);
+    i64 line_b = get_line_number_from_pos(app, buffer, nest->close.min);
+    if (line_a == line_b){ continue; }
+
+    Range_i64 range = Ii64(nest->open.min, nest->close.min);
     Rect_f32 scope_rect = qol_get_abs_block_rect(app, view, buffer, text_layout_id, range);
     scope_rect.p0 -= V2f32(3.f, 4.f);
     scope_rect.x1 += 10.f;
     Rect_f32 clip_rect = Rf32(scope_rect.p0, V2f32(scope_rect.x0 + 3.f + width, scope_rect.y1));
     draw_set_clip(app, rect_intersect(view_rect, clip_rect));
-    draw_rectangle_outline_fcolor(app, scope_rect, 5.f, 2.f, color);
-  }
-  draw_set_clip(app, prev_clip);
+    draw_rectangle_outline_fcolor(app, scope_rect, 5.f, 2.f, cl);
 
-  Token_Array tokens = get_token_array_from_buffer(app, buffer);
-  Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
-  for (i64 i=0 ; i < ranges.count; i += 1){
-    Range_i64 range = ranges.ranges[ranges.count-1-i];
-    i64 line0 = get_line_number_from_pos(app, buffer, range.min);
-    i64 line1 = get_line_number_from_pos(app, buffer, range.max);
-    if (line0 == line1 || range.max >= visible_range.max){ continue; }
+    if (!range_overlap(visible_range, nest->close)){ continue; }
 
-    Token *start_token = 0;
+    Range_i64 limit = Ii64((nest->parent ? nest->parent->open.min : 0), visible_range.max);
     Token_Iterator_Array it = token_iterator_pos(0, &tokens, range.min-1);
     i64 paren_level = 0;
     for (;;){
       Token *token = token_it_read(&it);
-      if (token == 0){ break; }
-
-      paren_level += (token->kind == TokenBaseKind_ParentheticalClose);
-      paren_level -= (token->kind == TokenBaseKind_ParentheticalOpen);
+      if (token == 0 || !range_overlap(limit, Ii64(token))){ break; }
+      paren_level += (token->kind == TokenBaseKind_ParenClose);
+      paren_level -= (token->kind == TokenBaseKind_ParenOpen);
 
       if (paren_level == 0){
         if (token->kind == TokenBaseKind_ScopeClose ||
-            (token->kind == TokenBaseKind_StatementClose && token->sub_kind != TokenCppKind_Colon))
+            (token->kind == TokenBaseKind_StmntClose && lang->id == Lang_Cpp && token->sub_kind != TokenCppKind_Colon))
         {
           break;
         }
         else if (token->kind == TokenBaseKind_Identifier ||
                  token->kind == TokenBaseKind_Keyword    ||
                  token->kind == TokenBaseKind_Comment    ||
-                 token->kind == qol_TokenKind_Control)
+                 token->kind == TokenBaseKind_Control)
         {
-          start_token = token;
+          Scratch_Block scratch(app);
+          i64 line = get_line_number_from_pos(app, buffer, nest->open.min);
+          i64 end_pos = get_line_end_pos(app, buffer, line_b)-1;
+          Rect_f32 end_rect = text_layout_character_on_screen(app, text_layout_id, end_pos);
+          Vec2_f32 p0 = V2f32(end_rect.x1 + 3.f, end_rect.y0 + 3.f);
+
+          String_Const_u8 text = push_buffer_line(app, scratch, buffer, line);
+          draw_set_clip(app, view_rect);
+          draw_string(app, qol_small_face, string_skip_whitespace(text), p0, fcolor_id(defcolor_ghost_character));
           break;
         }
       }
       if (!token_it_dec_non_whitespace(&it)){ break; }
-    }
-
-    if (start_token){
-      i64 line = get_line_number_from_pos(app, buffer, start_token->pos);
-      String_Const_u8 text = push_buffer_line(app, scratch, buffer, line);
-
-      i64 ws_count = 0;
-      for (u64 j = 0; j < text.size; j += 1){
-        if (text.str[j] > 32){ break; }
-        ws_count++;
-      }
-      text.str  += ws_count;
-      text.size -= ws_count;
-      text.size -= (text.str[text.size-1] == '\r');
-
-      i64 end_pos = get_line_end_pos(app, buffer, line1)-1;
-      Rect_f32 end_rect = text_layout_character_on_screen(app, text_layout_id, end_pos);
-      Vec2_f32 p0 = V2f32(end_rect.x1 + 3.f, end_rect.y0 + 3.f);
-
-      draw_string(app, qol_small_face, text, p0, fcolor_id(defcolor_ghost_character));
     }
   }
 }
@@ -224,7 +215,7 @@ qol_draw_comments(Application_Links *app, Buffer_ID buffer, Text_Layout_ID text_
       String_Const_u8 prefix = string_prefix(tail, match.size);
       if (block_match(prefix.str, match.str, match.size)){
         f32 y = text_layout_character_on_screen(app, text_layout_id, token->pos).y0;
-        Rect_f32 dividor_line = Rf32(rect.x0, y - 1.f, rect.x1, y);
+        Rect_f32 dividor_line = Rf32(rect.x0, y-1, rect.x1, y);
         draw_rectangle_fcolor(app, dividor_line, 0.f, fcolor_id(defcolor_comment));
       }
 
@@ -417,10 +408,20 @@ qol_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, Buff
   f32 cursor_roundness = metrics.normal_advance*cursor_roundness_100*0.01f;
   f32 mark_thickness = (f32)def_get_config_u64(app, vars_save_string_lit("mark_thickness"));
 
+  i64 cursor_pos = view_correct_cursor(app, view_id);
+  view_correct_mark(app, view_id);
+
+  // NOTE(allen): Line highlight
+  b32 highlight_line_at_cursor = def_get_config_b32(vars_save_string_lit("highlight_line_at_cursor"));
+  if (highlight_line_at_cursor && is_active_view){
+    i64 line_number = get_line_number_from_pos(app, buffer, cursor_pos);
+    draw_line_highlight(app, text_layout_id, line_number, fcolor_id(defcolor_highlight_cursor_line));
+  }
+
   // NOTE(allen): Token colorizing
   Token_Array token_array = get_token_array_from_buffer(app, buffer);
   if (token_array.tokens != 0){
-    qol_draw_cpp_token_colors(app, view_id, buffer, text_layout_id, &token_array);
+    qol_draw_token_colors(app, view_id, buffer, text_layout_id, &token_array);
 
     // NOTE(allen): Scan for TODOs and NOTEs
     b32 use_comment_keyword = def_get_config_b32(vars_save_string_lit("use_comment_keyword"));
@@ -437,9 +438,6 @@ qol_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, Buff
     paint_text_color_fcolor(app, text_layout_id, visible_range, fcolor_id(defcolor_text_default));
   }
 
-  i64 cursor_pos = view_correct_cursor(app, view_id);
-  view_correct_mark(app, view_id);
-
   // NOTE(allen): Scope highlight
   b32 use_scope_highlight = def_get_config_b32(vars_save_string_lit("use_scope_highlight"));
   if (use_scope_highlight){
@@ -452,13 +450,6 @@ qol_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, Buff
     f32 dx = view_get_buffer_scroll(app, view_id).position.pixel_shift.x;
     Rect_f32 col_rect = Rf32(rect_range_x(r) + rect.x0 - dx, rect_range_y(rect));
     draw_rectangle_fcolor(app, col_rect, 0.f, fcolor_id(defcolor_highlight_cursor_line));
-  }
-
-  // NOTE(allen): Line highlight
-  b32 highlight_line_at_cursor = def_get_config_b32(vars_save_string_lit("highlight_line_at_cursor"));
-  if (highlight_line_at_cursor && is_active_view){
-    i64 line_number = get_line_number_from_pos(app, buffer, cursor_pos);
-    draw_line_highlight(app, text_layout_id, line_number, fcolor_id(defcolor_highlight_cursor_line));
   }
 
   qol_draw_scopes(app, view_id, buffer, text_layout_id, metrics.normal_advance);
@@ -550,7 +541,7 @@ qol_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, Buff
     Scratch_Block scratch(app);
     ARGB_Color cl_nest = fcolor_resolve(fcolor_change_alpha(fcolor_id(defcolor_control), 0.8f));
     Text_Layout_ID minimap_id = MM_begin(app, scratch, view_id, face_id, buffer, token_array, rect, visible_range, cl_nest);
-    qol_paint_cpp_token_colors(app, buffer, minimap_id);
+    qol_paint_token_colors(app, buffer, minimap_id);
     MM_end(app, minimap_id);
   }
 
@@ -762,7 +753,7 @@ qol_draw_peek(Application_Links *app, Frame_Info frame_info){
   draw_line_highlight(app, text_layout_id, peek_line, fcolor_id(defcolor_highlight_cursor_line));
 
   Rect_f32 prev_clip = draw_set_clip(app, text_layout_region(app, text_layout_id));
-  qol_paint_cpp_token_colors(app, peek_buffer, text_layout_id);
+  qol_paint_token_colors(app, peek_buffer, text_layout_id);
   draw_text_layout_default(app, text_layout_id);
   text_layout_free(app, text_layout_id);
   draw_set_clip(app, prev_clip);

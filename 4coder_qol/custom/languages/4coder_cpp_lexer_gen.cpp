@@ -437,13 +437,12 @@ build_language_model(void){
 
   ////
 
-  sm_select_state(whitespace);
-  sm_case(" \t\r\f\v", whitespace);
-  sm_case("\n", whitespace_end_pp);
-  {
-    Emit_Rule *emit = sm_emit_rule();
-    sm_emit_handler_direct("Whitespace");
-    sm_fallback_peek(emit);
+  // TODO:
+#define S(s,n) for(int _I_=(sm_select_state(s),0); _I_==0; _I_ += (sm_fallback_peek(sm_emit_rule_direct(n)),1))
+
+  S(whitespace, "Whitespace"){
+    sm_case(" \t\r\f\v", whitespace);
+    sm_case("\n", whitespace_end_pp);
   }
 
   ////

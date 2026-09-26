@@ -177,7 +177,7 @@ print_positions_buffered(Application_Links *app, Buffer_Insertion *out, Buffer_I
                prev_token.sub_kind == TokenCppKind_Star ||
                prev_token.sub_kind == TokenCppKind_Comma ||
                prev_token.kind == TokenBaseKind_Keyword ||
-               prev_token.kind == qol_TokenKind_Primitive) &&
+               prev_token.kind == TokenBaseKind_Primitive) &&
               !(token->sub_kind == TokenCppKind_ParenOp ||
                 token->sub_kind == TokenCppKind_ParenCl ||
                 token->sub_kind == TokenCppKind_Comma)){

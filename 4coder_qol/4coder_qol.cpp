@@ -5,7 +5,6 @@
 
 //#define AUTO_CENTER_AFTER_JUMPS false
 
-#include "4coder_qol_token.h"
 #include "4coder_qol_lister.h"
 #include "4coder_qol_bview.h"
 #define run_lister qol_run_lister
@@ -38,6 +37,7 @@ function b32 MC_filter_command(Custom_Command_Function *func);
 #include "languages/qol_parser_helper.h"
 #include "4coder_default_include.cpp"
 #include "languages/cpp_parser.cpp"
+#include "languages/lua_parser.cpp"
 
 #include "4coder_qol_jumps.cpp"
 
@@ -81,6 +81,8 @@ global Lister_Node* g_qol_mouse_node;
 #include "../4coder_vim/4coder_vim_include.h"
 #include "../4coder_vim/4coder_vim_include.cpp"
 
+#include "languages/qol_languages.cpp"
+
 #include "4coder_qol_bindings.cpp"
 #include "4coder_qol_commands.cpp"
 #include "4coder_qol_reformat.cpp"
@@ -109,6 +111,10 @@ void custom_layer_init(Application_Links *app){
   MC_register(vim_normal_mode,  MC_Command_Global);
   MC_register(vim_paste_before, MC_Command_Cursor);
 
+  qol_lang_register(Lang_None, lang_lex_async_nop, lang_lex_sync_nop, lang_parse_nop, lang_paint_nop);
+  qol_lang_register(Lang_Cpp, lex_full_input_async_cpp, lex_full_input_cpp, cpp_parse_file, qol_get_token_color_cpp);
+  qol_lang_register(Lang_Lua, lex_full_input_async_lua, lex_full_input_lua, lua_parse_file, qol_get_token_color_lua);
+
   // Set up custom layer hooks
   {
     set_custom_hook(app, HookID_BufferViewerUpdate, default_view_adjust);
@@ -124,7 +130,7 @@ void custom_layer_init(Application_Links *app){
 
     set_custom_hook(app, HookID_BufferNameResolver, default_buffer_name_resolution);
 
-    set_custom_hook(app, HookID_BeginBuffer, vim_begin_buffer);
+    set_custom_hook(app, HookID_BeginBuffer, qol_begin_buffer);
     set_custom_hook(app, HookID_EndBuffer, end_buffer_close_jump_list);
     set_custom_hook(app, HookID_NewFile, default_new_file);
     set_custom_hook(app, HookID_SaveFile, qol_file_save);

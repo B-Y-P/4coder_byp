@@ -3,7 +3,6 @@
 #define LANG_NAME_CAMEL Cpp
 
 #include "lexer_generator/4coder_lex_gen_main.cpp"
-#include "4coder_qol_token.h"
 
 internal void
 build_language_model(void){
@@ -22,7 +21,7 @@ build_language_model(void){
   sm_char_name('?', "Ternary");
   sm_char_name('/', "Div");
 
-  // CPP Direct Toke Kinds
+  // CPP Direct Token Kinds
   sm_select_base_kind(TokenBaseKind_Comment);
   sm_direct_token_kind("BlockComment");
   sm_direct_token_kind("LineComment");
@@ -83,13 +82,13 @@ build_language_model(void){
   sm_op("{");
   sm_select_base_kind(TokenBaseKind_ScopeClose);
   sm_op("}");
-  sm_select_base_kind(TokenBaseKind_ParentheticalOpen);
+  sm_select_base_kind(TokenBaseKind_ParenOpen);
   sm_op("(");
   sm_op("[");
-  sm_select_base_kind(TokenBaseKind_ParentheticalClose);
+  sm_select_base_kind(TokenBaseKind_ParenClose);
   sm_op(")");
   sm_op("]");
-  sm_select_base_kind(TokenBaseKind_StatementClose);
+  sm_select_base_kind(TokenBaseKind_StmntClose);
   sm_op(";");
   sm_op(":");
   sm_select_base_kind(TokenBaseKind_Operator);
@@ -144,7 +143,7 @@ build_language_model(void){
   sm_op("<<=");
   sm_op(">>=");
 
-  sm_select_base_kind(TokenBaseKind_StatementClose);
+  sm_select_base_kind(TokenBaseKind_StmntClose);
   sm_op(",");
 
   // CPP Preprocess Operators
@@ -193,14 +192,14 @@ build_language_model(void){
   sm_key("New");
   sm_key("Delete");
 
-  sm_select_base_kind(qol_TokenKind_Struct);
+  sm_select_base_kind(TokenBaseKind_Struct);
   sm_key("Class");
   sm_key("Enum");
   sm_key("Struct");
   sm_key("Typedef");
   sm_key("Union");
 
-  sm_select_base_kind(qol_TokenKind_Primitive);
+  sm_select_base_kind(TokenBaseKind_Primitive);
   sm_key("Auto");
   sm_key("Void");
   sm_key("Bool");
@@ -226,7 +225,7 @@ build_language_model(void){
   sm_key("size_t");
   sm_key("ptrdiff_t");
 
-  sm_select_base_kind(qol_TokenKind_Control);
+  sm_select_base_kind(TokenBaseKind_Control);
   sm_key("Break");
   sm_key("Case");
   sm_key("Catch");
@@ -254,7 +253,7 @@ build_language_model(void){
   // CPP Preprocess Directives
   Keyword_Set *pp_directive_set = sm_begin_key_set("pp_directives");
 
-  sm_select_base_kind(TokenBaseKind_Preprocessor);
+  sm_select_base_kind(TokenBaseKind_Preproc);
   sm_key("PPInclude", "include");
   sm_key("PPVersion", "version");
   sm_key("PPDefine", "define");

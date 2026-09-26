@@ -7,35 +7,37 @@
 #if !defined(FCODER_TOKEN_H)
 #define FCODER_TOKEN_H
 
-typedef i16 Token_Base_Kind;
-enum{
-  TokenBaseKind_EOF = 0,
-  TokenBaseKind_Whitespace = 1,
-  TokenBaseKind_LexError = 2,
-  TokenBaseKind_Comment = 3,
-  TokenBaseKind_Keyword = 4,
-  TokenBaseKind_Preprocessor = 5,
-  TokenBaseKind_Identifier = 6,
-  TokenBaseKind_Operator = 7,
-  TokenBaseKind_LiteralInteger = 8,
-  TokenBaseKind_LiteralFloat = 9,
-  TokenBaseKind_LiteralString = 10,
-  TokenBaseKind_ScopeOpen = 11,
-  TokenBaseKind_ScopeClose = 12,
-  TokenBaseKind_ParentheticalOpen = 13,
-  TokenBaseKind_ParentheticalClose = 14,
-  TokenBaseKind_StatementClose = 15,
+enum Token_Base_Kind{
+  TokenBaseKind_EOF,
+  TokenBaseKind_Whitespace,
+  TokenBaseKind_LexError,
+  TokenBaseKind_Comment,
+  TokenBaseKind_Keyword,
+  TokenBaseKind_Preproc,
+  TokenBaseKind_Identifier,
+  TokenBaseKind_Operator,
+  TokenBaseKind_LiteralInteger,
+  TokenBaseKind_LiteralFloat,
+  TokenBaseKind_LiteralString,
+  TokenBaseKind_ScopeOpen,
+  TokenBaseKind_ScopeClose,
+  TokenBaseKind_ParenOpen,
+  TokenBaseKind_ParenClose,
+  TokenBaseKind_StmntClose,
+  TokenBaseKind_Primitive,
+  TokenBaseKind_Control,
+  TokenBaseKind_Struct,
 
-  TokenBaseKind_COUNT = 16,
+  TokenBaseKind_COUNT,
 };
 
-char *token_base_kind_names[] ={
+char *token_base_kind_names[] = {
   "EOF",
   "Whitespace",
   "LexError",
   "Comment",
   "Keyword",
-  "Preprocessor",
+  "Preproc",
   "Identifier",
   "Operator",
   "LiteralInteger",
@@ -43,9 +45,12 @@ char *token_base_kind_names[] ={
   "LiteralString",
   "ScopeOpen",
   "ScopeClose",
-  "ParentheticalOpen",
-  "ParentheticalClose",
-  "StatementClose",
+  "ParenOpen",
+  "ParenClose",
+  "StmntClose",
+  "Primitive",
+  "Control",
+  "Struct",
 };
 
 typedef u16 Token_Base_Flag;

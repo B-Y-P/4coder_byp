@@ -4,408 +4,10 @@
 
 // TOP
 
-#if !defined(LANG_NAME_LOWER) || !defined(LANG_NAME_CAMEL)
-#error 4coder_lex_get_main.cpp not correctly included.
-#endif
-
-#include "4coder_base_types.h"
-#include "4coder_table.h"
-#include "4coder_token.h"
-#include "pcg_basic.h"
-
-#include "4coder_base_types.cpp"
-#include "4coder_stringf.cpp"
-#include "4coder_malloc_allocator.cpp"
-#include "4coder_hash_functions.cpp"
-#include "4coder_table.cpp"
-#include "pcg_basic.c"
-
-#define LANG_NAME_LOWER_STR stringify(LANG_NAME_LOWER)
-#define LANG_NAME_CAMEL_STR stringify(LANG_NAME_CAMEL)
-
-////////////////////////////////
-
-// NOTE(allen): PRIMARY MODEL
-
-struct Token_Kind_Node{
-  Token_Kind_Node *next;
-  b32 optimized_in;
-  String_Const_u8 name;
-  Token_Base_Kind base_kind;
-};
-
-struct Token_Kind_Set{
-  Token_Kind_Node *first;
-  Token_Kind_Node *last;
-  i32 count;
-  Table_Data_u64 name_to_ptr;
-};
-
-struct Keyword{
-  Keyword *next;
-  String_Const_u8 name;
-  String_Const_u8 lexeme;
-};
-
-struct Keyword_Set{
-  Keyword_Set *next;
-  Keyword *first;
-  Keyword *last;
-  i32 count;
-  b32 has_fallback_token_kind;
-  String_Const_u8 fallback_name;
-  Table_Data_u64 name_to_ptr;
-  Table_Data_u64 lexeme_to_ptr;
-  String_Const_u8 pretty_name;
-};
-
-struct Keyword_Set_List{
-  Keyword_Set *first;
-  Keyword_Set *last;
-  i32 count;
-};
-
-struct Keyword_Layout{
-  u64 seed;
-  u64 error_score;
-  u64 max_single_error_score;
-  f32 iterations_per_lookup;
-  u64 *hashes;
-  u64 *contributed_error;
-  Keyword **slots;
-  i32 slot_count;
-};
-
-typedef i32 Flag_Reset_Rule;
-enum{
-  FlagResetRule_AutoZero,
-  FlagResetRule_KeepState,
-  FlagResetRule_COUNT,
-};
-
-struct Flag{
-  Flag *next;
-  Flag_Reset_Rule reset_rule;
-  Token_Base_Flag emit_flags;
-  u16 emit_sub_flags;
-
-  b32 optimized_in;
-  String_Const_u8 base_name;
-  i32 number;
-  i32 index;
-  u32 value;
-};
-
-struct Flag_Set{
-  Flag *first;
-  Flag *last;
-  i32 count;
-};
-
-typedef i32 Emit_Handler_Kind;
-enum{
-  EmitHandlerKind_Direct,
-  EmitHandlerKind_Keywords,
-  EmitHandlerKind_KeywordsDelim,
-};
-
-struct Emit_Handler{
-  Emit_Handler *next;
-  Emit_Handler_Kind kind;
-  Flag *flag_check;
-  union{
-    String_Const_u8 token_name;
-    Keyword_Set *keywords;
-  };
-};
-
-struct Emit_Check{
-  Emit_Check *next;
-  String_Const_u8 emit_check;
-  Flag *flag;
-  b32 value;
-};
-
-struct Emit_Check_List{
-  Emit_Check *first;
-  Emit_Check *last;
-  i32 count;
-};
-
-struct Emit_Rule{
-  Emit_Check_List emit_checks;
-  Emit_Handler *first;
-  Emit_Handler *last;
-  i32 count;
-};
-
-typedef i32 Action_Kind;
-enum{
-  ActionKind_SetFlag,
-  ActionKind_ZeroFlags,
-  ActionKind_DelimMarkFirst,
-  ActionKind_DelimMarkOnePastLast,
-  ActionKind_Consume,
-  ActionKind_Emit,
-};
-
-struct Action{
-  Action *next;
-  Action *prev;
-  Action_Kind kind;
-  union{
-    struct{
-      Flag *flag;
-      b32 value;
-    } set_flag;
-    Emit_Rule *emit_rule;
-  };
-};
-
-struct Action_List{
-  Action *first;
-  Action *last;
-  i32 count;
-};
-
-typedef i32 Action_Context;
-enum{
-  ActionContext_Normal,
-  ActionContext_EndOfFile,
-};
-
-typedef i32 Transition_Consume_Rule;
-enum{
-  Transition_Consume,
-  Transition_NoConsume,
-};
-
-global u16 smi_eof = 256;
-
-struct Field_Pin{
-  Field_Pin *next;
-
-  // This represents the set of flags with the particular /flag/ set to /flag/
-  // exactly half of all flag state possibilities.
-  Flag *flag;
-  b32 value;
-};
-
-struct Field_Pin_List{
-  Field_Pin_List *next;
-
-  // This set is the intersection of the set represented by each pin.
-  // A list with nothing in it is _always_ the "full set".
-  Field_Pin *first;
-  Field_Pin *last;
-  i32 count;
-};
-
-struct Field_Set{
-  // This set is the union of the set represented by each list.
-  Field_Pin_List *first;
-  Field_Pin_List *last;
-  i32 count;
-};
-
-struct Input_Set{
-  u16 *inputs;
-  i32 count;
-};
-
-struct Condition_Node{
-  Condition_Node *next;
-  Field_Set fields;
-  Input_Set inputs;
-};
-
-struct Condition_Set{
-  Condition_Node *first;
-  Condition_Node *last;
-  i32 count;
-};
-
-typedef i32 Transition_Case_Kind;
-enum{
-  TransitionCaseKind_NONE,
-
-  // intermediates only
-  TransitionCaseKind_CharaterArray,
-  TransitionCaseKind_EOF,
-  TransitionCaseKind_Fallback,
-
-  // actually stored in Transition_Case "kind" field
-  TransitionCaseKind_DelimMatch,
-  TransitionCaseKind_DelimMatchFail,
-  TransitionCaseKind_ConditionSet,
-};
-
-struct Transition_Case{
-  Transition_Case_Kind kind;
-  union{
-    Condition_Set condition_set;
-  };
-};
-
-struct Transition{
-  Transition *next;
-  Transition *prev;
-  struct State *parent_state;
-  Transition_Case condition;
-  Action_List activation_actions;
-  struct State *dst_state;
-};
-
-struct Transition_List{
-  Transition *first;
-  Transition *last;
-  i32 count;
-};
-
-struct Transition_Ptr_Node{
-  Transition_Ptr_Node *next;
-  Transition *ptr;
-};
-
-struct Transition_Ptr_Set{
-  Transition_Ptr_Node *first;
-  Transition_Ptr_Node *last;
-  i32 count;
-};
-
-struct State{
-  State *next;
-  Transition_List transitions;
-  String_Const_u8 pretty_name;
-
-  b32 optimized_in;
-  i32 number;
-  Transition_Ptr_Set back_references;
-
-  Action_List on_entry_actions;
-};
-
-struct State_Set{
-  State *first;
-  State *last;
-  i32 count;
-};
-
-struct Lexer_Model{
-  State *root;
-  Flag_Set flags;
-  State_Set states;
-};
-
-struct Lexer_Primary_Context{
-  Base_Allocator *allocator;
-  Arena arena;
-  Token_Kind_Set tokens;
-  Keyword_Set_List keywords;
-  Lexer_Model model;
-};
-
-////////////////////////////////
-
-struct Flag_Ptr_Node{
-  Flag_Ptr_Node *next;
-  Flag *flag;
-};
-
-struct Flag_Bucket{
-  String_Const_u8 pretty_name;
-  Flag_Ptr_Node *first;
-  Flag_Ptr_Node *last;
-  i32 max_bits;
-  i32 count;
-
-  i32 number_of_variables;
-};
-
-typedef i32 Flag_Bind_Property;
-enum{
-  FlagBindProperty_Free,
-  FlagBindProperty_Bound,
-  FlagBindProperty_COUNT,
-};
-
-struct Flag_Bucket_Set{
-  Flag_Bucket buckets[FlagBindProperty_COUNT][FlagResetRule_COUNT];
-};
-
-struct Partial_Transition{
-  Partial_Transition *next;
-  Field_Set fields;
-  Action_List actions;
-  State *dst_state;
-};
-
-struct Partial_Transition_List{
-  Partial_Transition *first;
-  Partial_Transition *last;
-  i32 count;
-};
-
-struct Grouped_Input_Handler{
-  Grouped_Input_Handler *next;
-
-  u8 inputs[256];
-  i32 input_count;
-  b8 inputs_used[256];
-
-  Partial_Transition_List partial_transitions;
-};
-
-struct Grouped_Input_Handler_List{
-  Grouped_Input_Handler *first;
-  Grouped_Input_Handler *last;
-  i32 count;
-
-  Grouped_Input_Handler *group_with_biggest_input_set;
-};
-
-////////////////////////////////
-
-// NOTE(allen): MODELING SYNTAX HELPERS
-
-struct Operator{
-  Operator *next;
-  String_Const_u8 name;
-  String_Const_u8 op;
-};
-
-struct Operator_Set{
-  Operator *first;
-  Operator *last;
-  i32 count;
-  Table_Data_u64 lexeme_to_ptr;
-};
-
-struct Lexer_Helper_Context{
-  Lexer_Primary_Context primary_ctx;
-  Table_u64_Data char_to_name;
-  Token_Base_Kind selected_base_kind;
-  State *selected_state;
-  Operator_Set *selected_op_set;
-  Keyword_Set *selected_key_set;
-  Emit_Rule *selected_emit_rule;
-  Transition *selected_transition;
-
-  // convenience pointer to primary's arena.
-  Arena *arena;
-};
-
-struct Character_Set{
-  Table_u64_u64 table;
-};
+#include "4coder_lex_gen_main.h"
 
 #include "4coder_lex_gen_hand_written.h"
 #include "4coder_lex_gen_hand_written.cpp"
-
-////////////////////////////////
-////////////////////////////////
-////////////////////////////////
-////////////////////////////////
 
 // NOTE(allen): INTERNAL CONSTRUCTORS
 
@@ -421,12 +23,12 @@ internal b32
 smi_try_add_token(Lexer_Primary_Context *ctx, String_Const_u8 name, Token_Base_Kind base_kind){
   b32 result = false;
   Token_Kind_Set *set = &ctx->tokens;
-  Table_Lookup lookup = table_lookup(&set->name_to_ptr, make_data(name.str, name.size));
+  Table_Lookup lookup = table_lookup(&set->name_to_ptr, name);
   if (!lookup.found_match){
     Token_Kind_Node *node = push_array_zero(&ctx->arena, Token_Kind_Node, 1);
     node->name = push_string_copy(&ctx->arena, name);
     node->base_kind = base_kind;
-    table_insert(&set->name_to_ptr, make_data(node->name.str, node->name.size), (u64)PtrAsInt(node));
+    table_insert(&set->name_to_ptr, node->name, (u64)PtrAsInt(node));
     sll_queue_push(set->first, set->last, node);
     set->count += 1;
     result = true;
@@ -437,16 +39,16 @@ smi_try_add_token(Lexer_Primary_Context *ctx, String_Const_u8 name, Token_Base_K
 internal b32
 smi_key(Lexer_Primary_Context *ctx, Keyword_Set *set, String_Const_u8 name, String_Const_u8 lexeme, Token_Base_Kind base_kind){
   b32 result = false;
-  Table_Lookup lookup = table_lookup(&set->name_to_ptr, make_data(name.str, name.size));
+  Table_Lookup lookup = table_lookup(&set->name_to_ptr, name);
   if (!lookup.found_match){
-    lookup = table_lookup(&set->lexeme_to_ptr, make_data(lexeme.str, lexeme.size));
+    lookup = table_lookup(&set->lexeme_to_ptr, lexeme);
     if (!lookup.found_match){
       if (smi_try_add_token(ctx, name, base_kind)){
         Keyword *key = push_array_zero(&ctx->arena, Keyword, 1);
         key->name = push_string_copy(&ctx->arena, name);
         key->lexeme = push_string_copy(&ctx->arena, lexeme);
-        table_insert(&set->name_to_ptr, make_data(key->name.str, key->name.size), (u64)PtrAsInt(key));
-        table_insert(&set->lexeme_to_ptr, make_data(key->lexeme.str, key->lexeme.size), (u64)PtrAsInt(key));
+        table_insert(&set->name_to_ptr, key->name, (u64)PtrAsInt(key));
+        table_insert(&set->lexeme_to_ptr, key->lexeme, (u64)PtrAsInt(key));
         sll_queue_push(set->first, set->last, key);
         set->count += 1;
         result = true;
@@ -470,12 +72,13 @@ smi_key_fallback(Lexer_Primary_Context *ctx, Keyword_Set *set, String_Const_u8 n
 }
 
 internal State*
-smi_add_state(Lexer_Primary_Context *ctx, String_Const_u8 pretty_name){
+smi_add_state(Lexer_Primary_Context *ctx, String_Const_u8 pretty_name, char *src){
   State_Set *set = &ctx->model.states;
   State *state = push_array_zero(&ctx->arena, State, 1);
   sll_queue_push(set->first, set->last, state);
   set->count += 1;
   state->pretty_name = push_string_copy(&ctx->arena, pretty_name);
+  state->source = src;
   return(state);
 }
 
@@ -527,54 +130,25 @@ smi_emit_handler_delim(Arena *arena, Emit_Rule *rule, Keyword_Set *set, Flag *fl
   return(handler);
 }
 
-internal void
-smi_append_set_flag(Arena *arena, Action_List *list, Flag *flag, b32 value){
+internal Action*
+smi_append_action(Arena *arena, Action_List *list, Action_Kind kind){
   Action *action = push_array_zero(arena, Action, 1);
   zdll_push_back(list->first, list->last, action);
   list->count += 1;
-  action->kind = ActionKind_SetFlag;
+  action->kind = kind;
+  return action;
+}
+
+internal void
+smi_append_set_flag(Arena *arena, Action_List *list, Flag *flag, b32 value){
+  Action *action = smi_append_action(arena, list, ActionKind_SetFlag);
   action->set_flag.flag = flag;
   action->set_flag.value = value;
 }
 
 internal void
-smi_append_zero_flags(Arena *arena, Action_List *list){
-  Action *action = push_array_zero(arena, Action, 1);
-  zdll_push_back(list->first, list->last, action);
-  list->count += 1;
-  action->kind = ActionKind_ZeroFlags;
-}
-
-internal void
-smi_append_delim_mark_first(Arena *arena, Action_List *list){
-  Action *action = push_array_zero(arena, Action, 1);
-  zdll_push_back(list->first, list->last, action);
-  list->count += 1;
-  action->kind = ActionKind_DelimMarkFirst;
-}
-
-internal void
-smi_append_delim_mark_one_past_last(Arena *arena, Action_List *list){
-  Action *action = push_array_zero(arena, Action, 1);
-  zdll_push_back(list->first, list->last, action);
-  list->count += 1;
-  action->kind = ActionKind_DelimMarkOnePastLast;
-}
-
-internal void
-smi_append_consume(Arena *arena, Action_List *list){
-  Action *action = push_array_zero(arena, Action, 1);
-  zdll_push_back(list->first, list->last, action);
-  list->count += 1;
-  action->kind = ActionKind_Consume;
-}
-
-internal void
 smi_append_emit(Arena *arena, Action_List *list, Emit_Rule *emit){
-  Action *action = push_array_zero(arena, Action, 1);
-  zdll_push_back(list->first, list->last, action);
-  list->count += 1;
-  action->kind = ActionKind_Emit;
+  Action *action = smi_append_action(arena, list, ActionKind_Emit);
   action->emit_rule = emit;
 }
 
@@ -584,11 +158,7 @@ smi_append_emit(Arena *arena, Action_List *list, Emit_Rule *emit){
 internal void
 CHECK_PIN_LIST(Field_Pin_List *list){
   i32 counter = 0;
-  for (Field_Pin *pin = list->first;
-       pin != 0;
-       pin = pin->next){
-    counter += 1;
-  }
+  for_ll (pin, list->first){ counter += 1; }
   Assert(counter == list->count);
 }
 #else
@@ -608,9 +178,7 @@ smi_field_pin_list_copy(Arena *arena, Field_Pin_List list){
   CHECK_PIN_LIST(&list);
   Field_Pin_List *new_list = push_array_zero(arena, Field_Pin_List, 1);
   new_list->count = list.count;
-  for (Field_Pin *node = list.first;
-       node != 0;
-       node = node->next){
+  for_ll(node, list.first){
     Field_Pin *new_pin = smi_field_pin_copy(arena, node);
     sll_queue_push(new_list->first, new_list->last, new_pin);
   }
@@ -622,9 +190,7 @@ internal Field_Set
 smi_field_set_copy(Arena *arena, Field_Set set){
   Field_Set result = {};
   result.count = set.count;
-  for (Field_Pin_List *pin_list = set.first;
-       pin_list != 0;
-       pin_list = pin_list->next){
+  for_ll(pin_list, set.first){
     Field_Pin_List *new_list = smi_field_pin_list_copy(arena, *pin_list);
     sll_queue_push(result.first, result.last, new_list);
   }
@@ -636,9 +202,7 @@ smi_field_pin_sub__recursive(Arena *arena, Field_Pin_List a, Field_Pin_List *lis
   if (list != 0){
     growing_list.count += 1;
     Field_Pin_List *next_list = list->next;
-    for (Field_Pin *pin = list->first;
-         pin != 0;
-         pin = pin->next){
+    for_ll(pin, list->first){
       Field_Pin local_pin = *pin;
       local_pin.next = 0;
       sll_queue_push(growing_list.first, growing_list.last, &local_pin);
@@ -649,13 +213,9 @@ smi_field_pin_sub__recursive(Arena *arena, Field_Pin_List a, Field_Pin_List *lis
     b32 has_conflicts = false;
     Temp_Memory restore_point = begin_temp(arena);
     Field_Pin_List *new_list = smi_field_pin_list_copy(arena, a);
-    for (Field_Pin *pin = growing_list.first;
-         pin != 0;
-         pin = pin->next){
+    for_ll(pin, growing_list.first){
       b32 is_duplicate = false;
-      for (Field_Pin *a_pin = new_list->first;
-           a_pin != 0;
-           a_pin = a_pin->next){
+      for_ll(a_pin, new_list->first){
         if (pin->flag == a_pin->flag){
           if (pin->value == a_pin->value){
             end_temp(restore_point);
@@ -695,9 +255,7 @@ smi_field_pin_sub(Arena *arena, Field_Pin_List a, Field_Set b){
 internal Field_Set
 smi_field_set_subtract(Arena *arena, Field_Set a, Field_Set b){
   Field_Set result = {};
-  for (Field_Pin_List *list = a.first;
-       list != 0;
-       list = list->next){
+  for_ll(list, a.first){
     Field_Set partial = smi_field_pin_sub(arena, *list, b);
     if (result.first == 0){
       result = partial;
@@ -716,22 +274,14 @@ smi_field_set_subtract(Arena *arena, Field_Set a, Field_Set b){
 internal Field_Set
 smi_field_set_intersect(Arena *arena, Field_Set a, Field_Set b){
   Field_Set result = {};
-  for (Field_Pin_List *a_list = a.first;
-       a_list != 0;
-       a_list = a_list->next){
-    for (Field_Pin_List *b_list = b.first;
-         b_list != 0;
-         b_list = b_list->next){
+  for_ll(a_list, a.first){
+    for_ll(b_list, b.first){
       b32 has_conflicts = false;
       Temp_Memory restore_point = begin_temp(arena);
       Field_Pin_List *new_list = smi_field_pin_list_copy(arena, *a_list);
-      for (Field_Pin *b_pin = b_list->first;
-           b_pin != 0;
-           b_pin = b_pin->next){
+      for_ll(b_pin, b_list->first){
         b32 is_duplicate = false;
-        for (Field_Pin *pin = new_list->first;
-             pin != 0;
-             pin = pin->next){
+        for_ll(pin, new_list->first){
           if (pin->flag == pin->flag){
             if (pin->value != pin->value){
               end_temp(restore_point);
@@ -762,42 +312,27 @@ smi_field_set_intersect(Arena *arena, Field_Set a, Field_Set b){
 internal b32
 smi_field_set_match(Arena *scratch, Field_Set a, Field_Set b){
   Temp_Memory temp = begin_temp(scratch);
-  b32 result = false;
-  Field_Set sub = smi_field_set_subtract(scratch, a, b);
-  if (sub.count == 0){
-    sub = smi_field_set_subtract(scratch, b, a);
-    if (sub.count == 0){
-      result = true;
-    }
-  }
+  b32 result = (smi_field_set_subtract(scratch, a, b).count == 0 &&
+                smi_field_set_subtract(scratch, b, a).count == 0);
   end_temp(temp);
   return(result);
 }
 
 internal Field_Set
 smi_field_set_union(Arena *arena, Field_Set a, Field_Set b){
-  Field_Set result = {};
-  if (a.first != 0){
-    if (b.first != 0){
-      a = smi_field_set_copy(arena, a);
-      // TODO(allen): simplify these lists by seeing if they union
-      // cleanly with the lists in a!
-      b = smi_field_set_copy(arena, b);
-      result.first = a.first;
-      a.last->next = b.first;
-      result.last = b.last;
-      result.count = a.count + b.count;
-    }
-    else{
-      result = smi_field_set_copy(arena, a);
-    }
-  }
-  else{
-    if (b.first != 0){
-      result = smi_field_set_copy(arena, b);
-    }
-  }
-  return(result);
+  if (a.first == 0 && b.first == 0){ return {}; }
+  if (a.first == 0){ return smi_field_set_copy(arena, b); }
+  if (b.first == 0){ return smi_field_set_copy(arena, a); }
+
+  Field_Set c = {};
+  // TODO(allen): simplify these lists by seeing if they union cleanly with the lists in a!
+  a = smi_field_set_copy(arena, a);
+  b = smi_field_set_copy(arena, b);
+  a.last->next = b.first;
+  c.count = a.count + b.count;
+  c.first = a.first;
+  c.last = b.last;
+  return c;
 }
 
 internal Field_Set
@@ -958,9 +493,7 @@ smi_condition_node_copy(Arena *arena, Condition_Node *node){
 internal Condition_Set
 smi_condition_set_copy(Arena *arena, Condition_Set set){
   Condition_Set result = {};
-  for (Condition_Node *node = set.first;
-       node != 0;
-       node = node->next){
+  for_ll(node, set.first){
     Condition_Node *new_node = smi_condition_node_copy(arena, node);
     sll_queue_push(result.first, result.last, new_node);
     result.count += 1;
@@ -1027,9 +560,7 @@ smi_condition_node_int(Arena *arena, Condition_Node a, Condition_Node b){
 internal Condition_Set
 smi_condition_set_subtract_node(Arena *arena, Condition_Set a, Condition_Node *b){
   Condition_Set result = {};
-  for (Condition_Node *node = a.first;
-       node != 0;
-       node = node->next){
+  for_ll(node, a.first){
     Condition_Set partial = smi_condition_node_sub(arena, *node, *b);
     if (result.first == 0){
       result = partial;
@@ -1048,9 +579,7 @@ smi_condition_set_subtract_node(Arena *arena, Condition_Set a, Condition_Node *b
 internal Condition_Set
 smi_condition_set_subtract(Arena *arena, Condition_Set a, Condition_Set b){
   Condition_Set result = a;
-  for (Condition_Node *node = b.first;
-       node != 0;
-       node = node->next){
+  for_ll(node, b.first){
     result = smi_condition_set_subtract_node(arena, result, node);
   }
   return(result);
@@ -1059,12 +588,8 @@ smi_condition_set_subtract(Arena *arena, Condition_Set a, Condition_Set b){
 internal Condition_Set
 smi_condition_set_intersect(Arena *arena, Condition_Set a, Condition_Set b){
   Condition_Set result = {};
-  for (Condition_Node *a_node = a.first;
-       a_node != 0;
-       a_node = a_node->next){
-    for (Condition_Node *b_node = b.first;
-         b_node != 0;
-         b_node = b_node->next){
+  for_ll(a_node, a.first){
+    for_ll(b_node, b.first){
       Condition_Node *node = smi_condition_node_int(arena, *a_node, *b_node);
       if (node->inputs.count > 0 && node->fields.count > 0){
         sll_queue_push(result.first, result.last, node);
@@ -1077,27 +602,19 @@ smi_condition_set_intersect(Arena *arena, Condition_Set a, Condition_Set b){
 
 internal Condition_Set
 smi_condition_set_union(Arena *arena, Condition_Set a, Condition_Set b){
-  Condition_Set result = {};
-  if (a.count != 0){
-    if (b.count != 0){
-      a = smi_condition_set_copy(arena, a);
-      // TODO(allen): simplify these down!
-      b = smi_condition_set_copy(arena, b);
-      result.first = a.first;
-      a.last->next = b.first;
-      result.last = b.last;
-      result.count = a.count + b.count;
-    }
-    else{
-      result = smi_condition_set_copy(arena, a);
-    }
-  }
-  else{
-    if (b.count != 0){
-      result = smi_condition_set_copy(arena, b);
-    }
-  }
-  return(result);
+  if (a.count == 0 && b.count == 0){ return {}; }
+  if (a.count == 0){ return smi_condition_set_copy(arena, b); }
+  if (b.count == 0){ return smi_condition_set_copy(arena, a); }
+
+  // TODO(allen): simplify these down!
+  Condition_Set c = {};
+  a = smi_condition_set_copy(arena, a);
+  b = smi_condition_set_copy(arena, b);
+  a.last->next = b.first;
+  c.count = a.count + b.count;
+  c.first = a.first;
+  c.last = b.last;
+  return c;
 }
 
 internal Condition_Node*
@@ -1136,8 +653,7 @@ smi_case(Lexer_Primary_Context *ctx, State *state,
     {
       transition->condition.kind = TransitionCaseKind_ConditionSet;
       Input_Set inputs = smi_input_set_construct(&ctx->arena, characters);
-      Field_Set fields = smi_field_set_construct(&ctx->arena,
-                                                 flag_check, flag_check_value);
+      Field_Set fields = smi_field_set_construct(&ctx->arena, flag_check, flag_check_value);
       transition->condition.condition_set = smi_condition(&ctx->arena, inputs, fields);
     }break;
 
@@ -1145,8 +661,7 @@ smi_case(Lexer_Primary_Context *ctx, State *state,
     {
       transition->condition.kind = TransitionCaseKind_ConditionSet;
       Input_Set inputs = smi_input_set_construct_eof(&ctx->arena);
-      Field_Set fields = smi_field_set_construct(&ctx->arena,
-                                                 flag_check, flag_check_value);
+      Field_Set fields = smi_field_set_construct(&ctx->arena, flag_check, flag_check_value);
       transition->condition.condition_set = smi_condition(&ctx->arena, inputs, fields);
     }break;
 
@@ -1154,8 +669,7 @@ smi_case(Lexer_Primary_Context *ctx, State *state,
     {
       transition->condition.kind = TransitionCaseKind_ConditionSet;
       Input_Set inputs = smi_input_set_construct_fallback(&ctx->arena);
-      Field_Set fields = smi_field_set_construct(&ctx->arena,
-                                                 flag_check, flag_check_value);
+      Field_Set fields = smi_field_set_construct(&ctx->arena, flag_check, flag_check_value);
       transition->condition.condition_set = smi_condition(&ctx->arena, inputs, fields);
     }break;
   }
@@ -1163,7 +677,7 @@ smi_case(Lexer_Primary_Context *ctx, State *state,
   transition->dst_state = dst;
 
   if (consume_rule == Transition_Consume){
-    smi_append_consume(&ctx->arena, &transition->activation_actions);
+    smi_append_action(&ctx->arena, &transition->activation_actions, ActionKind_Consume);
   }
 
   if (emit != 0){
@@ -1196,38 +710,15 @@ sm_char_name(u8 c, char *str){
     table_erase(&helper_ctx.char_to_name, lookup);
   }
   String_Const_u8 string = push_string_copy(helper_ctx.arena, SCu8(str));
-  table_insert(&helper_ctx.char_to_name, c, make_data(string.str, string.size));
+  table_insert(&helper_ctx.char_to_name, c, string);
 }
 
-internal void
-sm_select_base_kind(Token_Base_Kind kind){
-  helper_ctx.selected_base_kind = kind;
-}
-
-internal void
-sm_select_state(State *state){
-  helper_ctx.selected_state = state;
-}
-
-internal void
-sm_select_op_set(Operator_Set *set){
-  helper_ctx.selected_op_set = set;
-}
-
-internal void
-sm_select_key_set(Keyword_Set *set){
-  helper_ctx.selected_key_set = set;
-}
-
-internal void
-sm_select_emit(Emit_Rule *emit){
-  helper_ctx.selected_emit_rule = emit;
-}
-
-internal void
-sm_select_transition(Transition *transition){
-  helper_ctx.selected_transition = transition;
-}
+internal void sm_select_base_kind  (Token_Base_Kind kind)  { helper_ctx.selected_base_kind = kind; }
+internal void sm_select_state      (State *state)          { helper_ctx.selected_state = state; }
+internal void sm_select_op_set     (Operator_Set *set)     { helper_ctx.selected_op_set = set; }
+internal void sm_select_key_set    (Keyword_Set *set)      { helper_ctx.selected_key_set = set; }
+internal void sm_select_emit       (Emit_Rule *emit)       { helper_ctx.selected_emit_rule = emit; }
+internal void sm_select_transition (Transition *transition){ helper_ctx.selected_transition = transition; }
 
 internal b32
 sm_direct_token_kind(char *str){
@@ -1246,13 +737,13 @@ internal b32
 sm_op(String_Const_u8 lexeme, String_Const_u8 name){
   b32 result = false;
   Operator_Set *set = helper_ctx.selected_op_set;
-  Table_Lookup lookup = table_lookup(&set->lexeme_to_ptr, make_data(lexeme.str, lexeme.size));
+  Table_Lookup lookup = table_lookup(&set->lexeme_to_ptr, lexeme);
   if (!lookup.found_match){
     if (smi_try_add_token(&helper_ctx.primary_ctx, name, helper_ctx.selected_base_kind)){
       Operator *op = push_array_zero(helper_ctx.arena, Operator, 1);
       op->name = push_string_copy(helper_ctx.arena, name);
       op->op = push_string_copy(helper_ctx.arena, lexeme);
-      table_insert(&set->lexeme_to_ptr, make_data(op->op.str, op->op.size), (u64)PtrAsInt(op));
+      table_insert(&set->lexeme_to_ptr, op->op, (u64)PtrAsInt(op));
       sll_queue_push(set->first, set->last, op);
       set->count += 1;
       result = true;
@@ -1313,7 +804,7 @@ sm_key(char *str, char *lexeme){
 internal b32
 sm_key(char *str){
   String_Const_u8 name = SCu8(str);
-  String_Const_u8 lexeme = push_string_copy(helper_ctx.arena,  name);
+  String_Const_u8 lexeme = push_string_copy(helper_ctx.arena, name);
   lexeme = string_mod_lower(lexeme);
   return(sm_key(name, lexeme));
 }
@@ -1328,14 +819,18 @@ sm_key_fallback(char *str){
   return(sm_key_fallback(SCu8(str)));
 }
 
+#define __SRC__  __FILE__ "(" stringify(__LINE__) ")"
+#define sm_add_state(n) sm_add_state_(n, __SRC__)
+#define sm_emit_rule_direct(n) (helper_ctx.selected_source = __SRC__, sm_emit_rule_direct_(n))
+
 internal State*
-sm_add_state(String_Const_u8 pretty_name){
-  return(smi_add_state(&helper_ctx.primary_ctx, pretty_name));
+sm_add_state_(String_Const_u8 pretty_name, char *source){
+  return(smi_add_state(&helper_ctx.primary_ctx, pretty_name, source));
 }
 
 internal State*
-sm_add_state(char *pretty_name){
-  return(smi_add_state(&helper_ctx.primary_ctx, SCu8(pretty_name)));
+sm_add_state_(char *pretty_name, char *source){
+  return(smi_add_state(&helper_ctx.primary_ctx, SCu8(pretty_name), source));
 }
 
 internal State*
@@ -1353,7 +848,7 @@ sm_add_flag(Flag_Reset_Rule rule){
 }
 
 internal void
-sm_flag_bind(Flag *flag, Token_Base_Kind emit_flags){
+sm_flag_bind(Flag *flag, Token_Base_Flag emit_flags){
   flag->emit_flags = emit_flags;
 }
 
@@ -1371,8 +866,7 @@ sm_emit_rule(void){
 
 internal void
 sm_emit_handler_direct(Flag *flag_check, String_Const_u8 name){
-  Emit_Rule *rule = helper_ctx.selected_emit_rule;
-  smi_emit_handler(helper_ctx.arena, rule, name, flag_check);
+  smi_emit_handler(helper_ctx.arena, helper_ctx.selected_emit_rule, name, flag_check);
 }
 
 internal void
@@ -1387,8 +881,7 @@ sm_emit_handler_direct(Flag *flag_check, char *name){
 
 internal void
 sm_emit_handler_keys(Flag *flag_check, Keyword_Set *set){
-  Emit_Rule *rule = helper_ctx.selected_emit_rule;
-  smi_emit_handler(helper_ctx.arena, rule, set, flag_check);
+  smi_emit_handler(helper_ctx.arena, helper_ctx.selected_emit_rule, set, flag_check);
 }
 
 internal void
@@ -1398,13 +891,25 @@ sm_emit_handler_keys(Keyword_Set *set){
 
 internal void
 sm_emit_handler_keys_delim(Flag *flag_check, Keyword_Set *set){
-  Emit_Rule *rule = helper_ctx.selected_emit_rule;
-  smi_emit_handler_delim(helper_ctx.arena, rule, set, flag_check);
+  smi_emit_handler_delim(helper_ctx.arena, helper_ctx.selected_emit_rule, set, flag_check);
 }
 
 internal void
 sm_emit_handler_keys_delim(Keyword_Set *set){
   sm_emit_handler_keys_delim(0, set);
+}
+
+
+internal Emit_Rule*
+sm_emit_rule_direct_(char *name){
+  Emit_Rule* rule = sm_emit_rule();
+  sm_emit_handler_direct(name);
+
+  if (!table_lookup(&helper_ctx.primary_ctx.tokens.name_to_ptr, SCu8(name)).found_match){
+    printf("%s: error: direct token kind '%s' not declared\n", helper_ctx.selected_source, name);
+    helper_ctx.primary_ctx.has_error = true;
+  }
+  return(rule);
 }
 
 internal Transition*
@@ -1424,134 +929,102 @@ sm_case(Transition_Case_Kind kind, Flag *flag_check, b32 flag_check_value, State
   return(transition);
 }
 
-internal Transition*
-sm_case(char *str, State *dst){
+internal Transition* sm_case(char *str, State *dst){
   return(sm_case(SCu8(str), 0, 0, dst, Transition_Consume, 0));
 }
-internal Transition*
-sm_case(u8 *str, State *dst){
+internal Transition* sm_case(u8 *str, State *dst){
   return(sm_case(SCu8(str), 0, 0, dst, Transition_Consume, 0));
 }
-internal Transition*
-sm_case_peek(char *str, State *dst){
+internal Transition* sm_case_peek(char *str, State *dst){
   return(sm_case(SCu8(str), 0, 0, dst, Transition_NoConsume, 0));
 }
-internal Transition*
-sm_case_peek(u8 *str, State *dst){
+internal Transition* sm_case_peek(u8 *str, State *dst){
   return(sm_case(SCu8(str), 0, 0, dst, Transition_NoConsume, 0));
 }
-internal Transition*
-sm_case_flagged(Flag *flag_check, b32 flag_check_value, char *str, State *dst){
+internal Transition* sm_case_flagged(Flag *flag_check, b32 flag_check_value, char *str, State *dst){
   return(sm_case(SCu8(str), flag_check, flag_check_value, dst, Transition_Consume, 0));
 }
-internal Transition*
-sm_case_flagged(Flag *flag_check, b32 flag_check_value, u8 *str, State *dst){
+internal Transition* sm_case_flagged(Flag *flag_check, b32 flag_check_value, u8 *str, State *dst){
   return(sm_case(SCu8(str), flag_check, flag_check_value, dst, Transition_Consume, 0));
 }
-internal Transition*
-sm_case_peek_flagged(Flag *flag_check, b32 flag_check_value, char *str, State *dst){
+internal Transition* sm_case_peek_flagged(Flag *flag_check, b32 flag_check_value, char *str, State *dst){
   return(sm_case(SCu8(str), flag_check, flag_check_value, dst, Transition_NoConsume, 0));
 }
-internal Transition*
-sm_case_peek_flagged(Flag *flag_check, b32 flag_check_value, u8 *str, State *dst){
+internal Transition* sm_case_peek_flagged(Flag *flag_check, b32 flag_check_value, u8 *str, State *dst){
   return(sm_case(SCu8(str), flag_check, flag_check_value, dst, Transition_NoConsume, 0));
 }
-internal Transition*
-sm_case(char *str, Emit_Rule *emit){
+internal Transition* sm_case(char *str, Emit_Rule *emit){
   return(sm_case(SCu8(str), 0, 0, helper_ctx.primary_ctx.model.root, Transition_Consume, emit));
 }
-internal Transition*
-sm_case(u8 *str, Emit_Rule *emit){
+internal Transition* sm_case(u8 *str, Emit_Rule *emit){
   return(sm_case(SCu8(str), 0, 0, helper_ctx.primary_ctx.model.root, Transition_Consume, emit));
 }
-internal Transition*
-sm_case_peek(char *str, Emit_Rule *emit){
+internal Transition* sm_case_peek(char *str, Emit_Rule *emit){
   return(sm_case(SCu8(str), 0, 0, helper_ctx.primary_ctx.model.root, Transition_NoConsume, emit));
 }
-internal Transition*
-sm_case_peek(u8 *str, Emit_Rule *emit){
+internal Transition* sm_case_peek(u8 *str, Emit_Rule *emit){
   return(sm_case(SCu8(str), 0, 0, helper_ctx.primary_ctx.model.root, Transition_NoConsume, emit));
 }
-internal Transition*
-sm_case_flagged(Flag *flag_check, b32 flag_check_value, char *str, Emit_Rule *emit){
+internal Transition* sm_case_flagged(Flag *flag_check, b32 flag_check_value, char *str, Emit_Rule *emit){
   return(sm_case(SCu8(str), flag_check, flag_check_value, helper_ctx.primary_ctx.model.root, Transition_Consume, emit));
 }
-internal Transition*
-sm_case_flagged(Flag *flag_check, b32 flag_check_value, u8 *str, Emit_Rule *emit){
+internal Transition* sm_case_flagged(Flag *flag_check, b32 flag_check_value, u8 *str, Emit_Rule *emit){
   return(sm_case(SCu8(str), flag_check, flag_check_value, helper_ctx.primary_ctx.model.root, Transition_Consume, emit));
 }
-internal Transition*
-sm_case_peek_flagged(Flag *flag_check, b32 flag_check_value, char *str, Emit_Rule *emit){
+internal Transition* sm_case_peek_flagged(Flag *flag_check, b32 flag_check_value, char *str, Emit_Rule *emit){
   return(sm_case(SCu8(str), flag_check, flag_check_value, helper_ctx.primary_ctx.model.root, Transition_NoConsume, emit));
 }
-internal Transition*
-sm_case_peek_flagged(Flag *flag_check, b32 flag_check_value, u8 *str, Emit_Rule *emit){
+internal Transition* sm_case_peek_flagged(Flag *flag_check, b32 flag_check_value, u8 *str, Emit_Rule *emit){
   return(sm_case(SCu8(str), flag_check, flag_check_value, helper_ctx.primary_ctx.model.root, Transition_NoConsume, emit));
 }
 
-internal Transition*
-sm_case_eof(State *dst){
+internal Transition* sm_case_eof(State *dst){
   return(sm_case(TransitionCaseKind_EOF, 0, 0, dst, Transition_Consume, 0));
 }
-internal Transition*
-sm_case_eof_peek(State *dst){
+internal Transition* sm_case_eof_peek(State *dst){
   return(sm_case(TransitionCaseKind_EOF, 0, 0, dst, Transition_NoConsume, 0));
 }
-internal Transition*
-sm_case_eof_flagged(Flag *flag_check, b32 flag_check_value, State *dst){
+internal Transition* sm_case_eof_flagged(Flag *flag_check, b32 flag_check_value, State *dst){
   return(sm_case(TransitionCaseKind_EOF, flag_check, flag_check_value, dst, Transition_Consume, 0));
 }
-internal Transition*
-sm_case_eof_peek_flagged(Flag *flag_check, b32 flag_check_value, State *dst){
+internal Transition* sm_case_eof_peek_flagged(Flag *flag_check, b32 flag_check_value, State *dst){
   return(sm_case(TransitionCaseKind_EOF, flag_check, flag_check_value, dst, Transition_NoConsume, 0));
 }
-internal Transition*
-sm_case_eof(Emit_Rule *emit){
+internal Transition* sm_case_eof(Emit_Rule *emit){
   return(sm_case(TransitionCaseKind_EOF, 0, 0, helper_ctx.primary_ctx.model.root, Transition_Consume, emit));
 }
-internal Transition*
-sm_case_eof_peek(Emit_Rule *emit){
+internal Transition* sm_case_eof_peek(Emit_Rule *emit){
   return(sm_case(TransitionCaseKind_EOF, 0, 0, helper_ctx.primary_ctx.model.root, Transition_NoConsume, emit));
 }
-internal Transition*
-sm_case_eof_flagged(Flag *flag_check, b32 flag_check_value, Emit_Rule *emit){
+internal Transition* sm_case_eof_flagged(Flag *flag_check, b32 flag_check_value, Emit_Rule *emit){
   return(sm_case(TransitionCaseKind_EOF, flag_check, flag_check_value, helper_ctx.primary_ctx.model.root, Transition_Consume, emit));
 }
-internal Transition*
-sm_case_eof_peek_flagged(Flag *flag_check, b32 flag_check_value, Emit_Rule *emit){
+internal Transition* sm_case_eof_peek_flagged(Flag *flag_check, b32 flag_check_value, Emit_Rule *emit){
   return(sm_case(TransitionCaseKind_EOF, flag_check, flag_check_value, helper_ctx.primary_ctx.model.root, Transition_NoConsume, emit));
 }
 
-internal Transition*
-sm_fallback(State *dst){
+internal Transition* sm_fallback(State *dst){
   return(sm_case(TransitionCaseKind_Fallback, 0, 0, dst, Transition_Consume, 0));
 }
-internal Transition*
-sm_fallback_peek(State *dst){
+internal Transition* sm_fallback_peek(State *dst){
   return(sm_case(TransitionCaseKind_Fallback, 0, 0, dst, Transition_NoConsume, 0));
 }
-internal Transition*
-sm_fallback_flagged(Flag *flag_check, b32 flag_check_value, State *dst){
+internal Transition* sm_fallback_flagged(Flag *flag_check, b32 flag_check_value, State *dst){
   return(sm_case(TransitionCaseKind_Fallback, flag_check, flag_check_value, dst, Transition_Consume, 0));
 }
-internal Transition*
-sm_fallback_peek_flagged(Flag *flag_check, b32 flag_check_value, State *dst){
+internal Transition* sm_fallback_peek_flagged(Flag *flag_check, b32 flag_check_value, State *dst){
   return(sm_case(TransitionCaseKind_Fallback, flag_check, flag_check_value, dst, Transition_NoConsume, 0));
 }
-internal Transition*
-sm_fallback(Emit_Rule *emit){
+internal Transition* sm_fallback(Emit_Rule *emit){
   return(sm_case(TransitionCaseKind_Fallback, 0, 0, helper_ctx.primary_ctx.model.root, Transition_Consume, emit));
 }
-internal Transition*
-sm_fallback_peek(Emit_Rule *emit){
+internal Transition* sm_fallback_peek(Emit_Rule *emit){
   return(sm_case(TransitionCaseKind_Fallback, 0, 0, helper_ctx.primary_ctx.model.root, Transition_NoConsume, emit));
 }
-internal Transition*
-sm_fallback_flagged(Flag *flag_check, b32 flag_check_value, Emit_Rule *emit){
+internal Transition* sm_fallback_flagged(Flag *flag_check, b32 flag_check_value, Emit_Rule *emit){
   return(sm_case(TransitionCaseKind_Fallback, flag_check, flag_check_value, helper_ctx.primary_ctx.model.root, Transition_Consume, emit));
 }
-internal Transition*
-sm_fallback_peek_flagged(Flag *flag_check, b32 flag_check_value, Emit_Rule *emit){
+internal Transition* sm_fallback_peek_flagged(Flag *flag_check, b32 flag_check_value, Emit_Rule *emit){
   return(sm_case(TransitionCaseKind_Fallback, flag_check, flag_check_value, helper_ctx.primary_ctx.model.root, Transition_NoConsume, emit));
 }
 
@@ -1563,8 +1036,7 @@ sm_match_delim(State *dst, State *fail_dst){
 
 internal void
 sm_on_transition_set_flag(Flag *flag, b32 value){
-  Transition *transition = helper_ctx.selected_transition;
-  smi_append_set_flag(helper_ctx.arena, &transition->activation_actions, flag, value);
+  smi_append_set_flag(helper_ctx.arena, &helper_ctx.selected_transition->activation_actions, flag, value);
 }
 
 internal void
@@ -1585,20 +1057,17 @@ sm_emit_check_set_flag(char *emit_check, Flag *flag, b32 value){
 
 internal void
 sm_set_flag(Flag *flag, b32 value){
-  State *state = helper_ctx.selected_state;
-  smi_append_set_flag(helper_ctx.arena, &state->on_entry_actions, flag, value);
+  smi_append_set_flag(helper_ctx.arena, &helper_ctx.selected_state->on_entry_actions, flag, value);
 }
 
 internal void
 sm_delim_mark_first(void){
-  State *state = helper_ctx.selected_state;
-  smi_append_delim_mark_first(helper_ctx.arena, &state->on_entry_actions);
+  smi_append_action(helper_ctx.arena, &helper_ctx.selected_state->on_entry_actions, ActionKind_DelimMarkFirst);
 }
 
 internal void
 sm_delim_mark_one_past_last(void){
-  State *state = helper_ctx.selected_state;
-  smi_append_delim_mark_one_past_last(helper_ctx.arena, &state->on_entry_actions);
+  smi_append_action(helper_ctx.arena, &helper_ctx.selected_state->on_entry_actions, ActionKind_DelimMarkOnePastLast);
 }
 
 ////////////////////////////////
@@ -1609,15 +1078,13 @@ internal Operator_Set*
 smo_copy_op_set(Operator_Set *set){
   Operator_Set *new_set = push_array_zero(helper_ctx.arena, Operator_Set, 1);
   new_set->lexeme_to_ptr = make_table_Data_u64(helper_ctx.primary_ctx.allocator, set->count*2);
-  for (Operator *node = set->first;
-       node != 0;
-       node = node->next){
+  for_ll(node, set->first){
     Operator *new_node = push_array_zero(helper_ctx.arena, Operator, 1);
     sll_queue_push(new_set->first, new_set->last, new_node);
     new_set->count += 1;
     new_node->name = node->name;
     new_node->op = node->op;
-    table_insert(&new_set->lexeme_to_ptr, make_data(new_node->op.str, new_node->op.size), (u64)PtrAsInt(new_node));
+    table_insert(&new_set->lexeme_to_ptr, new_node->op, (u64)PtrAsInt(new_node));
   }
   return(new_set);
 }
@@ -1633,7 +1100,7 @@ smo_remove_ops_with_prefix(Operator_Set *set, String_Const_u8 prefix){
        node = next){
     next = node->next;
     if (string_match(prefix, string_prefix(node->op, prefix.size))){
-      table_erase(&set->lexeme_to_ptr, make_data(node->op.str, node->op.size));
+      table_erase(&set->lexeme_to_ptr, node->op);
     }
     else{
       sll_queue_push(first, last, node);
@@ -1662,7 +1129,7 @@ smo_remove_ops_without_prefix(Operator_Set *set, String_Const_u8 prefix){
        node = next){
     next = node->next;
     if (!string_match(prefix, string_prefix(node->op, prefix.size))){
-      table_erase(&set->lexeme_to_ptr, make_data(node->op.str, node->op.size));
+      table_erase(&set->lexeme_to_ptr, node->op);
     }
     else{
       sll_queue_push(first, last, node);
@@ -1691,7 +1158,7 @@ smo_ops_string_skip(Operator_Set *set, u64 size){
     next = node->next;
     if (node->op.size > size){
       String_Const_u8 new_op = string_skip(node->op, size);
-      if (table_insert(&new_set.lexeme_to_ptr, make_data(new_op.str, new_op.size), (u64)PtrAsInt(node))){
+      if (table_insert(&new_set.lexeme_to_ptr, new_op, (u64)PtrAsInt(node))){
         node->op = new_op;
         sll_queue_push(new_set.first, new_set.last, node);
         new_set.count += 1;
@@ -1712,9 +1179,7 @@ smo_new_char_set(void){
 
 internal void
 smo_char_set_union_ops_firsts(Character_Set *chars, Operator_Set *ops){
-  for (Operator *node = ops->first;
-       node != 0;
-       node = node->next){
+  for_ll(node, ops->first){
     String_Const_u8 lexeme = node->op;
     u64 c = lexeme.str[0];
     table_insert(&chars->table, c, c);
@@ -1752,13 +1217,11 @@ smo_op_set_lexer_root(Operator_Set *set, State *machine_root, String_Const_u8 fa
 
   State *root = sm_add_state("op root");
 
-  for (Operator *node = set->first;
-       node != 0;
-       node = node->next){
+  for_ll(node, set->first){
     String_Const_u8 lexeme = node->op;
     for (u64 i = 1; i < lexeme.size; i += 1){
       String_Const_u8 prefix = string_prefix(lexeme, i);
-      Table_Lookup lookup = table_lookup(&string_to_state, make_data(prefix.str, prefix.size));
+      Table_Lookup lookup = table_lookup(&string_to_state, prefix);
       if (!lookup.found_match){
         State *state = sm_add_state("op stage");
         State *parent = 0;
@@ -1781,9 +1244,7 @@ smo_op_set_lexer_root(Operator_Set *set, State *machine_root, String_Const_u8 fa
     }
   }
 
-  for (Operator *node = set->first;
-       node != 0;
-       node = node->next){
+  for_ll(node, set->first){
     String_Const_u8 lexeme = node->op;
     Table_Lookup lookup = table_lookup(&string_to_state, make_data(lexeme.str, lexeme.size));
     if (!lookup.found_match){
@@ -1807,15 +1268,9 @@ smo_op_set_lexer_root(Operator_Set *set, State *machine_root, String_Const_u8 fa
     }
   }
 
-  for (Operator *node = set->first;
-       node != 0;
-       node = node->next){
-    String_Const_u8 lexeme = node->op;
-    Table_Lookup lookup = table_lookup(&string_to_state, make_data(lexeme.str, lexeme.size));
-    if (lookup.found_match){
-      u64 val = 0;
-      table_read(&string_to_state, lookup, &val);
-      State *state = (State*)IntAsPtr(val);
+  for_ll(node, set->first){
+    State *state;
+    if (table_read(&string_to_state, node->op, (u64*)&state)){
       String_Const_u8 string = {};
       Emit_Rule *emit = smi_emit_rule(helper_ctx.arena);
       smi_emit_handler(helper_ctx.arena, emit, node->name, 0);
@@ -1829,17 +1284,12 @@ smo_op_set_lexer_root(Operator_Set *set, State *machine_root, String_Const_u8 fa
     smi_emit_handler(helper_ctx.arena, emit, fallback_token_name, 0);
     smi_case(&helper_ctx.primary_ctx, root, TransitionCaseKind_Fallback, zero_string, 0, 0, machine_root, Transition_NoConsume, emit);
   }
-  for (Operator *node = set->first;
-       node != 0;
-       node = node->next){
+  for_ll(node, set->first){
     String_Const_u8 lexeme = node->op;
     for (u64 i = 1; i < lexeme.size; i += 1){
       String_Const_u8 prefix = string_prefix(lexeme, i);
-      Table_Lookup lookup = table_lookup(&string_to_state, make_data(prefix.str, prefix.size));
-      Assert(lookup.found_match);
-      u64 val = 0;
-      table_read(&string_to_state, lookup, &val);
-      State *state = (State*)IntAsPtr(val);
+      State *state;
+      Assert(table_read(&string_to_state, prefix, (u64*)&state));
       String_Const_u8 string = {};
       Emit_Rule *emit = smi_emit_rule(helper_ctx.arena);
       smi_emit_handler(helper_ctx.arena, emit, fallback_token_name, 0);
@@ -1942,9 +1392,7 @@ string_char_subtract(String_Const_u8 a, String_Const_u8 b){
 internal Action_List
 opt_copy_action_list(Arena *arena, Action_List actions){
   Action_List result = {};
-  for (Action *node = actions.first;
-       node != 0;
-       node = node->next){
+  for_ll(node, actions.first){
     Action *new_node = push_array_write(arena, Action, 1, node);
     zdll_push_back(result.first, result.last, new_node);
     result.count += 1;
@@ -1970,16 +1418,10 @@ opt_copy_condition(Arena *arena, Transition_Case condition, Table_u64_u64 old_to
   Transition_Case result = condition;
   if (result.kind == TransitionCaseKind_ConditionSet){
     result.condition_set = smi_condition_set_copy(arena, condition.condition_set);
-    for (Condition_Node *node = result.condition_set.first;
-         node != 0;
-         node = node->next){
+    for_ll(node, result.condition_set.first){
       Field_Set fields = node->fields;
-      for (Field_Pin_List *pin_list = fields.first;
-           pin_list != 0;
-           pin_list = pin_list->next){
-        for (Field_Pin *pin = pin_list->first;
-             pin != 0;
-             pin = pin->next){
+      for_ll(pin_list, fields.first){
+        for_ll(pin, pin_list->first){
           pin->flag = opt_flag_fixup(pin->flag, old_to_new);
         }
       }
@@ -1992,9 +1434,7 @@ internal Emit_Rule*
 opt_copy_emit_rule(Arena *arena, Emit_Rule *emit, Table_u64_u64 old_to_new){
   Emit_Rule *new_emit = push_array_write(arena, Emit_Rule, 1, emit);
   block_zero_struct(&new_emit->emit_checks);
-  for (Emit_Check *emit_check = emit->emit_checks.first;
-       emit_check != 0;
-       emit_check = emit_check->next){
+  for_ll(emit_check, emit->emit_checks.first){
     Emit_Check *new_emit_check = push_array_write(arena, Emit_Check, 1, emit_check);
     sll_queue_push(new_emit->emit_checks.first, new_emit->emit_checks.last, new_emit_check);
     new_emit->emit_checks.count += 1;
@@ -2002,9 +1442,7 @@ opt_copy_emit_rule(Arena *arena, Emit_Rule *emit, Table_u64_u64 old_to_new){
   }
   new_emit->first = 0;
   new_emit->last = 0;
-  for (Emit_Handler *handler = emit->first;
-       handler != 0;
-       handler = handler->next){
+  for_ll(handler, emit->first){
     Emit_Handler *new_handler = push_array_write(arena, Emit_Handler, 1, handler);
     sll_queue_push(new_emit->first, new_emit->last, new_handler);
     new_handler->flag_check = opt_flag_fixup(handler->flag_check, old_to_new);
@@ -2020,9 +1458,7 @@ opt_copy_model(Arena *arena, Lexer_Model model){
   Table_u64_u64 old_to_new = make_table_u64_u64(arena->base_allocator, pointer_count*2);
   Table_u64_u64 new_to_old = make_table_u64_u64(arena->base_allocator, pointer_count*2);
 
-  for (Flag *flag = model.flags.first;
-       flag != 0;
-       flag = flag->next){
+  for_ll(flag, model.flags.first){
     Flag *new_flag = push_array_zero(arena, Flag, 1);
     sll_queue_push(result.flags.first, result.flags.last, new_flag);
     result.flags.count += 1;
@@ -2033,9 +1469,7 @@ opt_copy_model(Arena *arena, Lexer_Model model){
     table_insert(&new_to_old, (u64)PtrAsInt(new_flag), (u64)PtrAsInt(flag));
   }
 
-  for (State *state = model.states.first;
-       state != 0;
-       state = state->next){
+  for_ll(state, model.states.first){
     State *new_state = push_array_zero(arena, State, 1);
     sll_queue_push(result.states.first, result.states.last, new_state);
     result.states.count += 1;
@@ -2044,9 +1478,7 @@ opt_copy_model(Arena *arena, Lexer_Model model){
     new_state->pretty_name = push_string_copy(arena, state->pretty_name);
   }
 
-  for (State *new_state = result.states.first;
-       new_state != 0;
-       new_state = new_state->next){
+  for_ll(new_state, result.states.first){
     Table_Lookup lookup = table_lookup(&new_to_old, (u64)PtrAsInt(new_state));
     Assert(lookup.found_match);
     State *state = 0;
@@ -2054,18 +1486,14 @@ opt_copy_model(Arena *arena, Lexer_Model model){
     table_read(&new_to_old, lookup, &val);
     state = (State*)(IntAsPtr(val));
 
-    for (Transition *trans = state->transitions.first;
-         trans != 0;
-         trans = trans->next){
+    for_ll(trans, state->transitions.first){
       Transition *new_trans = push_array_zero(arena, Transition, 1);
       zdll_push_back(new_state->transitions.first, new_state->transitions.last, new_trans);
       new_state->transitions.count += 1;
       new_trans->parent_state = new_state;
       new_trans->condition = opt_copy_condition(arena, trans->condition, old_to_new);
       new_trans->activation_actions = opt_copy_action_list(arena, trans->activation_actions);
-      for (Action *action = new_trans->activation_actions.first;
-           action != 0;
-           action = action->next){
+      for_ll(action, new_trans->activation_actions.first){
         switch (action->kind){
           case ActionKind_SetFlag:
           {
@@ -2107,67 +1535,43 @@ opt_copy_model(Arena *arena, Lexer_Model model){
 
 internal void
 opt_simplify_transitions(Lexer_Primary_Context *ctx){
-  for (State *state = ctx->model.states.first;
-       state != 0;
-       state = state->next){
-    Transition_List *transitions = &state->transitions;
-
-    b32 is_delim_match = false;
-    if (transitions->first->condition.kind == TransitionCaseKind_DelimMatch){
-      is_delim_match = true;
+  for_ll(state, ctx->model.states.first){
+    if (state->transitions.first->condition.kind == TransitionCaseKind_DelimMatch){
+      continue;  // skip delim matches, they can't be simplified away
     }
 
-    if (!is_delim_match){
-      Transition *first = 0;
-      Transition *last = 0;
-      i32 count = 0;
-
-      for (Transition *trans = transitions->first, *next = 0;
-           trans != 0;
-           trans = next){
-        next = trans->next;
-        Transition_Case condition = trans->condition;
-        Assert(condition.kind == TransitionCaseKind_ConditionSet);
-        Condition_Set condition_set = condition.condition_set;
-        for (Transition *prev_trans = first;
-             prev_trans != 0;
-             prev_trans = prev_trans->next){
-          Transition_Case prev_condition = prev_trans->condition;
-          condition_set = smi_condition_set_subtract(&ctx->arena,
-                                                     condition_set,
-                                                     prev_condition.condition_set);
-          if (condition_set.count == 0){
-            break;
-          }
-        }
-        if (condition_set.count != 0){
-          trans->condition.condition_set = condition_set;
-          zdll_push_back(first, last, trans);
-          count += 1;
+    Transition_List list = {};
+    for (Transition *ta = state->transitions.first, *next = 0; ta; ta = next){
+      next = ta->next;
+      Assert(ta->condition.kind == TransitionCaseKind_ConditionSet);
+      Condition_Set c = ta->condition.condition_set;
+      for_ll(tb, list.first){
+        c = smi_condition_set_subtract(&ctx->arena, c, tb->condition.condition_set);
+        if (c.count == 0){
+          break;
         }
       }
 
-      transitions->first = first;
-      transitions->last = last;
-      transitions->count = count;
+      if (c.count != 0){
+        ta->condition.condition_set = c;
+        zdll_push_back(list.first, list.last, ta);
+        list.count += 1;
+      }
     }
+    state->transitions = list;
   }
 }
 
 internal void
 opt_mark_all_states_excluded(Lexer_Primary_Context *ctx){
-  for (State *state = ctx->model.states.first;
-       state != 0;
-       state = state->next){
+  for_ll(state, ctx->model.states.first){
     state->optimized_in = false;
   }
 }
 
 internal void
 opt_mark_all_states_included(Lexer_Primary_Context *ctx){
-  for (State *state = ctx->model.states.first;
-       state != 0;
-       state = state->next){
+  for_ll(state, ctx->model.states.first){
     state->optimized_in = true;
   }
 }
@@ -2194,30 +1598,21 @@ opt_discard_all_excluded_states(Lexer_Primary_Context *ctx){
 
 internal void
 opt_include_reachable_states(State *state){
-  if (!state->optimized_in){
-    state->optimized_in = true;
-    for (Transition *trans = state->transitions.first;
-         trans != 0;
-         trans = trans->next){
-      opt_include_reachable_states(trans->dst_state);
-    }
+  if (state->optimized_in){ return; }
+  state->optimized_in = true;
+  for_ll(trans, state->transitions.first){
+    opt_include_reachable_states(trans->dst_state);
   }
 }
 
 internal void
 opt_update_state_back_references(Lexer_Primary_Context *ctx){
-  for (State *state = ctx->model.states.first;
-       state != 0;
-       state = state->next){
+  for_ll(state, ctx->model.states.first){
     block_zero_struct(&state->back_references);
   }
 
-  for (State *state = ctx->model.states.first;
-       state != 0;
-       state = state->next){
-    for (Transition *trans = state->transitions.first;
-         trans != 0;
-         trans = trans->next){
+  for_ll(state, ctx->model.states.first){
+    for_ll(trans, state->transitions.first){
       State *dst = trans->dst_state;
       Transition_Ptr_Node *new_ptr_node = push_array_zero(&ctx->arena, Transition_Ptr_Node, 1);
       new_ptr_node->ptr = trans;
@@ -2231,22 +1626,17 @@ opt_update_state_back_references(Lexer_Primary_Context *ctx){
 
 internal void
 opt_set_auto_zero_flags_on_root(Lexer_Primary_Context *ctx){
-  State *root = ctx->model.root;
-  smi_append_zero_flags(&ctx->arena, &root->on_entry_actions);
+  smi_append_action(&ctx->arena, &ctx->model.root->on_entry_actions, ActionKind_ZeroFlags);
 }
 
 internal void
 opt_transfer_state_actions_to_transitions(Lexer_Primary_Context *ctx){
   opt_update_state_back_references(ctx);
 
-  for (State *state = ctx->model.states.first;
-       state != 0;
-       state = state->next){
+  for_ll(state, ctx->model.states.first){
     Action_List actions = state->on_entry_actions;
     if (actions.count > 0){
-      for (Transition_Ptr_Node *node = state->back_references.first;
-           node != 0;
-           node = node->next){
+      for_ll(node, state->back_references.first){
         Transition *trans = node->ptr;
         Action_List actions_copy = opt_copy_action_list(&ctx->arena, actions);
         if (trans->activation_actions.first == 0){
@@ -2267,9 +1657,7 @@ opt_transfer_state_actions_to_transitions(Lexer_Primary_Context *ctx){
 internal void
 opt_flags_set_numbers(Lexer_Model model){
   i32 number = 0;
-  for (Flag *flag = model.flags.first;
-       flag != 0;
-       flag = flag->next){
+  for_ll(flag, model.flags.first){
     flag->number = number;
     number += 1;
   }
@@ -2278,9 +1666,7 @@ opt_flags_set_numbers(Lexer_Model model){
 internal void
 opt_states_set_numbers(Lexer_Model model){
   i32 number = 1;
-  for (State *state = model.states.first;
-       state != 0;
-       state = state->next){
+  for_ll(state, model.states.first){
     state->number = number;
     number += 1;
   }
@@ -2323,25 +1709,17 @@ opt_transition_push_actions_forward(Lexer_Primary_Context *ctx, Transition *a, T
 
 internal b32
 opt_action_list_contains_consume(Action_List list){
-  b32 result = false;
-  for (Action *act = list.first;
-       act != 0;
-       act = act->next){
-    if (act->kind == ActionKind_Consume){
-      result = true;
-      break;
-    }
+  for_ll(act, list.first){
+    if (act->kind == ActionKind_Consume){ return true; }
   }
-  return(result);
+  return false;
 }
 
 internal void
 opt_skip_past_thunk_states(Lexer_Primary_Context *ctx){
   opt_mark_all_states_included(ctx);
 
-  for (State *state = ctx->model.states.first;
-       state != 0;
-       state = state->next){
+  for_ll(state, ctx->model.states.first){
     // TODO(allen): A more complete thunk state test would check if all transitions
     // have the same effect.  If they do, then it is a thunk state.  Only having
     // one transition is just a special case of this more general rule.
@@ -2362,14 +1740,10 @@ opt_skip_past_thunk_states(Lexer_Primary_Context *ctx){
     }
   }
 
-  for (State *state = ctx->model.states.first;
-       state != 0;
-       state = state->next){
+  for_ll(state, ctx->model.states.first){
     if (state->optimized_in){
       Transition_List *transitions = &state->transitions;
-      for (Transition *trans = transitions->first;
-           trans != 0;
-           trans = trans->next){
+      for_ll(trans, transitions->first){
         for (;!trans->dst_state->optimized_in;){
           Transition *dst_trans = trans->dst_state->transitions.first;
           opt_transition_pull_actions_backward(ctx, trans, dst_trans);
@@ -2381,139 +1755,67 @@ opt_skip_past_thunk_states(Lexer_Primary_Context *ctx){
 
 internal b32
 opt_emit_rule_match(Emit_Rule *rule_a, Emit_Rule *rule_b){
-  b32 result = true;
-  if (rule_a->emit_checks.count != rule_b->emit_checks.count){
-    result = false;
-    goto end;
-  }
-  for (Emit_Check *check_a = rule_a->emit_checks.first, *check_b = rule_b->emit_checks.first;
-       check_a != 0 && check_b != 0;
-       check_a = check_a->next, check_b = check_b->next){
-    if (check_a->flag != check_b->flag ||
-        !string_match(check_a->emit_check, check_b->emit_check) ||
-        check_a->value != check_b->value){
-      result = false;
-      goto end;
-    }
+  if (rule_a->emit_checks.count != rule_b->emit_checks.count){ return false; }
+  if (rule_a->count != rule_b->count){ return false; }
+
+  for (Emit_Check *a = rule_a->emit_checks.first, *b = rule_b->emit_checks.first; a && b; a = a->next, b = b->next){
+    if (a->flag != b->flag) { return false; }
+    if (!string_match(a->emit_check, b->emit_check)){ return false; }
+    if (a->value != b->value){ return false; }
   }
 
-  if (rule_a->count != rule_b->count){
-    result = false;
-    goto end;
+  for (Emit_Handler *a=rule_a->first, *b=rule_b->first; a && b; a = a->next, b = b->next){
+    if (a->kind != b->kind){ return false; }
+    if (a->flag_check != b->flag_check){ return false; }
+    if (a->kind == EmitHandlerKind_Direct && !string_match(a->token_name, b->token_name)){ return false; }
+    if (a->kind == EmitHandlerKind_Keywords      && a->keywords != b->keywords){ return false; }
+    if (a->kind == EmitHandlerKind_KeywordsDelim && a->keywords != b->keywords){ return false; }
   }
 
-  for (Emit_Handler *handler_a = rule_a->first, *handler_b = rule_b->first;
-       handler_a != 0 && handler_b != 0;
-       handler_a = handler_a->next, handler_b = handler_b->next){
-    if (handler_a->kind != handler_b->kind ||
-        handler_a->flag_check != handler_b->flag_check){
-      result = false;
-      goto end;
-    }
-    switch (handler_a->kind){
-      case EmitHandlerKind_Direct:
-      {
-        if (!string_match(handler_a->token_name, handler_b->token_name)){
-          result = false;
-          goto end;
-        }
-      }break;
-      case EmitHandlerKind_Keywords:
-      case EmitHandlerKind_KeywordsDelim:
-      {
-        if (handler_a->keywords != handler_b->keywords){
-          result = false;
-          goto end;
-        }
-      }break;
-    }
-  }
-
-  end:;
-  return(result);
+  return true;
 }
 
 internal b32
 opt_action_lists_match(Action_List a, Action_List b){
-  b32 result = false;
-  if (a.count == b.count){
-    result = true;
-    for (Action *node_a = a.first, *node_b = b.first;
-         node_a != 0 && node_b != 0;
-         node_a = node_a->next, node_b = node_b->next){
-      if (node_a->kind != node_b->kind){
-        result = false;
-        goto double_break;
-      }
-
-      switch (node_a->kind){
-        case ActionKind_SetFlag:
-        {
-          if (node_a->set_flag.flag != node_b->set_flag.flag ||
-              node_a->set_flag.value != node_b->set_flag.value){
-            result = false;
-            goto double_break;
-          }
-        }break;
-
-        case ActionKind_Emit:
-        {
-          if (!opt_emit_rule_match(node_a->emit_rule, node_b->emit_rule)){
-            result = false;
-            goto double_break;
-          }
-        }break;
-      }
+  if (a.count != b.count){ return false; }
+  for (Action *node_a = a.first, *node_b = b.first;
+       node_a != 0 && node_b != 0;
+       node_a = node_a->next, node_b = node_b->next){
+    if (node_a->kind != node_b->kind){ return false; }
+    if (node_a->kind == ActionKind_SetFlag){
+      if (node_a->set_flag.flag != node_b->set_flag.flag){ return false; }
+      if (node_a->set_flag.value != node_b->set_flag.value){ return false; }
+    }
+    if (node_a->kind == ActionKind_Emit){
+      if (!opt_emit_rule_match(node_a->emit_rule, node_b->emit_rule)){ return false; }
     }
   }
-  double_break:;
-  return(result);
+  return true;
 }
 
 internal void
 opt_merge_redundant_transitions_in_each_state(Lexer_Primary_Context *ctx){
-  for (State *state = ctx->model.states.first;
-       state != 0;
-       state = state->next){
-    Transition_List *transitions = &state->transitions;
+  for_ll(state, ctx->model.states.first){
+    Transition_List list = {};
+    for (Transition *a = state->transitions.first, *next=0; a; a=next){
+      next = a->next;
 
-    Transition *first = 0;
-    Transition *last = 0;
-    i32 count = 0;
-
-    for (Transition *trans = transitions->first, *next = 0;
-         trans != 0;
-         trans = next){
-      next = trans->next;
-
-      Transition *merge_trans = 0;
-      for (Transition *comp_trans = trans->next;
-           comp_trans != 0;
-           comp_trans = comp_trans->next){
-        if (opt_action_lists_match(trans->activation_actions, comp_trans->activation_actions) &&
-            trans->dst_state == comp_trans->dst_state){
-          merge_trans = comp_trans;
+      b32 did_merge = false;
+      for_ll(b, a->next){
+        if (a->dst_state == b->dst_state && opt_action_lists_match(a->activation_actions, b->activation_actions)){
+          Assert(a->condition.kind == TransitionCaseKind_ConditionSet);
+          Assert(b->condition.kind == TransitionCaseKind_ConditionSet);
+          b->condition.condition_set = smi_condition_set_union(&ctx->arena, a->condition.condition_set, b->condition.condition_set);
           break;
         }
       }
 
-      if (merge_trans != 0){
-        Assert(trans->condition.kind == TransitionCaseKind_ConditionSet);
-        Assert(merge_trans->condition.kind == TransitionCaseKind_ConditionSet);
-        merge_trans->condition.condition_set =
-          smi_condition_set_union(&ctx->arena,
-                                  trans->condition.condition_set,
-                                  merge_trans->condition.condition_set);
-      }
-      else{
-        zdll_push_back(first, last, trans);
-        count += 1;
+      if (!did_merge){
+        zdll_push_back(list.first, list.last, a);
+        list.count += 1;
       }
     }
-
-    transitions->first = first;
-    transitions->last = last;
-    transitions->count = count;
+    state->transitions = list;
   }
 }
 
@@ -2528,17 +1830,13 @@ opt_condition_set_is_subset(Arena *scratch, Condition_Set sub, Condition_Set sup
 
 internal void
 opt_remove_peeks_without_creating_transition_splits(Lexer_Primary_Context *ctx){
-  for (State *state = ctx->model.states.first;
-       state != 0;
-       state = state->next){
+  for_ll(state, ctx->model.states.first){
     Transition_List *transitions = &state->transitions;
     if (transitions->first->condition.kind != TransitionCaseKind_ConditionSet){
       continue;
     }
 
-    for (Transition *trans = transitions->first;
-         trans != 0;
-         trans = trans->next){
+    for_ll(trans, transitions->first){
       i32 step_counter = 0;
       for (;!opt_action_list_contains_consume(trans->activation_actions);
            step_counter += 1){
@@ -2553,9 +1851,7 @@ opt_remove_peeks_without_creating_transition_splits(Lexer_Primary_Context *ctx){
           break;
         }
 
-        for (Transition *dst_trans = dst_transitions->first;
-             dst_trans != 0;
-             dst_trans = dst_trans->next){
+        for_ll(dst_trans, dst_transitions->first){
           if (opt_condition_set_is_subset(&ctx->arena,
                                           trans->condition.condition_set,
                                           dst_trans->condition.condition_set)){
@@ -2577,9 +1873,7 @@ opt_remove_peeks_into_single_entry_point_states(Lexer_Primary_Context *ctx){
   opt_update_state_back_references(ctx);
   opt_mark_all_states_included(ctx);
 
-  for (State *state = ctx->model.states.first;
-       state != 0;
-       state = state->next){
+  for_ll(state, ctx->model.states.first){
     if (state->transitions.first->condition.kind != TransitionCaseKind_ConditionSet){
       continue;
     }
@@ -2632,20 +1926,13 @@ opt_remove_peeks_into_single_entry_point_states(Lexer_Primary_Context *ctx){
 
 internal b32
 opt_condition_is_eof_only(Transition_Case condition){
-  b32 result = false;
-  if (condition.kind == TransitionCaseKind_ConditionSet){
-    result = true;
-    for (Condition_Node *node = condition.condition_set.first;
-         node != 0;
-         node = node->next){
-      Input_Set inputs = node->inputs;
-      if (inputs.count > 1 || inputs.inputs[0] != smi_eof){
-        result = false;
-        break;
-      }
+  if (condition.kind != TransitionCaseKind_ConditionSet){ return false; }
+  for_ll(node, condition.condition_set.first){
+    if (node->inputs.count > 1 || node->inputs.inputs[0] != smi_eof){
+      return false;
     }
   }
-  return(result);
+  return true;
 }
 
 internal Keyword_Layout
@@ -2657,9 +1944,7 @@ opt_key_layout(Arena *arena, Keyword_Set keywords, i32 slot_count, u64 seed){
   layout.contributed_error = push_array_zero(arena, u64, slot_count);
   layout.slots = push_array_zero(arena, Keyword*, slot_count);
   layout.slot_count = slot_count;
-  for (Keyword *keyword = keywords.first;
-       keyword != 0;
-       keyword = keyword->next){
+  for_ll(keyword, keywords.first){
     u64 hash = lexeme_hash(seed, keyword->lexeme.str, keyword->lexeme.size);
     i32 first_index = (hash%slot_count);
     i32 index = first_index;
@@ -2824,27 +2109,17 @@ opt_key_layout(Arena *arena, Keyword_Set keywords){
 
 internal b32
 opt__input_set_contains(Input_Set set, u16 x){
-  b32 result = false;
   for (i32 i = 0; i < set.count; i += 1){
-    if (set.inputs[i] == x){
-      result = true;
-      break;
-    }
+    if (set.inputs[i] == x){ return true; }
   }
-  return(result);
+  return false;
 }
 
 internal b32
 opt__partial_transition_match(Arena *scratch, Partial_Transition *a, Partial_Transition *b){
-  b32 result = false;
-  if (smi_field_set_match(scratch, a->fields, b->fields)){
-    if (opt_action_lists_match(a->actions, b->actions)){
-      if (a->dst_state == b->dst_state){
-        result = true;
-      }
-    }
-  }
-  return(result);
+  return (a->dst_state == b->dst_state
+          && smi_field_set_match(scratch, a->fields, b->fields)
+          && opt_action_lists_match(a->actions, b->actions));
 }
 
 internal void
@@ -2855,9 +2130,7 @@ opt__push_partial_transition(Arena *arena, Partial_Transition_List *list, Field_
   partial.dst_state = trans->dst_state;
 
   b32 is_duplicate = false;
-  for (Partial_Transition *node = list->first;
-       node != 0;
-       node = node->next){
+  for_ll(node, list->first){
     if (opt__partial_transition_match(arena, node, &partial)){
       is_duplicate = true;
       break;
@@ -2873,27 +2146,19 @@ opt__push_partial_transition(Arena *arena, Partial_Transition_List *list, Field_
 
 internal b32
 opt__partial_transition_list_match(Arena *scratch, Partial_Transition_List *a, Partial_Transition_List *b){
-  b32 result = false;
-  if (a->count == b->count){
-    result = true;
-    for (Partial_Transition *node_a = a->first;
-         node_a != 0;
-         node_a = node_a->next){
-      b32 has_match = false;
-      for (Partial_Transition *node_b = b->first;
-           node_b != 0;
-           node_b = node_b->next){
-        if (opt__partial_transition_match(scratch, node_a, node_b)){
-          has_match = true;
-          break;
-        }
-      }
-      if (!has_match){
-        result = false;
+  if (a->count != b->count){ return false; }
+
+  for_ll(node_a, a->first){
+    b32 has_match = false;
+    for_ll(node_b, b->first){
+      if (opt__partial_transition_match(scratch, node_a, node_b)){
+        has_match = true;
+        break;
       }
     }
+    if (!has_match){ return false; }
   }
-  return(result);
+  return true;
 }
 
 internal void
@@ -2917,14 +2182,10 @@ opt_grouped_input_handlers(Arena *arena, Transition *first_trans){
   for (u16 i = 0; i <= 255; i += 1){
     Temp_Memory restore_point = begin_temp(arena);
     Partial_Transition_List list = {};
-    for (Transition *trans = first_trans;
-         trans != 0;
-         trans = trans->next){
+    for_ll(trans, first_trans){
       Assert(trans->condition.kind == TransitionCaseKind_ConditionSet);
       Condition_Set condition_set = trans->condition.condition_set;
-      for (Condition_Node *node = condition_set.first;
-           node != 0;
-           node = node->next){
+      for_ll(node, condition_set.first){
         if (opt__input_set_contains(node->inputs, i)){
           opt__push_partial_transition(arena, &list, node->fields, trans);
         }
@@ -2932,9 +2193,7 @@ opt_grouped_input_handlers(Arena *arena, Transition *first_trans){
     }
 
     Grouped_Input_Handler *matching_group = 0;
-    for (Grouped_Input_Handler *group = result.first;
-         group != 0;
-         group = group->next){
+    for_ll(group, result.first){
       if (opt__partial_transition_list_match(arena, &group->partial_transitions, &list)){
         matching_group = group;
         break;
@@ -2968,16 +2227,12 @@ internal void
 debug_print_states(Lexer_Primary_Context *ctx){
   printf("Number of States: %d\n", ctx->model.states.count);
   i32 transition_count = 0;
-  for (State *state = ctx->model.states.first;
-       state != 0;
-       state = state->next){
+  for_ll(state, ctx->model.states.first){
     Transition_List *transitions = &state->transitions;
     transition_count += transitions->count;
   }
   printf("Number of Transitions: %d\n", transition_count);
-  for (State *state = ctx->model.states.first;
-       state != 0;
-       state = state->next){
+  for_ll(state, ctx->model.states.first){
     printf("State: %.*s\n", string_expand(state->pretty_name));
   }
 }
@@ -2991,32 +2246,24 @@ debug_print_transitions(Arena *scratch, Lexer_Model model){
 
   printf("Number of States: %d\n", model.states.count);
   i32 transition_count = 0;
-  for (State *state = model.states.first;
-       state != 0;
-       state = state->next){
+  for_ll(state, model.states.first){
     Transition_List *transitions = &state->transitions;
     transition_count += transitions->count;
   }
   printf("Number of Transitions: %d\n", transition_count);
 
-  for (State *state = model.states.first;
-       state != 0;
-       state = state->next){
+  for_ll(state, model.states.first){
     printf("State: %.*s\n", string_expand(state->pretty_name));
 
     Transition_List *transitions = &state->transitions;
-    for (Transition *trans = transitions->first;
-         trans != 0;
-         trans = trans->next){
+    for_ll(trans, transitions->first){
 #define transition_on "Transition on "
       if (trans->condition.kind == TransitionCaseKind_DelimMatch){
         printf("\t" transition_on "<DelimMatch>\n");
       }
       else{
         printf("\t" transition_on "");
-        for (Condition_Node *node = trans->condition.condition_set.first;
-             node != 0;
-             node = node->next){
+        for_ll(node, trans->condition.condition_set.first){
           printf("([%3d]", node->inputs.count);
           if (node->inputs.count < 10){
             b32 all_printable = true;
@@ -3050,13 +2297,9 @@ debug_print_transitions(Arena *scratch, Lexer_Model model){
           printf(" x ");
 
           printf("(");
-          for (Field_Pin_List *pins = node->fields.first;
-               pins != 0;
-               pins = pins->next){
+          for_ll(pins, node->fields.first){
             block_fill_u8(field_memory, field_bit_width, '*');
-            for (Field_Pin *pin = pins->first;
-                 pin != 0;
-                 pin = pin->next){
+            for_ll(pin, pins->first){
               i32 flag_number = pin->flag->number;
               field_memory[flag_number] = pin->value?'1':'0';
             }
@@ -3074,9 +2317,7 @@ debug_print_transitions(Arena *scratch, Lexer_Model model){
         printf(":\n");
       }
 
-      for (Action *act = trans->activation_actions.first;
-           act != 0;
-           act = act->next){
+      for_ll(act, trans->activation_actions.first){
         switch (act->kind){
           case ActionKind_SetFlag:
           {
@@ -3149,28 +2390,20 @@ gen_token_full_name(Arena *arena, String_Const_u8 base_name){
 }
 
 internal void
-gen_tokens(Arena *scratch, Token_Kind_Set tokens, FILE *out){
-  Temp_Memory temp = begin_temp(scratch);
-  i32 counter = 0;
-  fprintf(out, "enum Token_" LANG_NAME_CAMEL_STR "_Kind{\n");
-  for (Token_Kind_Node *node = tokens.first;
-       node != 0;
-       node = node->next){
-    char *full_name = gen_token_full_name(scratch, node->name);
-    fprintf(out, "%s = %d,\n", full_name, counter);
-    counter += 1;
-  }
-  char *full_name = gen_token_full_name(scratch, SCu8("COUNT"));
-  fprintf(out, "%s = %d,\n", full_name, counter);
+gen_tokens(Token_Kind_Set tokens, FILE *out){
+  fprintf(out, "enum Token_" LANG_NAME_CAMEL_STR "_Kind : u16 {\n");
+  for_ll(n, tokens.first)
+    fprintf(out, "Token" LANG_NAME_CAMEL_STR "Kind_%.*s,\n", string_expand(n->name));
+  fprintf(out, "Token" LANG_NAME_CAMEL_STR "Kind_COUNT,\n");
   fprintf(out, "};\n\n");
   fprintf(out, "char *token_" LANG_NAME_LOWER_STR "_kind_names[] = {\n");
-  for (Token_Kind_Node *node = tokens.first;
-       node != 0;
-       node = node->next){
-    fprintf(out, "\"%.*s\",\n", string_expand(node->name));
-  }
-  fprintf(out, "};\n");
-  end_temp(temp);
+  for_ll(n, tokens.first)
+    fprintf(out, "\"%.*s\",\n", string_expand(n->name));
+  fprintf(out, "};\n\n");
+
+  fprintf(out, "function b32 qol_tok_accept(struct QOL_Parse_State *state, Token_" LANG_NAME_CAMEL_STR "_Kind kind);\n");
+  fprintf(out, "function b32 qol_tok_peek  (struct QOL_Parse_State *state, Token_" LANG_NAME_CAMEL_STR "_Kind kind);\n");
+  fprintf(out, "function b32 qol_tok_peek  (struct QOL_Parse_State *state, Token_" LANG_NAME_CAMEL_STR "_Kind kind, Token **out_tok);");
 }
 
 internal void
@@ -3182,24 +2415,16 @@ gen_keyword_table(Arena *scratch, Token_Kind_Set tokens, Keyword_Set keywords, F
   fprintf(out, "i32 " LANG_NAME_LOWER_STR "_%.*s_slot_count = %d;\n\n", string_expand(keywords.pretty_name), key_layout.slot_count);
   fprintf(out, "u64 " LANG_NAME_LOWER_STR "_%.*s_hash_array[%d] = {\n", string_expand(keywords.pretty_name), key_layout.slot_count);
   for (i32 i = 0; i < key_layout.slot_count; i += 1){
-    if (key_layout.slots[i] == 0){
-      fprintf(out, "0x%016x,", 0);
-    }
-    else{
-      fprintf(out, "0x%016llx,", (u64)((u64)(key_layout.hashes[i]) | 1));
-    }
-    if (i % 4 == 3 || i + 1 == key_layout.slot_count){
-      fprintf(out, "\n");
-    }
+    u64 hash = (key_layout.slots[i] == 0 ? 0 : u64(key_layout.hashes[i]) | 1ull);
+    char ws = (i % 8 == 7 || i + 1 == key_layout.slot_count ? '\n' : ' ');
+    fprintf(out, "0x%016llx,%c", hash, ws);
   }
   fprintf(out, "};\n\n");
 
-  fprintf(out, "String_Const_u8 " LANG_NAME_LOWER_STR "_%.*s_key_array[%d] = {",
-          string_expand(keywords.pretty_name), key_layout.slot_count);
+  fprintf(out, "String_Const_u8 " LANG_NAME_LOWER_STR "_%.*s_key_array[%d] = {", string_expand(keywords.pretty_name), key_layout.slot_count);
   for (i32 i = 0; i < key_layout.slot_count; i += 1){
     if (key_layout.slots[i] == 0){
-      if (i == 0){ fprintf(out, "\n"); }
-      fprintf(out, " {},");
+      fprintf(out, "%c{},", i == 0 ? '\n' : ' ');
     }
     else{
       fprintf(out, "\nstring_u8_litexpr(\"%.*s\"),", string_expand(key_layout.slots[i]->lexeme));
@@ -3207,27 +2432,17 @@ gen_keyword_table(Arena *scratch, Token_Kind_Set tokens, Keyword_Set keywords, F
   }
   fprintf(out, "\n};\n\n");
 
-  fprintf(out, "Lexeme_Table_Value " LANG_NAME_LOWER_STR "_%.*s_value_array[%d] = {",
-          string_expand(keywords.pretty_name), key_layout.slot_count);
+  fprintf(out, "Lexeme_Table_Value " LANG_NAME_LOWER_STR "_%.*s_value_array[%d] = {", string_expand(keywords.pretty_name), key_layout.slot_count);
   for (i32 i = 0; i < key_layout.slot_count; i += 1){
     if (key_layout.slots[i] == 0){
-      if (i == 0){ fprintf(out, "\n"); }
-      fprintf(out, " {},");
+      fprintf(out, "%c{},", i == 0 ? '\n' : ' ');
     }
     else{
-      Temp_Memory temp2 = begin_temp(scratch);
       Keyword *keyword = key_layout.slots[i];
-      String_Const_u8 name = keyword->name;
+      Token_Kind_Node *tok;
+      Assert(table_read(&tokens.name_to_ptr, keyword->name, (u64*)&tok));
 
-      char *full_token_name = gen_token_full_name(scratch, name);
-      Table_Lookup lookup = table_lookup(&tokens.name_to_ptr, make_data(name.str, name.size));
-      Assert(lookup.found_match);
-      u64 val = 0;
-      table_read(&tokens.name_to_ptr, lookup, &val);
-      Token_Kind_Node *token_node = (Token_Kind_Node*)IntAsPtr(val);
-
-      fprintf(out, "\n{%u, %s},", token_node->base_kind, full_token_name);
-      end_temp(temp2);
+      fprintf(out, "\n{TokenBaseKind_%s, Token" LANG_NAME_CAMEL_STR "Kind_%.*s},", token_base_kind_names[tok->base_kind], string_expand(keyword->name));
     }
   }
   fprintf(out, "\n};\n\n");
@@ -3243,14 +2458,16 @@ gen_flag_check__cont_flow(Flag *flag, b32 value, FILE *out){
   fprintf(out, "HasFlag(state.%.*s%d, 0x%x)", string_expand(flag->base_name), flag->index, flag->value);
 }
 
-internal bool field_set_is_true(Field_Set fields){ return fields.first == NULL || fields.first->count == 0; }
+internal bool field_set_is_true(Field_Set fields){
+  return fields.first == NULL || fields.first->count == 0;
+}
 
 internal void
 gen_SLOW_field_set_check__cont_flow(Field_Set fields, FILE *out){
-  for (Field_Pin_List *pin_list = fields.first; pin_list != 0; pin_list = pin_list->next){
+  for_ll(pin_list, fields.first){
     fprintf(out, "(");
     if (pin_list->count > 0){
-      for (Field_Pin *pin = pin_list->first; pin != 0; pin = pin->next){
+      for_ll(pin, pin_list->first){
         gen_flag_check__cont_flow(pin->flag, pin->value, out);
         if (pin->next != 0){
           fprintf(out, " && ");
@@ -3317,9 +2534,7 @@ gen_emit__fill_token_flags(Flag_Set flags, Flag_Bucket_Set bucket_set, FILE *out
       fprintf(out, "token.flags = state.flags_KB0;\n");
     }
   }
-  for (Flag *flag = flags.first;
-       flag != 0;
-       flag = flag->next){
+  for_ll(flag, flags.first){
     if (flag->emit_sub_flags != 0){
       fprintf(out, "if (");
       gen_flag_check__cont_flow(flag, true, out);
@@ -3332,10 +2547,8 @@ gen_emit__fill_token_flags(Flag_Set flags, Flag_Bucket_Set bucket_set, FILE *out
 
 internal void
 gen_emit__fill_token_base_kind(Token_Kind_Set tokens, String_Const_u8 name, FILE *out){
-  Table_Lookup lookup = table_lookup(&tokens.name_to_ptr, make_data(name.str, name.size));
-  Assert(lookup.found_match);
   Token_Kind_Node *node = 0;
-  table_read(&tokens.name_to_ptr, lookup, (u64*)&node);
+  Assert(table_read(&tokens.name_to_ptr, name, (u64*)&node));
   fprintf(out, "token.kind = TokenBaseKind_%s;\n", token_base_kind_names[node->base_kind]);
 }
 
@@ -3353,9 +2566,7 @@ gen_SLOW_action_list__cont_flow(Arena *scratch, Token_Kind_Set tokens, Flag_Set 
                                 Flag_Bucket_Set bucket_set, Action_List action_list,
                                 Action_Context context, FILE *out){
   Action_Context result_context = ActionContext_Normal;
-  for (Action *action = action_list.first;
-       action != 0;
-       action = action->next){
+  for_ll(action, action_list.first){
     switch (action->kind){
       case ActionKind_SetFlag:
       {
@@ -3425,7 +2636,7 @@ gen_SLOW_action_list__cont_flow(Arena *scratch, Token_Kind_Set tokens, Flag_Set 
             case EmitHandlerKind_Keywords:
             {
               Keyword_Set *keywords = handler->keywords;
-              fprintf(out, "Lexeme_Table_Lookup lookup = "
+              fprintf(out, "lookup = "
                       "lexeme_table_lookup("
                       LANG_NAME_LOWER_STR "_%.*s_hash_array, "
                       LANG_NAME_LOWER_STR "_%.*s_key_array, "
@@ -3454,7 +2665,7 @@ gen_SLOW_action_list__cont_flow(Arena *scratch, Token_Kind_Set tokens, Flag_Set 
             case EmitHandlerKind_KeywordsDelim:
             {
               Keyword_Set *keywords = handler->keywords;
-              fprintf(out, "Lexeme_Table_Lookup lookup = "
+              fprintf(out, "lookup = "
                       "lexeme_table_lookup("
                       LANG_NAME_LOWER_STR "_%.*s_hash_array, "
                       LANG_NAME_LOWER_STR "_%.*s_key_array, "
@@ -3489,9 +2700,7 @@ gen_SLOW_action_list__cont_flow(Arena *scratch, Token_Kind_Set tokens, Flag_Set 
 
         if (emit->emit_checks.count > 0){
           fprintf(out, "switch (token.sub_kind){\n");
-          for (Emit_Check *emit_check = emit->emit_checks.first;
-               emit_check != 0;
-               emit_check = emit_check->next){
+          for_ll(emit_check, emit->emit_checks.first){
             Temp_Memory temp = begin_temp(scratch);
             char *emit_check_full_name = gen_token_full_name(scratch, emit_check->emit_check);
             fprintf(out, "case %s:{\n", emit_check_full_name);
@@ -3540,12 +2749,10 @@ gen_flag_init__cont_flow(Flag_Bucket *bucket, FILE *out){
 internal void
 gen_bound_flag_fill_lookup__cont_flow(Flag_Bucket *bucket){
   i32 counter = 0;
-  for (Flag_Ptr_Node *node = bucket->first;
-       node != 0;
-       node = node->next, counter += 1){
+  for_ll(node, bucket->first){
     Flag *flag = node->flag;
     flag->base_name = bucket->pretty_name;
-    flag->number = counter;
+    flag->number = counter++;
     flag->index = 0;
     flag->value = flag->emit_flags;
   }
@@ -3555,14 +2762,13 @@ internal void
 gen_flag_fill_lookup__cont_flow(Flag_Bucket *bucket){
   i32 max_bits = bucket->max_bits;
   i32 counter = 0;
-  for (Flag_Ptr_Node *node = bucket->first;
-       node != 0;
-       node = node->next, counter += 1){
+  for_ll(node, bucket->first){
     Flag *flag = node->flag;
     flag->base_name = bucket->pretty_name;
     flag->number = counter;
     flag->index = counter/max_bits;
     flag->value = (1 << (counter % max_bits));
+    counter++;
   }
 }
 
@@ -3580,18 +2786,14 @@ gen_contiguous_control_flow_lexer(Arena *scratch, Token_Kind_Set tokens, Lexer_M
   Condition_Set cut_set = smi_condition(scratch, cut_inputs, cut_fields);
 
   // Split EOFs and insert at beginning
-  for (State *state = model.states.first;
-       state != 0;
-       state = state->next){
+  for_ll(state, model.states.first){
     Transition_List *transitions = &state->transitions;
     if (transitions->first->condition.kind == TransitionCaseKind_ConditionSet){
       Transition *first = 0;
       Transition *last = 0;
       i32 count = 0;
 
-      for (Transition *trans = transitions->first, *next = 0;
-           trans != 0;
-           trans = next){
+      for (Transition* trans = transitions->first, *next = 0; trans; trans = next){
         next = trans->next;
 
         Assert(trans->condition.kind == TransitionCaseKind_ConditionSet);
@@ -3636,9 +2838,7 @@ gen_contiguous_control_flow_lexer(Arena *scratch, Token_Kind_Set tokens, Lexer_M
   bucket_set.buckets[FlagBindProperty_Bound][FlagResetRule_KeepState].pretty_name = string_u8_litexpr("flags_KB");
   bucket_set.buckets[FlagBindProperty_Bound][FlagResetRule_KeepState].max_bits = 16;
 
-  for (Flag *flag = model.flags.first;
-       flag != 0;
-       flag = flag->next){
+  for_ll(flag, model.flags.first){
     Flag_Reset_Rule reset_rule = flag->reset_rule;
     Flag_Bind_Property bind_property =
       (flag->emit_flags != 0)?FlagBindProperty_Bound:FlagBindProperty_Free;
@@ -3696,11 +2896,10 @@ gen_contiguous_control_flow_lexer(Arena *scratch, Token_Kind_Set tokens, Lexer_M
   fprintf(out, "b32 result = false;\n");
   fprintf(out, "u64 emit_counter = 0;\n");
   fprintf(out, "Lex_State_" LANG_NAME_CAMEL_STR " state;\n");
-  fprintf(out, "block_copy_struct(&state, state_ptr);\n\n");
+  fprintf(out, "block_copy_struct(&state, state_ptr);\n");
+  fprintf(out, "Lexeme_Table_Lookup lookup = {};\n\n");
 
-  for (State *state = model.states.first;
-       state != 0;
-       state = state->next){
+  for_ll(state, model.states.first){
     fprintf(out, "state_label_%d: // %.*s\n", state->number, string_expand(state->pretty_name));
     fprintf(out, "{\n");
 
@@ -3787,31 +2986,37 @@ gen_contiguous_control_flow_lexer(Arena *scratch, Token_Kind_Set tokens, Lexer_M
 
         Grouped_Input_Handler_List group_list = opt_grouped_input_handlers(scratch, trans);
 
-        fprintf(out, "switch (*state.ptr){\n");
-        for (Grouped_Input_Handler *group = group_list.first; group != 0; group = group->next){
+        b32 needs_switch = (group_list.count != 1 || group_list.first != group_list.group_with_biggest_input_set);
+        if (needs_switch) { fprintf(out, "switch (*state.ptr)"); }
+        fprintf(out, "{\n");
+        char* str = (needs_switch ? "break;" : "");
+        for_ll(group, group_list.first){
 
-          if (group == group_list.group_with_biggest_input_set){
-            fprintf(out, "default:");
-          }
-          else{
-            i32 input_count = group->input_count;
-            u8 *inputs = group->inputs;
-            for (i32 i = 0; i < input_count; i += 1){
-              fprintf(out, "case 0x%02x:", inputs[i]);
-              if ((i % 7) == 6){
-                fprintf(out, "\n");
+          if (needs_switch) {
+            if (group == group_list.group_with_biggest_input_set){
+              fprintf(out, "default:");
+            }
+            else{
+              i32 input_count = group->input_count;
+              u8 *inputs = group->inputs;
+              for (i32 i = 0; i < input_count; i += 1){
+                fprintf(out, "case 0x%02x:", inputs[i]);
+                if ((i % 7) == 6){
+                  fprintf(out, "\n");
+                }
               }
             }
           }
 
           Partial_Transition *partial = group->partial_transitions.first;
           if (partial->next == 0 && partial->actions.count == 0){
-            fprintf(out, "{ goto state_label_%d; }break; // %.*s\n", partial->dst_state->number, string_expand(partial->dst_state->pretty_name));
+            fprintf(out, "{ goto state_label_%d; }%s // %.*s\n", partial->dst_state->number, str, string_expand(partial->dst_state->pretty_name));
           }
           else if (partial->next == 0 && partial->actions.count == 1 && partial->actions.first->kind == ActionKind_Consume){
-            fprintf(out, "{ state.ptr += 1; goto state_label_%d; }break; // %.*s\n", partial->dst_state->number, string_expand(partial->dst_state->pretty_name));
+            fprintf(out, "{ state.ptr += 1; goto state_label_%d; }%s // %.*s\n", partial->dst_state->number, str, string_expand(partial->dst_state->pretty_name));
           }
-          else{
+          else
+          {
             fprintf(out, "{\n");
             for (; partial != 0; partial = partial->next){
               if (partial->next != 0){
@@ -3827,7 +3032,7 @@ gen_contiguous_control_flow_lexer(Arena *scratch, Token_Kind_Set tokens, Lexer_M
                 fprintf(out, "}\n");
               }
             }
-            fprintf(out, "}break;\n");
+            fprintf(out, "}%s\n", str);
           }
         }
         fprintf(out, "}\n");
@@ -3850,6 +3055,47 @@ gen_contiguous_control_flow_lexer(Arena *scratch, Token_Kind_Set tokens, Lexer_M
   fprintf(out, "Token_List list = {};\n");
   fprintf(out, "lex_full_input_" LANG_NAME_LOWER_STR "_breaks(arena, &list, &state, max_u64);\n");
   fprintf(out, "return(list);\n");
+  fprintf(out, "}\n\n");
+
+  fprintf(out, "internal Token_List\n");
+  fprintf(out, "lex_full_input_async_" LANG_NAME_LOWER_STR "(Async_Context *actx, Arena *arena, String_Const_u8 input, i32 limit, b32 *canceled){\n");
+  fprintf(out, "Lex_State_" LANG_NAME_CAMEL_STR " state = {};\n");
+  fprintf(out, "Token_List list = {};\n");
+  fprintf(out, "lex_full_input_" LANG_NAME_LOWER_STR "_init(&state, input);\n");
+  fprintf(out, "for (;;){\n");
+  fprintf(out, "if (lex_full_input_" LANG_NAME_LOWER_STR "_breaks(arena, &list, &state, limit)){\n");
+  fprintf(out, "break;\n");
+  fprintf(out, "}\n");
+  fprintf(out, "if (async_check_canceled(actx)){\n");
+  fprintf(out, "*canceled = true;\n");
+  fprintf(out, "break;\n");
+  fprintf(out, "}\n");
+  fprintf(out, "}\n");
+  fprintf(out, "return(list);\n");
+  fprintf(out, "}\n\n");
+
+  fprintf(out, "function b32 qol_tok_accept(QOL_Parse_State *state, Token_" LANG_NAME_CAMEL_STR "_Kind kind){\n");
+  fprintf(out, "Token *token = qol_tok_peek(state);\n");
+  fprintf(out, "if (token != 0 && token->sub_kind == kind){\n");
+  fprintf(out, "qol_tok_consume(state);\n");
+  fprintf(out, "return true;\n");
+  fprintf(out, "}\n");
+  fprintf(out, "return false;\n");
+  fprintf(out, "}\n\n");
+
+  fprintf(out, "function b32 qol_tok_peek(QOL_Parse_State *state, Token_" LANG_NAME_CAMEL_STR "_Kind kind, Token **out_tok){\n");
+  fprintf(out, "if (state->generic.finished){ return false; }\n");
+  fprintf(out, "Token *token = qol_tok_peek(state);\n");
+  fprintf(out, "if (token->sub_kind == kind){\n");
+  fprintf(out, "*out_tok = token;\n");
+  fprintf(out, "return true;\n");
+  fprintf(out, "}\n");
+  fprintf(out, "return false;\n");
+  fprintf(out, "}\n\n");
+
+  fprintf(out, "function b32 qol_tok_peek(QOL_Parse_State *state, Token_" LANG_NAME_CAMEL_STR "_Kind kind){\n");
+  fprintf(out, "Token *t;\n");
+  fprintf(out, "return qol_tok_peek(state, kind, &t);\n");
   fprintf(out, "}");
 
   end_temp(temp);
@@ -3885,6 +3131,21 @@ int main(void){
 
   Lexer_Primary_Context *ctx = &helper_ctx.primary_ctx;
 
+  opt_mark_all_states_excluded(ctx);
+  opt_include_reachable_states(ctx->model.root);
+
+  for_ll(s, ctx->model.states.first){
+    if (!s->optimized_in){
+      printf("%s: error: '%.*s' is unreachable\n", s->source, string_expand(s->pretty_name));
+      ctx->has_error = true;
+    }
+    if (s->transitions.first == NULL){
+      printf("%s: error: '%.*s' has no outgoing transitions\n", s->source, string_expand(s->pretty_name));
+      ctx->has_error = true;
+    }
+  }
+  if (ctx->has_error){ return 1; }
+
   // NOTE(allen): Type checking
   // DelimMatch only with a single catch-all fallback, no peeks.
   // Remove the declaration of states and flags?
@@ -3905,6 +3166,12 @@ int main(void){
 
   opt_mark_all_states_excluded(ctx);
   opt_include_reachable_states(ctx->model.root);
+
+  for_ll(s, ctx->model.states.first){
+    if (s->optimized_in){ continue; }
+    printf("%s: -- error '%.*s' is unreachable\n", s->source, string_expand(s->pretty_name));
+  }
+
   opt_discard_all_excluded_states(ctx);
 
   opt_merge_redundant_transitions_in_each_state(ctx);
@@ -3960,12 +3227,10 @@ int main(void){
 
   // NOTE(allen): Code generation
   fprintf(out_h_file, "// Generated by 4coder_lex_gen_main.cpp\n\n");
-  gen_tokens(&ctx->arena, ctx->tokens, out_h_file);
+  gen_tokens(ctx->tokens, out_h_file);
 
   fprintf(out_cpp_file, "// Generated by 4coder_lex_gen_main.cpp\n\n");
-  for (Keyword_Set *set = ctx->keywords.first;
-       set != 0;
-       set = set->next){
+  for_ll(set, ctx->keywords.first){
     gen_keyword_table(&ctx->arena, ctx->tokens, *set, out_cpp_file);
   }
   gen_contiguous_control_flow_lexer(&ctx->arena, ctx->tokens, ctx->model, out_cpp_file);
@@ -3992,5 +3257,3 @@ int main(void){
   // Feature: Temporally chunked input
   return(0);
 }
-
-// BOTTOM

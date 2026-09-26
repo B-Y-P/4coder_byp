@@ -149,7 +149,7 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
   VimBind(N|V|MAP, vim_goto_line,                   (Sft|KeyCode_G));
   VimBind(N|V|MAP, vim_goto_column,                 (Sft|KeyCode_BackwardSlash));
   VimBind(N|V|MAP, vim_modal_percent,               (Sft|KeyCode_5));
-  VimBind(N|V|MAP, vim_bounce,                      (Ctl|KeyCode_5));
+  VimBind(N|V|MAP, vim_bounce_fwd,                  (Ctl|KeyCode_5));
   VimBind(N|V|MAP, vim_set_seek_char,                    KeyCode_F);
   VimBind(N|V|MAP, vim_set_seek_char,                    KeyCode_T);
   VimBind(N|V|MAP, vim_set_seek_char,               (Sft|KeyCode_F));

@@ -2347,13 +2347,13 @@ get_nest_delimiter_kind(Token_Base_Kind kind, Find_Nest_Flag flags){
         result = NestDelim_Close;
       }
     }break;
-    case TokenBaseKind_ParentheticalOpen:
+    case TokenBaseKind_ParenOpen:
     {
       if (HasFlag(flags, FindNest_Paren)){
         result = NestDelim_Open;
       }
     }break;
-    case TokenBaseKind_ParentheticalClose:
+    case TokenBaseKind_ParenClose:
     {
       if (HasFlag(flags, FindNest_Paren)){
         result = NestDelim_Close;

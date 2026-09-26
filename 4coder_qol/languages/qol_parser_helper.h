@@ -6,13 +6,6 @@ struct QOL_Parse_State{
   Generic_Parse_State generic;
 };
 
-enum{
-  TokenBaseKind_StmntClose = TokenBaseKind_StatementClose,
-  TokenBaseKind_ParenOpen  = TokenBaseKind_ParentheticalOpen,
-  TokenBaseKind_ParenClose = TokenBaseKind_ParentheticalClose,
-  TokenBaseKind_Preproc    = TokenBaseKind_Preprocessor
-};
-
 function void qol_parse_init(Application_Links *app, Arena *arena, String_Const_u8 contents, Token_Array *tokens, QOL_Parse_State *state){
   state->stack = NULL;
   generic_parse_init(app, arena, contents, tokens, &state->generic);
@@ -41,17 +34,6 @@ function b32 qol_tok_peek(QOL_Parse_State *state, Token_Base_Kind kind, Token **
   return false;
 }
 
-function b32 qol_tok_peek(QOL_Parse_State *state, Token_Cpp_Kind kind, Token **out_tok){
-  if (state->generic.finished){ return false; }
-  Token *token = qol_tok_peek(state);
-  if (token->sub_kind == kind){
-    *out_tok = token;
-    return true;
-  }
-  return false;
-}
-
-function b32 qol_tok_peek(QOL_Parse_State *state, Token_Cpp_Kind  kind){ Token *t; return qol_tok_peek(state, kind, &t); }
 function b32 qol_tok_peek(QOL_Parse_State *state, Token_Base_Kind kind){ Token *t; return qol_tok_peek(state, kind, &t); }
 
 function b32 qol_tok_peek_preproc_body(QOL_Parse_State *state){
@@ -72,15 +54,6 @@ function b32 qol_tok_accept(QOL_Parse_State *state, Token_Base_Kind kind, Token 
 function b32 qol_tok_accept(QOL_Parse_State *state, Token_Base_Kind kind){
   Token *t = 0;
   return qol_tok_accept(state, kind, &t);
-}
-
-function b32 qol_tok_accept(QOL_Parse_State *state, Token_Cpp_Kind kind){
-  Token *token = qol_tok_peek(state);
-  if (token != 0 && token->sub_kind == kind){
-    qol_tok_consume(state);
-    return true;
-  }
-  return false;
 }
 
 function b32 qol_nest_is_inside(Code_Index_Nest *nest, Code_Index_Nest_Kind kind){
@@ -134,7 +107,7 @@ function Code_Index_Nest* qol_nest_pop(QOL_Parse_State *state, bool is_closed, R
 // For balanced input, _paren and _scope are symmetric, but for unbalanced input, scopes dominates unclosed parens
 function Code_Index_Nest* qol_nest_pop_scope(QOL_Parse_State *state){
   Range_i64 range = Ii64(qol_tok_close(state));
-  while (state->stack == 0 || state->stack->kind != CodeIndexNest_Scope){
+  while (state->stack != 0 && state->stack->kind != CodeIndexNest_Scope){
     qol_nest_pop(state, false, Ii64(range.min));
   }
   defer{ qol_tok_consume(state); };
@@ -143,8 +116,8 @@ function Code_Index_Nest* qol_nest_pop_scope(QOL_Parse_State *state){
 
 function Code_Index_Nest* qol_nest_pop_paren(QOL_Parse_State *state){
   Range_i64 range = Ii64(qol_tok_close(state));
-  if (state->stack == 0 || state->stack->kind != CodeIndexNest_Paren){ return NULL; }
   defer{ qol_tok_consume(state); };
+  if (state->stack == 0 || state->stack->kind != CodeIndexNest_Paren){ return NULL; }
   return qol_nest_pop(state, true, range);
 }
 
@@ -178,7 +151,7 @@ function Code_Index_Nest* qol_parse_preproc(QOL_Parse_State *state){
   qol_nest_push(state, CodeIndexNest_Preprocessor);
   for (;;){
     if (state->generic.finished){ break; }
-    if (qol_tok_peek(state, TokenBaseKind_Preprocessor) || !qol_tok_peek_preproc_body(state)){ break; }
+    if (qol_tok_peek(state, TokenBaseKind_Preproc) || !qol_tok_peek_preproc_body(state)){ break; }
     if (qol_tok_peek(state, TokenBaseKind_Identifier) && try_macro){ qol_note_push(state, Ii64(qol_tok_peek(state)), CodeIndexNote_Macro); }
     if (qol_tok_peek(state, TokenBaseKind_ScopeOpen)){ qol_parse_scope(state); continue; }
     if (qol_tok_peek(state, TokenBaseKind_ParenOpen)){ qol_parse_paren(state); continue; }
@@ -193,8 +166,8 @@ function Code_Index_Nest* qol_parse_stmnt(QOL_Parse_State *state){
   qol_nest_push(state, CodeIndexNest_Statement);
   for (;;){
     if (state->generic.finished){ break; }
-    if (state->generic.in_preprocessor && (!qol_tok_peek_preproc_body(state) || qol_tok_peek(state, TokenBaseKind_Preprocessor))){ break; }
-    if (!state->generic.in_preprocessor && qol_tok_peek(state, TokenBaseKind_Preprocessor)){ break; }
+    if (state->generic.in_preprocessor && (!qol_tok_peek_preproc_body(state) || qol_tok_peek(state, TokenBaseKind_Preproc))){ break; }
+    if (!state->generic.in_preprocessor && qol_tok_peek(state, TokenBaseKind_Preproc)){ break; }
     if (qol_tok_peek(state, TokenBaseKind_ParenOpen )){ qol_parse_paren(state); continue; }
     if (qol_tok_peek(state, TokenBaseKind_ScopeOpen )){ break; } // { qol_parse_scope(state); return qol_nest_pop(state, true, Ii64(state->just_closed)); }
     if (qol_tok_peek(state, TokenBaseKind_ParenClose)){ break; }
@@ -209,8 +182,8 @@ function Code_Index_Nest* qol_parse_scope(QOL_Parse_State *state){
   qol_nest_push(state, CodeIndexNest_Scope);
   for (;;){
     if (state->generic.finished){ break; }
-    if (state->generic.in_preprocessor && (!qol_tok_peek_preproc_body(state) || qol_tok_peek(state, TokenBaseKind_Preprocessor))){ break; }
-    if (!state->generic.in_preprocessor && qol_tok_peek(state, TokenBaseKind_Preprocessor)){ qol_parse_preproc(state); continue; }
+    if (state->generic.in_preprocessor && (!qol_tok_peek_preproc_body(state) || qol_tok_peek(state, TokenBaseKind_Preproc))){ break; }
+    if (!state->generic.in_preprocessor && qol_tok_peek(state, TokenBaseKind_Preproc)){ qol_parse_preproc(state); continue; }
     if (qol_tok_peek(state, TokenBaseKind_ScopeClose)){ break; }
     if (qol_tok_peek(state, TokenBaseKind_ScopeOpen )){ qol_parse_scope(state); continue; }
     if (qol_tok_peek(state, TokenBaseKind_ParenClose)){ qol_tok_consume(state); continue; }
@@ -224,8 +197,8 @@ function Code_Index_Nest* qol_parse_paren(QOL_Parse_State *state){
   qol_nest_push(state, CodeIndexNest_Paren);
   for (;;){
     if (state->generic.finished){ break; }
-    if (state->generic.in_preprocessor && !qol_tok_peek_preproc_body(state) || qol_tok_peek(state, TokenBaseKind_Preprocessor)){ break; }
-    if (!state->generic.in_preprocessor && qol_tok_peek(state, TokenBaseKind_Preprocessor)){ qol_parse_preproc(state); continue; }
+    if (state->generic.in_preprocessor && !qol_tok_peek_preproc_body(state) || qol_tok_peek(state, TokenBaseKind_Preproc)){ break; }
+    if (!state->generic.in_preprocessor && qol_tok_peek(state, TokenBaseKind_Preproc)){ qol_parse_preproc(state); continue; }
     if (qol_tok_peek(state, TokenBaseKind_ParenClose)){ break; }
     if (qol_tok_peek(state, TokenBaseKind_ParenOpen )){ qol_parse_paren(state); continue; }
     if (qol_tok_peek(state, TokenBaseKind_ScopeClose)){ break; }

@@ -92,11 +92,11 @@ find_anchor_token(Application_Links *app, Buffer_ID buffer, Token_Array *tokens,
               scope_counter -= 1;
             }
           }break;
-          case TokenBaseKind_ParentheticalOpen:
+          case TokenBaseKind_ParenOpen:
           {
             paren_counter += 1;
           }break;
-          case TokenBaseKind_ParentheticalClose:
+          case TokenBaseKind_ParenClose:
           {
             if (paren_counter > 0){
               paren_counter -= 1;
@@ -135,7 +135,7 @@ indent__unfinished_statement(Token *token, Nest *current_nest){
     switch (token->kind){
       case TokenBaseKind_ScopeOpen:
       case TokenBaseKind_ScopeClose:
-      case TokenBaseKind_StatementClose:
+      case TokenBaseKind_StmntClose:
       {
         result = false;
       }break;
@@ -167,47 +167,47 @@ get_indentation_array(Application_Links *app, Arena *arena, Buffer_ID buffer, Ra
   block_fill_u64(indentations, sizeof(*indentations)*count, (u64)(-1));
 
 #if 0
-      Managed_Scope scope = buffer_get_managed_scope(app, buffer);
-      Token_Array *tokens = scope_attachment(app, scope, attachment_tokens, Token_Array);
-      #endif
+  Managed_Scope scope = buffer_get_managed_scope(app, buffer);
+  Token_Array *tokens = scope_attachment(app, scope, attachment_tokens, Token_Array);
+#endif
 
-      Token_Array token_array = get_token_array_from_buffer(app, buffer);
-      Token_Array *tokens = &token_array;
+  Token_Array token_array = get_token_array_from_buffer(app, buffer);
+  Token_Array *tokens = &token_array;
 
-      i64 anchor_line = clamp_bot(1, lines.first - 1);
-      Token *anchor_token = find_anchor_token(app, buffer, tokens, anchor_line);
-      if (anchor_token != 0 &&
+  i64 anchor_line = clamp_bot(1, lines.first - 1);
+  Token *anchor_token = find_anchor_token(app, buffer, tokens, anchor_line);
+  if (anchor_token != 0 &&
       anchor_token >= tokens->tokens &&
       anchor_token < tokens->tokens + tokens->count){
-      i64 line = get_line_number_from_pos(app, buffer, anchor_token->pos);
-      line = clamp_top(line, lines.first);
+    i64 line = get_line_number_from_pos(app, buffer, anchor_token->pos);
+    line = clamp_top(line, lines.first);
 
-      Token_Iterator_Array token_it = token_iterator(0, tokens, anchor_token);
+    Token_Iterator_Array token_it = token_iterator(0, tokens, anchor_token);
 
-      Scratch_Block scratch(app, arena);
-      Nest *nest = 0;
-      Nest_Alloc nest_alloc = {};
+    Scratch_Block scratch(app, arena);
+    Nest *nest = 0;
+    Nest_Alloc nest_alloc = {};
 
-      i64 line_last_indented = line - 1;
-      i64 last_indent = 0;
-      i64 actual_indent = 0;
-      b32 in_unfinished_statement = false;
+    i64 line_last_indented = line - 1;
+    i64 last_indent = 0;
+    i64 actual_indent = 0;
+    b32 in_unfinished_statement = false;
 
-      Indent_Line_Cache line_cache = {};
+    Indent_Line_Cache line_cache = {};
 
-      for (;;){
+    for (;;){
       Token *token = token_it_read(&token_it);
 
       if (line_cache.where_token_starts == 0 ||
-      token->pos >= line_cache.one_past_last_pos){
-      ProfileScope(app, "get line number");
-      line_cache.where_token_starts = get_line_number_from_pos(app, buffer, token->pos);
-      line_cache.one_past_last_pos = get_line_end_pos(app, buffer, line_cache.where_token_starts);
+          token->pos >= line_cache.one_past_last_pos){
+        ProfileScope(app, "get line number");
+        line_cache.where_token_starts = get_line_number_from_pos(app, buffer, token->pos);
+        line_cache.one_past_last_pos = get_line_end_pos(app, buffer, line_cache.where_token_starts);
       }
 
       i64 current_indent = 0;
       if (nest != 0){
-      current_indent = nest->indent;
+        current_indent = nest->indent;
       }
       i64 this_indent = current_indent;
       i64 following_indent = current_indent;
@@ -215,114 +215,114 @@ get_indentation_array(Application_Links *app, Arena *arena, Buffer_ID buffer, Ra
       b32 shift_by_actual_indent = false;
       b32 ignore_unfinished_statement = false;
       if (HasFlag(token->flags, TokenBaseFlag_PreprocessorBody)){
-      this_indent = 0;
+        this_indent = 0;
       }
       else{
-      switch (token->kind){
-      case TokenBaseKind_ScopeOpen:
-      {
-      Nest *new_nest = indent__new_nest(arena, &nest_alloc);
-      sll_stack_push(nest, new_nest);
-      nest->kind = TokenBaseKind_ScopeOpen;
-      nest->indent = current_indent + indent_width;
-      following_indent = nest->indent;
-      ignore_unfinished_statement = true;
-      }break;
+        switch (token->kind){
+          case TokenBaseKind_ScopeOpen:
+          {
+            Nest *new_nest = indent__new_nest(arena, &nest_alloc);
+            sll_stack_push(nest, new_nest);
+            nest->kind = TokenBaseKind_ScopeOpen;
+            nest->indent = current_indent + indent_width;
+            following_indent = nest->indent;
+            ignore_unfinished_statement = true;
+          }break;
 
-      case TokenBaseKind_ScopeClose:
-      {
-      for (;nest != 0 && nest->kind != TokenBaseKind_ScopeOpen;){
-      Nest *n = nest;
-      sll_stack_pop(nest);
-      indent__free_nest(&nest_alloc, n);
-      }
-      if (nest != 0 && nest->kind == TokenBaseKind_ScopeOpen){
-      Nest *n = nest;
-      sll_stack_pop(nest);
-      indent__free_nest(&nest_alloc, n);
-      }
-      this_indent = 0;
-      if (nest != 0){
-      this_indent = nest->indent;
-      }
-      following_indent = this_indent;
-      ignore_unfinished_statement = true;
-      }break;
+          case TokenBaseKind_ScopeClose:
+          {
+            for (;nest != 0 && nest->kind != TokenBaseKind_ScopeOpen;){
+              Nest *n = nest;
+              sll_stack_pop(nest);
+              indent__free_nest(&nest_alloc, n);
+            }
+            if (nest != 0 && nest->kind == TokenBaseKind_ScopeOpen){
+              Nest *n = nest;
+              sll_stack_pop(nest);
+              indent__free_nest(&nest_alloc, n);
+            }
+            this_indent = 0;
+            if (nest != 0){
+              this_indent = nest->indent;
+            }
+            following_indent = this_indent;
+            ignore_unfinished_statement = true;
+          }break;
 
-      case TokenBaseKind_ParentheticalOpen:
-      {
-      Nest *new_nest = indent__new_nest(arena, &nest_alloc);
-      sll_stack_push(nest, new_nest);
-      nest->kind = TokenBaseKind_ParentheticalOpen;
-      line_indent_cache_update(app, buffer, tab_width, &line_cache);
-      nest->indent = (token->pos - line_cache.indent_info.first_char_pos) + 1;
-      following_indent = nest->indent;
-      shift_by_actual_indent = true;
-      ignore_unfinished_statement = true;
-      }break;
+          case TokenBaseKind_ParenOpen:
+          {
+            Nest *new_nest = indent__new_nest(arena, &nest_alloc);
+            sll_stack_push(nest, new_nest);
+            nest->kind = TokenBaseKind_ParenOpen;
+            line_indent_cache_update(app, buffer, tab_width, &line_cache);
+            nest->indent = (token->pos - line_cache.indent_info.first_char_pos) + 1;
+            following_indent = nest->indent;
+            shift_by_actual_indent = true;
+            ignore_unfinished_statement = true;
+          }break;
 
-      case TokenBaseKind_ParentheticalClose:
-      {
-      if (nest != 0 && nest->kind == TokenBaseKind_ParentheticalOpen){
-      Nest *n = nest;
-      sll_stack_pop(nest);
-      indent__free_nest(&nest_alloc, n);
-      }
-      following_indent = 0;
-      if (nest != 0){
-      following_indent = nest->indent;
-      }
-      //ignore_unfinished_statement = true;
-      }break;
+          case TokenBaseKind_ParenClose:
+          {
+            if (nest != 0 && nest->kind == TokenBaseKind_ParenOpen){
+              Nest *n = nest;
+              sll_stack_pop(nest);
+              indent__free_nest(&nest_alloc, n);
+            }
+            following_indent = 0;
+            if (nest != 0){
+              following_indent = nest->indent;
+            }
+            //ignore_unfinished_statement = true;
+          }break;
+        }
+
+        if (token->sub_kind == TokenCppKind_BlockComment ||
+            token->sub_kind == TokenCppKind_LiteralStringRaw){
+          ignore_unfinished_statement = true;
+        }
+
+        if (in_unfinished_statement && !ignore_unfinished_statement){
+          this_indent += indent_width;
+        }
       }
 
-      if (token->sub_kind == TokenCppKind_BlockComment ||
-      token->sub_kind == TokenCppKind_LiteralStringRaw){
-      ignore_unfinished_statement = true;
-      }
-
-      if (in_unfinished_statement && !ignore_unfinished_statement){
-      this_indent += indent_width;
-      }
-      }
-
-      #define EMIT(N) \
-      Stmnt(if (lines.first <= line_it){shifted_indentations[line_it]=N;} \
-      if (line_it == lines.end){goto finished;} \
-      actual_indent = N; )
+#define EMIT(N) \
+  Stmnt(if (lines.first <= line_it){shifted_indentations[line_it]=N;} \
+        if (line_it == lines.end){goto finished;} \
+        actual_indent = N; )
 
       i64 line_it = line_last_indented;
       if (lines.first <= line_cache.where_token_starts){
-      for (;line_it < line_cache.where_token_starts;){
-      line_it += 1;
-      if (line_it == line_cache.where_token_starts){
-      EMIT(this_indent);
+        for (;line_it < line_cache.where_token_starts;){
+          line_it += 1;
+          if (line_it == line_cache.where_token_starts){
+            EMIT(this_indent);
+          }
+          else{
+            EMIT(last_indent);
+          }
+        }
       }
       else{
-      EMIT(last_indent);
-      }
-      }
-      }
-      else{
-      actual_indent = this_indent;
-      line_it = line_cache.where_token_starts;
+        actual_indent = this_indent;
+        line_it = line_cache.where_token_starts;
       }
 
       i64 line_where_token_ends = get_line_number_from_pos(app, buffer, token->pos + token->size);
       if (lines.first <= line_where_token_ends){
-      line_indent_cache_update(app, buffer, tab_width, &line_cache);
-      i64 line_where_token_starts_shift = this_indent - line_cache.indent_info.indent_pos;
-      for (;line_it < line_where_token_ends;){
-      line_it += 1;
-      i64 line_it_start_pos = get_line_start_pos(app, buffer, line_it);
-      Indent_Info line_it_indent_info = get_indent_info_line_number_and_start(app, buffer, line_it, line_it_start_pos, tab_width);
-      i64 new_indent = line_it_indent_info.indent_pos + line_where_token_starts_shift;
-      new_indent = clamp_bot(0, new_indent);
-      EMIT(new_indent);
-      }
+        line_indent_cache_update(app, buffer, tab_width, &line_cache);
+        i64 line_where_token_starts_shift = this_indent - line_cache.indent_info.indent_pos;
+        for (;line_it < line_where_token_ends;){
+          line_it += 1;
+          i64 line_it_start_pos = get_line_start_pos(app, buffer, line_it);
+          Indent_Info line_it_indent_info = get_indent_info_line_number_and_start(app, buffer, line_it, line_it_start_pos, tab_width);
+          i64 new_indent = line_it_indent_info.indent_pos + line_where_token_starts_shift;
+          new_indent = clamp_bot(0, new_indent);
+          EMIT(new_indent);
+        }
       }
       else{
-      line_it = line_where_token_ends;
+        line_it = line_where_token_ends;
       }
 #undef EMIT
 

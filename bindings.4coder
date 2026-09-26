@@ -160,7 +160,7 @@ keys_vim = {
   {"N|V|MAP", "vim_goto_line",                   "Sft|G"},
   {"N|V|MAP", "vim_goto_column",                 "Sft|BackwardSlash"},
   {"N|V|MAP", "vim_modal_percent",               "Sft|5"},
-  {"N|V|MAP", "vim_bounce",                      "Ctl|5"},
+  {"N|V|MAP", "vim_bounce_bwd",                  "Ctl|5"},
   {"N|V|MAP", "vim_set_seek_char",                   "F"},
   {"N|V|MAP", "vim_set_seek_char",                   "T"},
   {"N|V|MAP", "vim_set_seek_char",               "Sft|F"},

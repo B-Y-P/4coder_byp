@@ -15,7 +15,16 @@
 #include "4coder_stringf.cpp"
 #include "4coder_malloc_allocator.cpp"
 
+// Dummy declarations
+struct Async_Context{};
+struct QOL_Parse_State{ struct{ b32 finished; }generic; };
+bool async_check_canceled(Async_Context *actx){ return false; }
+Token* qol_tok_peek(QOL_Parse_State *state){ return NULL; }
+void qol_tok_consume(QOL_Parse_State *state){}
+
 #include "4coder_token.cpp"
+#include "lexer_generator/4coder_lex_gen_hand_written.h"
+#include "lexer_generator/4coder_lex_gen_hand_written.cpp"
 #include "generated/lexer_cpp.cpp"
 
 #include "4coder_file.h"
@@ -365,7 +374,7 @@ static b32
 require_open_parenthese(Reader *reader, i64 *opt_pos_out){
   b32 success = false;
   Token token = get_token(reader);
-  if (token.kind == TokenBaseKind_ParentheticalOpen){
+  if (token.kind == TokenBaseKind_ParenOpen){
     success = true;
     if (opt_pos_out != 0){
       *opt_pos_out = token.pos;
@@ -386,7 +395,7 @@ static b32
 require_close_parenthese(Reader *reader, i64 *opt_pos_out){
   b32 success = false;
   Token token = get_token(reader);
-  if (token.kind == TokenBaseKind_ParentheticalClose){
+  if (token.kind == TokenBaseKind_ParenClose){
     success = true;
     if (opt_pos_out != 0){
       *opt_pos_out = token.pos;

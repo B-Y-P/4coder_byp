@@ -396,22 +396,22 @@ VIM_COMMAND_SIG(vim_backward_END){
   view_set_cursor_and_preferred_x(app, view, seek_pos(pos));
 }
 
-VIM_COMMAND_SIG(vim_bounce){
+function void vim_bounce_dir(Application_Links *app, Scan_Direction dir){
   vim_push_jump();
   Vim_Motion_Block vim_motion_block(app);
-  Scan_Direction direction = Scan_Forward;
-  Input_Event event = get_current_input(app).event;
-  if(event.kind == InputEventKind_KeyStroke && has_modifier(&event, KeyCode_Control)){ direction=Scan_Backward; }
   View_ID view = get_active_view(app, Access_ReadVisible);
   Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
   i64 pos = view_get_cursor_pos(app, view);
-  pos = vim_scan_bounce(app, buffer, pos, direction);
+  pos = vim_scan_bounce(app, buffer, pos, dir);
   view_set_cursor_and_preferred_x(app, view, seek_pos(pos));
 }
 
+VIM_COMMAND_SIG(vim_bounce_fwd){ vim_bounce_dir(app, Scan_Forward); }
+VIM_COMMAND_SIG(vim_bounce_bwd){ vim_bounce_dir(app, Scan_Backward); }
+
 VIM_COMMAND_SIG(vim_modal_percent){
   if(vim_state.number){ vim_percent_file(app); }
-  else{ vim_bounce(app); }
+  else{ vim_bounce_fwd(app); }
 }
 
 VIM_COMMAND_SIG(vim_paste_after){
